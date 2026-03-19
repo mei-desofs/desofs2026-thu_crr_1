@@ -60,15 +60,10 @@ package "OrderAggregate" {
       +productId: UUID
     }
 
-    class Payment <<Entity>>
-
     enum OrderStatus <<ValueObject>>
-    enum PaymentStatus <<ValueObject>>
 
     Order --> OrderItem
-    Order --> Payment
     Order --> OrderStatus
-    Payment --> PaymentStatus
     Order "1" --> "1" Money
     OrderItem "1" --> "1" Money
     Order "1" --> "1" Address : delivery address
