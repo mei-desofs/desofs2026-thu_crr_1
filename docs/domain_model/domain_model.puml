@@ -1,0 +1,80 @@
+@startuml DomainModel
+
+package "Common" {
+    class Money <<ValueObject>>
+    class Address <<ValueObject>>
+    class Email <<ValueObject>>
+}
+
+package "CustomerAggregate" {
+    class User <<Root>> {
+      +userId: UUID
+      +role: UserRole
+    }
+
+    class UserRole <<ValueObject>>
+
+    class Customer <<Entity>> {
+      +customerId: UUID
+      +nif: NIF
+    }
+
+    class NIF <<ValueObject>>
+
+    User --> Customer : can be a
+    User --> Email
+    User --> UserRole
+    Customer --> NIF
+    Customer "1" --> "1..*" Address : delivery addresses
+}
+
+package "CategoryAggregate" {
+    class Category <<Root>>
+}
+
+package "ProductAggregate" {
+    class Product <<Root>>
+    Product "1" --> "1" Category
+    Product "1" --> "1" Money
+}
+
+package "CartAggregate" {
+    class Cart <<Root>> {
+      +userId: UUID
+    }
+
+    class CartItem <<Entity>> {
+      +productId: UUID
+    }
+
+    Cart --> CartItem
+    CartItem "1" --> "1" Product : has
+}
+
+package "OrderAggregate" {
+    class Order <<Root>> {
+      +userId: UUID
+    }
+
+    class OrderItem <<Entity>> {
+      +productId: UUID
+    }
+
+    class Payment <<Entity>>
+
+    enum OrderStatus <<ValueObject>>
+    enum PaymentStatus <<ValueObject>>
+
+    Order --> OrderItem
+    Order --> Payment
+    Order --> OrderStatus
+    Payment --> PaymentStatus
+    Order "1" --> "1" Money
+    OrderItem "1" --> "1" Money
+    Order "1" --> "1" Address : delivery address
+}
+
+User "1" --> "0..1" Cart : owns
+User "1" --> "0..*" Order : places
+
+@enduml
