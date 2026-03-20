@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: TechStore
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tech_store_db
+    username: tech_store_user
+    password: tech_store_pass
+    driver-class-name: org.postgresql.Driver

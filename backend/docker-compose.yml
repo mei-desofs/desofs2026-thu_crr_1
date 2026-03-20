@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  tech-store:
+    image: postgres:17
+    container_name: tech-store-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tech_store_user
+      POSTGRES_PASSWORD: tech_store_pass
+      POSTGRES_DB: tech_store_db
+    volumes:
+      - tech_store_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - tech_store_network
+
+volumes:
+  tech_store_pg_data:
+
+networks:
+  tech_store_network:
+    driver: bridge
