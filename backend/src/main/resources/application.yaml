@@ -7,3 +7,16 @@ spring:
     username: tech_store_user
     password: tech_store_pass
     driver-class-name: org.postgresql.Driver
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: true
+
+management:
+    endpoints:
+        web:
+        exposure:
+            include: "*"
