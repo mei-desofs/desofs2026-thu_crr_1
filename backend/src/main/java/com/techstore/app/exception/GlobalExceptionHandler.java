@@ -99,8 +99,10 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex,
             HttpServletRequest request) {
         logger.warn("Method argument type mismatch: {}", ex.getMessage());
+        Class<?> requiredType = ex.getRequiredType();
+        String expectedTypeName = (requiredType != null) ? requiredType.getSimpleName() : "unknown";
         String message = String.format("Invalid parameter '%s'. Expected type: %s",
-                ex.getName(), ex.getRequiredType().getSimpleName());
+                ex.getName(), expectedTypeName);
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 message,
@@ -234,24 +236,6 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handle 404 Not Found exceptions
-     */
-    @ExceptionHandler(NoHandlerFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleNotFound(
-            NoHandlerFoundException ex,
-            HttpServletRequest request) {
-        logger.warn("Resource not found: {}", ex.getRequestURL());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "The requested resource was not found.",
-                "Not Found",
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     /**

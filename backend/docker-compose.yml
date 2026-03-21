@@ -6,9 +6,9 @@ services:
     container_name: tech-store-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tech_store_user
-      POSTGRES_PASSWORD: tech_store_pass
-      POSTGRES_DB: tech_store_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - tech_store_pg_data:/var/lib/postgresql/data
     ports:

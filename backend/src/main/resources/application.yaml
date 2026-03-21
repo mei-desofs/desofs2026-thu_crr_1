@@ -3,9 +3,9 @@ spring:
     name: TechStore
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/tech_store_db
-    username: tech_store_user
-    password: tech_store_pass
+    url: ${DB_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
 springdoc:
@@ -16,7 +16,7 @@ springdoc:
   show-actuator: true
 
 management:
-    endpoints:
-        web:
-        exposure:
-            include: "*"
+  endpoints:
+    web:
+      exposure:
+        include: info, health
