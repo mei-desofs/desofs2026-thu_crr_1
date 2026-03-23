@@ -2,6 +2,7 @@ package com.techstore.app.service;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.dto.ProductCreationResponse;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.mapper.ProductMapper;
 import com.techstore.app.repository.CategoryRepository;
@@ -18,11 +19,11 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Product save(ProductRequestDTO dto) {
-        Category category = categoryRepository.findById(dto.getCategoryId())
+    public ProductCreationResponse save(ProductRequestDTO dto) {
+        Category category = categoryRepository.findById(dto.categoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         Product product = ProductMapper.toEntity(dto, category);
-        return productRepository.save(product);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 }

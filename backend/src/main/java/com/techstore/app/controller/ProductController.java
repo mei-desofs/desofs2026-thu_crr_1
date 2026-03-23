@@ -1,6 +1,6 @@
 package com.techstore.app.controller;
 
-import com.techstore.app.domain.product.Product;
+import com.techstore.app.dto.ProductCreationResponse;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.service.interfaces.ProductService;
 import jakarta.validation.Valid;
@@ -20,7 +20,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product save(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
+    public ProductCreationResponse save(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
         return productService.save(productRequestDTO);
     }
 }
