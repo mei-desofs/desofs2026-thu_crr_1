@@ -1,11 +1,13 @@
 package com.techstore.app.service.interfaces;
 
-import com.techstore.app.domain.product.Product;
-import com.techstore.app.dto.ProductCreationResponse;
+import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
+
+import java.util.List;
 
 public interface ProductService {
 
-    ProductCreationResponse save(ProductRequestDTO productRequestDTO);
+    ProductResponseDTO save(ProductRequestDTO productRequestDTO);
+    List<ProductResponseDTO> findByName(String productName);
 
 }
