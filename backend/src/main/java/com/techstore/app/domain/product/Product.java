@@ -2,6 +2,7 @@ package com.techstore.app.domain.product;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,7 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = true)
+    @Column
     private String description;
 
     @Embedded
@@ -35,10 +36,23 @@ public class Product {
     public Product() {}
 
     public Product(String name, String description, Money price, Category category) {
+        if (!isNameValid(name)) {
+            throw new BusinessException("Product name must contain only letters.");
+        }
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
     }
 
+    public void setName(String name) {
+        if (!isNameValid(name)) {
+            throw new BusinessException("Product name must contain only letters.");
+        }
+        this.name = name;
+    }
+
+    public boolean isNameValid(String name) {
+        return name.matches("[a-zA-Z0-9 ]+") && !name.isBlank();
+    }
 }

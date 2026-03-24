@@ -2,12 +2,16 @@ package com.techstore.app.domain.product;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProductTest {
 
@@ -22,6 +26,24 @@ class ProductTest {
         assertEquals("Wireless mouse", product.getDescription());
         assertEquals(price, product.getPrice());
         assertEquals(category, product.getCategory());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingProductWithBlankName() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+
+        assertThrows(BusinessException.class,
+                () -> new Product("   ", "Wireless mouse", price, category));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingProductWithInvalidCharactersInName() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+
+        assertThrows(BusinessException.class,
+                () -> new Product("@@@", "Wireless mouse", price, category));
     }
 
     @Test
@@ -44,6 +66,20 @@ class ProductTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenUpdatingProductNameWithBlankValue() {
+        Product product = new Product();
+
+        assertThrows(BusinessException.class, () -> product.setName("   "));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingProductNameWithInvalidCharacters() {
+        Product product = new Product();
+
+        assertThrows(BusinessException.class, () -> product.setName("@@@"));
+    }
+
+    @Test
     void shouldCreateProductWithDefaultConstructor() {
         Product product = new Product();
 
@@ -52,5 +88,23 @@ class ProductTest {
         assertNull(product.getDescription());
         assertNull(product.getPrice());
         assertNull(product.getCategory());
+    }
+
+    @Test
+    void shouldReturnTrueWhenProductNameIsValid() {
+        Product product = new Product();
+
+        boolean isValid = product.isNameValid("Ultra Laptop 15");
+
+        assertTrue(isValid);
+    }
+
+    @Test
+    void shouldReturnFalseWhenProductNameIsInvalid() {
+        Product product = new Product();
+
+        boolean isValid = product.isNameValid("@@@");
+
+        assertFalse(isValid);
     }
 }

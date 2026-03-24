@@ -1,11 +1,11 @@
 package com.techstore.app.domain.shared;
 
+import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MoneyTest {
 
@@ -20,7 +20,7 @@ class MoneyTest {
 
     @Test
     void shouldAllowUpdatingValue() {
-        Money money = new Money();
+        Money money = new Money(new BigDecimal("10.00"));
         BigDecimal amount = new BigDecimal("25.50");
 
         money.setValue(amount);
@@ -29,9 +29,38 @@ class MoneyTest {
     }
 
     @Test
-    void shouldCreateMoneyWithDefaultConstructor() {
-        Money money = new Money();
+    void shouldThrowExceptionWhenValueIsNull() {
+        Money money = new Money(new BigDecimal("10.00"));
 
-        assertNull(money.getValue());
+        assertThrows(BusinessException.class, () -> money.setValue(null));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingMoneyWithNullValue() {
+        assertThrows(BusinessException.class, () -> new Money(null));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingMoneyWithZero() {
+        assertThrows(BusinessException.class, () -> new Money(BigDecimal.ZERO));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingMoneyWithNegativeValue() {
+        assertThrows(BusinessException.class, () -> new Money(new BigDecimal("-0.01")));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingMoneyWithZero() {
+        Money money = new Money(new BigDecimal("10.00"));
+
+        assertThrows(BusinessException.class, () -> money.setValue(BigDecimal.ZERO));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingMoneyWithNegativeValue() {
+        Money money = new Money(new BigDecimal("10.00"));
+
+        assertThrows(BusinessException.class, () -> money.setValue(new BigDecimal("-0.01")));
     }
 }

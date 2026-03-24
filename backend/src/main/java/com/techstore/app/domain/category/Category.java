@@ -1,5 +1,6 @@
 package com.techstore.app.domain.category;
 
+import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,6 +22,14 @@ public class Category {
     public Category() {}
 
     public Category(String name) {
+        if (!isValid(name)) {
+            throw new BusinessException("Category name must contain only letters.");
+        }
+
         this.name = name;
+    }
+
+    public boolean isValid(String name) {
+        return name.matches("[a-zA-Z0-9 ]+") && !name.isBlank();
     }
 }
