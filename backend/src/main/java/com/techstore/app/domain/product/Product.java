@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode
 @Entity
 public class Product {
 
@@ -25,6 +25,7 @@ public class Product {
     @Column(nullable = true)
     private String description;
 
+    @Embedded
     private Money price;
 
     @ManyToOne
