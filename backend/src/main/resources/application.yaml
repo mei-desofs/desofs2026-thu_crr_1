@@ -2,9 +2,8 @@ spring:
   application:
     name: TechStore
 
-server:
-  servlet:
-    context-path: /api
+  profiles:
+    active: bootstrap
 
   datasource:
     url: ${DB_URL}
@@ -16,6 +15,10 @@ server:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+server:
+  servlet:
+    context-path: /api
 
 springdoc:
   swagger-ui:
