@@ -39,4 +39,11 @@ public class ProductServiceImpl implements ProductService {
         return products.stream().map(ProductMapper::toResponse)
                 .toList();
     }
+
+    @Override
+    public Page<ProductResponseDTO> findByNameLike(String productName, Pageable pageable) {
+        Page<Product> products = productRepository.findByNameLike(productName, pageable);
+
+        return products.map(ProductMapper::toResponse);
+    }
 }

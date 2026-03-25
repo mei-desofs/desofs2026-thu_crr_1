@@ -4,10 +4,13 @@ import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.service.interfaces.ProductService;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -22,5 +25,11 @@ public class ProductController {
     @PostMapping
     public ProductResponseDTO save(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
         return productService.save(productRequestDTO);
+    }
+
+    @GetMapping("/search")
+    public Page<ProductResponseDTO> search(@RequestParam String productName,
+                                           @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
+        return productService.findByNameLike(productName, pageable);
     }
 }
