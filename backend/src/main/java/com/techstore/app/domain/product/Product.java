@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -33,6 +35,12 @@ public class Product {
     @JoinColumn(nullable = false)
     private Category category;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     public Product() {}
 
     public Product(String name, String description, Money price, Category category) {
@@ -43,6 +51,18 @@ public class Product {
         this.description = description;
         this.price = price;
         this.category = category;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void setName(String name) {
