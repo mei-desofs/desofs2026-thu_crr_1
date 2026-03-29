@@ -1,0 +1,19 @@
+@startuml deployment-view
+
+package "TechStore" {
+
+  node "Server 1: " as SERVER1 {
+
+    component "Backend" as Backend <<component>>  {
+    }
+  }
+
+  node "Server 2: ?" as SERVER2 {
+    component "Database" as Database <<component>> {
+    }
+  }
+}
+
+Backend --> Database :TCP/IP
+
+@enduml
