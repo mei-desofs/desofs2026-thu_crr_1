@@ -12,8 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,6 +98,53 @@ class ProductServiceImplTest {
         assertEquals("Gaming headset", response.get(1).description());
         assertEquals(new BigDecimal("59.90"), response.get(1).price());
         assertEquals("Audio", response.get(1).categoryName());
+    }
+
+    @Test
+    void shouldFindProductsByNameLikeAndMapToResponsePage() {
+        Category peripherals = new Category("Peripherals");
+        Category audio = new Category("Audio");
+
+        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals);
+        keyboard.setId(100L);
+        Product headset = new Product("Gaming Keyboard", "RGB keyboard", new Money(new BigDecimal("59.90")), audio);
+        headset.setId(101L);
+
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
+
+        when(productRepository.findByNameLike("Key", pageable)).thenReturn(productsPage);
+
+        Page<ProductResponseDTO> response = productService.findByNameLike("Key", pageable);
+
+        assertEquals(2, response.getTotalElements());
+        assertEquals(1, response.getTotalPages());
+        assertEquals(2, response.getContent().size());
+
+        assertEquals(100L, response.getContent().get(0).id());
+        assertEquals("Keyboard", response.getContent().get(0).name());
+        assertEquals("Mechanical keyboard", response.getContent().get(0).description());
+        assertEquals(new BigDecimal("89.99"), response.getContent().get(0).price());
+        assertEquals("Peripherals", response.getContent().get(0).categoryName());
+
+        assertEquals(101L, response.getContent().get(1).id());
+        assertEquals("Gaming Keyboard", response.getContent().get(1).name());
+        assertEquals("RGB keyboard", response.getContent().get(1).description());
+        assertEquals(new BigDecimal("59.90"), response.getContent().get(1).price());
+        assertEquals("Audio", response.getContent().get(1).categoryName());
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenFindByNameLikeHasNoMatches() {
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Product> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(productRepository.findByNameLike("unknown", pageable)).thenReturn(emptyPage);
+
+        Page<ProductResponseDTO> response = productService.findByNameLike("unknown", pageable);
+
+        assertEquals(0, response.getTotalElements());
+        assertEquals(0, response.getContent().size());
     }
 
     private ProductRequestDTO mockProductRequest(String name, String description, BigDecimal price, Long categoryId) {
