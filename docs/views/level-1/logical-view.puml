@@ -1,0 +1,18 @@
+@startuml logical-view
+top to bottom direction
+
+interface "API" as API
+interface "External Auth API" as EXTERNAL_AUTH_API
+interface "External Email API" as EMAIL_API
+
+component "TechStore" <<component>> <<C4 System>> {
+    portin " " as PI
+    portout " " as PI1
+    portout " " as PI2
+}
+
+API -- PI
+PI1 --( EXTERNAL_AUTH_API
+PI2 --( EMAIL_API
+
+@enduml

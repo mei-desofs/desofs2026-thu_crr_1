@@ -1,0 +1,1008 @@
+Index: backend/src/main/java/com/techstore/app/repository/interfaces/UserRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/repository/interfaces/UserRepository.java b/backend/src/main/java/com/techstore/app/repository/interfaces/UserRepository.java
+new file mode 100644
+--- /dev/null	(date 1774292366251)
++++ b/backend/src/main/java/com/techstore/app/repository/interfaces/UserRepository.java	(date 1774292366251)
+@@ -0,0 +1,15 @@
++package com.techstore.app.repository.interfaces;
++
++import com.techstore.app.domain.user.Email;
++import com.techstore.app.domain.user.User;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++import java.util.Optional;
++import java.util.UUID;
++
++public interface UserRepository extends JpaRepository<User, UUID> {
++
++    Optional<User> findByEmail(Email email);
++
++    User save(User user);
++}
+Index: backend/src/main/java/com/techstore/app/client/SupabaseAuthClient.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/client/SupabaseAuthClient.java b/backend/src/main/java/com/techstore/app/client/SupabaseAuthClient.java
+new file mode 100644
+--- /dev/null	(date 1774559556362)
++++ b/backend/src/main/java/com/techstore/app/client/SupabaseAuthClient.java	(date 1774559556362)
+@@ -0,0 +1,132 @@
++package com.techstore.app.client;
++
++import com.fasterxml.jackson.databind.JsonNode;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.techstore.app.dto.auth.SupabaseUserResponse;
++import com.techstore.app.exception.BusinessException;
++import org.springframework.beans.factory.annotation.Qualifier;
++import org.springframework.beans.factory.annotation.Value;
++import org.springframework.http.*;
++import org.springframework.stereotype.Component;
++import org.springframework.web.client.HttpStatusCodeException;
++import org.springframework.web.client.RestTemplate;
++
++import java.util.Map;
++
++@Component
++public class SupabaseAuthClient {
++
++    private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users";
++    private static final String AUTH_INVITE = "/auth/v1/invite";
++    private static final String AUTH_VERIFY = "/auth/v1/verify";
++
++    private final String supabaseUrl;
++
++    private final String redirectUrl;
++
++    private final RestTemplate restTemplate;
++    private final ObjectMapper objectMapper;
++
++    public SupabaseAuthClient(@Value("${supabase.url}") String supabaseUrl,
++                              @Value("${supabase.redirect-url}") String redirectUrl,
++                              @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
++        this.supabaseUrl = supabaseUrl;
++        this.redirectUrl = redirectUrl;
++        this.restTemplate = restTemplate;
++        this.objectMapper = objectMapper;
++    }
++
++    public void inviteUser(String email, String role) {
++        String url = supabaseUrl + AUTH_INVITE;
++
++        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
++                Map.of("email", email, "data", Map.of("role", role),
++                        "redirect_to", redirectUrl));
++
++        try {
++            restTemplate.exchange(url, HttpMethod.POST, entity, Void.class);
++        } catch (HttpStatusCodeException ex) {
++            throw mapException(ex);
++        }
++    }
++
++    public void deleteUser(String userId) {
++        String url = supabaseUrl + AUTH_ADMIN_USERS + userId;
++
++        try {
++            restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
++        } catch (HttpStatusCodeException ex) {
++            throw mapException(ex);
++        }
++    }
++
++    public SupabaseUserResponse verifyInviteToken(String tokenHash, String type) {
++        String url = supabaseUrl + AUTH_VERIFY;
++
++        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
++                Map.of("token_hash", tokenHash, "type", type)
++        );
++
++        try {
++            ResponseEntity<SupabaseUserResponse> response = restTemplate.exchange(
++                    url, HttpMethod.POST, entity, SupabaseUserResponse.class);
++
++            if (response.getBody() == null) {
++                throw new IllegalStateException("Empty response from Supabase.");
++            }
++
++            return response.getBody();
++
++        } catch (HttpStatusCodeException ex) {
++            throw mapException(ex);
++        }
++    }
++
++    private RuntimeException mapException(HttpStatusCodeException ex) {
++        String message = extractMessage(ex.getResponseBodyAsString());
++        int status = ex.getStatusCode().value();
++
++        if (status >= 400 && status < 500) {
++            return new BusinessException(normalizeMessage(message));
++        }
++
++        return new IllegalStateException("Supabase internal error.");
++    }
++
++    private String extractMessage(String body) {
++        if (body == null || body.isBlank()) {
++            return "Unknown error.";
++        }
++
++        try {
++            JsonNode json = objectMapper.readTree(body);
++
++            if (json.hasNonNull("msg")) return json.get("msg").asText();
++            if (json.hasNonNull("message")) return json.get("message").asText();
++            if (json.hasNonNull("error_description")) return json.get("error_description").asText();
++            if (json.hasNonNull("error")) return json.get("error").asText();
++
++            return body;
++        } catch (Exception e) {
++            return body;
++        }
++    }
++
++    private String normalizeMessage(String message) {
++        String lower = message.toLowerCase();
++
++        if (lower.contains("already registered") || lower.contains("duplicate"))
++            return "User with this email already exists.";
++
++        if (lower.contains("password"))
++            return "Password does not meet the requirements.";
++
++        if (lower.contains("rate limit") || lower.contains("too many"))
++            return "Too many requests. Please try again later.";
++
++        if (lower.contains("invalid email format"))
++            return "Invalid email.";
++
++        return message;
++    }
++}
+Index: backend/src/main/java/com/techstore/app/domain/user/Email.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/domain/user/Email.java b/backend/src/main/java/com/techstore/app/domain/user/Email.java
+new file mode 100644
+--- /dev/null	(date 1774292366237)
++++ b/backend/src/main/java/com/techstore/app/domain/user/Email.java	(date 1774292366237)
+@@ -0,0 +1,33 @@
++package com.techstore.app.domain.user;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Embeddable;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++import lombok.Setter;
++
++/**
++ * Value object representing a user's email address with validation logic to ensure it follows a standard email format.
++ * The email must contain an '@' symbol and a valid domain.
++ */
++@Getter
++@NoArgsConstructor
++@Embeddable
++public class Email {
++
++    private static final String REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
++
++    @Column(name = "email", length = 180, nullable = false, unique = true)
++    private String email;
++
++    public Email(String email) {
++        if(!isValidEmail(email)) {
++            throw new IllegalArgumentException("Invalid email format. Email must contain an '@' symbol and a valid domain.");
++        }
++        this.email = email;
++    }
++
++    public static boolean isValidEmail(String email) {
++        return email != null && email.matches(REGEX);
++    }
++}
+Index: backend/src/main/java/com/techstore/app/controller/WebhooksController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/controller/WebhooksController.java b/backend/src/main/java/com/techstore/app/controller/WebhooksController.java
+new file mode 100644
+--- /dev/null	(date 1774558654808)
++++ b/backend/src/main/java/com/techstore/app/controller/WebhooksController.java	(date 1774558654808)
+@@ -0,0 +1,31 @@
++package com.techstore.app.controller;
++
++import com.techstore.app.dto.auth.InviteSignupRequest;
++import com.techstore.app.service.interfaces.AuthService;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++import java.util.Map;
++
++@RestController
++@RequestMapping("/webhooks")
++public class WebhooksController {
++
++    private final AuthService authService;
++
++    public WebhooksController(AuthService authService) {
++        this.authService = authService;
++    }
++
++    @PostMapping("/auth")
++    public ResponseEntity<Void> handleAuthWebhook(
++            @RequestHeader("x-webhook-secret") String secret,
++            @RequestBody  Map<String, Object> payload) {
++        if(!authService.confirmInvite(secret, payload)) {
++            return ResponseEntity.status(403).build();
++        }
++        return ResponseEntity.ok().build();
++    }
++}
++
++
+Index: backend/src/main/java/com/techstore/app/domain/user/Role.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/domain/user/Role.java b/backend/src/main/java/com/techstore/app/domain/user/Role.java
+new file mode 100644
+--- /dev/null	(date 1774292366240)
++++ b/backend/src/main/java/com/techstore/app/domain/user/Role.java	(date 1774292366240)
+@@ -0,0 +1,30 @@
++package com.techstore.app.domain.user;
++
++import lombok.AllArgsConstructor;
++import lombok.Getter;
++
++import java.util.Arrays;
++
++/**
++ * Enum representing user roles in the system.
++ */
++@AllArgsConstructor
++@Getter
++public enum Role {
++    CUSTOMER("Customer"),
++    MANAGER("Manager"),
++    CARRIER("Carrier");
++
++    private String description;
++
++    public static Role fromString(String value) {
++        if (value == null) {
++            throw new IllegalArgumentException("Role cannot be null");
++        }
++
++        return Arrays.stream(Role.values())
++                .filter(role -> role.name().equalsIgnoreCase(value))
++                .findFirst()
++                .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + value));
++    }
++}
+Index: backend/src/main/java/com/techstore/app/domain/user/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/domain/user/User.java b/backend/src/main/java/com/techstore/app/domain/user/User.java
+new file mode 100644
+--- /dev/null	(date 1774551808301)
++++ b/backend/src/main/java/com/techstore/app/domain/user/User.java	(date 1774551808301)
+@@ -0,0 +1,65 @@
++package com.techstore.app.domain.user;
++
++import jakarta.persistence.*;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++import lombok.Setter;
++import org.hibernate.annotations.UuidGenerator;
++
++import java.time.LocalDateTime;
++import java.util.UUID;
++
++/**
++ * Entity representing a user in the system.
++ */
++@Entity
++@Table(name = "users")
++@NoArgsConstructor
++@Getter
++public class User {
++
++    @Id
++    @GeneratedValue
++    @UuidGenerator
++    private UUID id;
++
++    @Version
++    private Long version;
++
++    @Embedded
++    @Setter
++    private Email email;
++
++    @Column(nullable = false, unique = true)
++    @Setter
++    private UUID supabaseUserId;
++
++    @Enumerated(EnumType.STRING)
++    @Column(nullable = false)
++    @Setter
++    private Role role;
++
++    @Column(name = "created_at", nullable = false, updatable = false)
++    private LocalDateTime createdAt;
++
++    @Column(name = "updated_at", nullable = false)
++    private LocalDateTime updatedAt;
++
++    public User(Email email, Role role, UUID supabaseUserId) {
++        this.email = email;
++        this.role = role;
++        this.supabaseUserId = supabaseUserId;
++    }
++
++    @PrePersist
++    protected void onCreate() {
++        LocalDateTime now = LocalDateTime.now();
++        createdAt = now;
++        updatedAt = now;
++    }
++
++    @PreUpdate
++    protected void onUpdate() {
++        updatedAt = LocalDateTime.now();
++    }
++}
+\ No newline at end of file
+Index: backend/src/main/resources/application.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>spring:\r\n  application:\r\n    name: TechStore\r\n\r\nserver:\r\n  servlet:\r\n    context-path: /api\r\n\r\n  datasource:\r\n    url: ${DB_URL}\r\n    username: ${POSTGRES_USER}\r\n    password: ${POSTGRES_PASSWORD}\r\n    driver-class-name: org.postgresql.Driver\r\n\r\n  jpa:\r\n    hibernate:\r\n      ddl-auto: update\r\n    show-sql: true\r\n\r\nspringdoc:\r\n  swagger-ui:\r\n    path: /swagger-ui.html\r\n  api-docs:\r\n    path: /v3/api-docs\r\n  show-actuator: true\r\n\r\nmanagement:\r\n  endpoints:\r\n    web:\r\n      exposure:\r\n        include: info, health\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/resources/application.yaml b/backend/src/main/resources/application.yaml
+--- a/backend/src/main/resources/application.yaml	(revision a5bed73d83bbf0697173efa31276982616fbf055)
++++ b/backend/src/main/resources/application.yaml	(date 1774559248545)
+@@ -2,10 +2,6 @@
+   application:
+     name: TechStore
+ 
+-server:
+-  servlet:
+-    context-path: /api
+-
+   datasource:
+     url: ${DB_URL}
+     username: ${POSTGRES_USER}
+@@ -17,6 +13,10 @@
+       ddl-auto: update
+     show-sql: true
+ 
++server:
++  servlet:
++    context-path: /api
++
+ springdoc:
+   swagger-ui:
+     path: /swagger-ui.html
+@@ -29,3 +29,8 @@
+     web:
+       exposure:
+         include: info, health
++
++supabase:
++  url: ${SUPABASE_URL}
++  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
++  redirect-url: ${SUPABASE_REDIRECT_URL}
+\ No newline at end of file
+Index: backend/src/main/java/com/techstore/app/dto/auth/InviteSignupRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/dto/auth/InviteSignupRequest.java b/backend/src/main/java/com/techstore/app/dto/auth/InviteSignupRequest.java
+new file mode 100644
+--- /dev/null	(date 1774292366246)
++++ b/backend/src/main/java/com/techstore/app/dto/auth/InviteSignupRequest.java	(date 1774292366246)
+@@ -0,0 +1,20 @@
++package com.techstore.app.dto.auth;
++
++import jakarta.validation.constraints.Email;
++import jakarta.validation.constraints.NotBlank;
++import jakarta.validation.constraints.Pattern;
++
++/**
++ * DTO for user registration request (only MANAGER and CARRIER roles are allowed).
++ * @param email User's email address
++ * @param role User's role (must be either MANAGER or CARRIER)
++ */
++public record InviteSignupRequest(
++        @NotBlank(message = "Email is required")
++        @Email(message = "Invalid email format")
++        String email,
++
++        @NotBlank(message = "Role is required")
++        @Pattern(regexp = "MANAGER|CARRIER", message = "Role must be MANAGER or CARRIER")
++        String role) {
++}
+Index: backend/src/main/java/com/techstore/app/dto/auth/SupabaseUserResponse.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/dto/auth/SupabaseUserResponse.java b/backend/src/main/java/com/techstore/app/dto/auth/SupabaseUserResponse.java
+new file mode 100644
+--- /dev/null	(date 1774378954130)
++++ b/backend/src/main/java/com/techstore/app/dto/auth/SupabaseUserResponse.java	(date 1774378954130)
+@@ -0,0 +1,15 @@
++package com.techstore.app.dto.auth;
++
++import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
++import com.fasterxml.jackson.annotation.JsonProperty;
++
++@JsonIgnoreProperties(ignoreUnknown = true)
++public record SupabaseUserResponse(String id, String email,
++                                   @JsonProperty("app_metadata") AppMetadata appMetadata) {
++    public String getRole() {
++        return appMetadata != null ? appMetadata.role() : "USER";
++    }
++
++    @JsonIgnoreProperties(ignoreUnknown = true)
++    public record AppMetadata(String role) {}
++}
+Index: backend/src/main/java/com/techstore/app/config/SupabaseConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/config/SupabaseConfig.java b/backend/src/main/java/com/techstore/app/config/SupabaseConfig.java
+new file mode 100644
+--- /dev/null	(date 1774377490487)
++++ b/backend/src/main/java/com/techstore/app/config/SupabaseConfig.java	(date 1774377490487)
+@@ -0,0 +1,35 @@
++package com.techstore.app.config;
++
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.techstore.app.client.SupabaseAuthClient;
++import org.springframework.beans.factory.annotation.Qualifier;
++import org.springframework.beans.factory.annotation.Value;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.web.client.RestTemplate;
++
++@Configuration
++public class SupabaseConfig {
++
++    @Value("${supabase.service-role-key}")
++    private String supabaseKey;
++
++    @Bean
++    public ObjectMapper objectMapper() {
++        return new ObjectMapper();
++    }
++
++    @Bean
++    public RestTemplate supabaseRestTemplate() {
++        RestTemplate restTemplate = new RestTemplate();
++
++        restTemplate.getInterceptors().add((request, body, execution) -> {
++            request.getHeaders().set("apikey", supabaseKey);
++            request.getHeaders().set("Authorization", "Bearer " + supabaseKey);
++            request.getHeaders().set("Content-Type", "application/json");
++            return execution.execute(request, body);
++        });
++
++        return restTemplate;
++    }
++}
+Index: backend/src/test/java/com/techstore/app/domain/user/EmailTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/test/java/com/techstore/app/domain/user/EmailTest.java b/backend/src/test/java/com/techstore/app/domain/user/EmailTest.java
+new file mode 100644
+--- /dev/null	(date 1774292366273)
++++ b/backend/src/test/java/com/techstore/app/domain/user/EmailTest.java	(date 1774292366273)
+@@ -0,0 +1,40 @@
++package com.techstore.app.domain.user;
++
++import org.junit.jupiter.api.Test;
++
++import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++public class EmailTest {
++
++    @Test
++    void ensureValidEmailIsAccepted() {
++        // Arrange
++        String validEmail = "test@gmail.com";
++
++        // Act & Assert
++        assertDoesNotThrow(() -> new Email(validEmail));
++    }
++
++    @Test
++    void ensureInvalidEmailThrowsException() {
++        // Arrange
++        String invalidEmail = "invalid-email";
++
++        // Act
++        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
++                () -> new Email(invalidEmail));
++
++        assertTrue(exception.getMessage().contains("Invalid email format. Email must contain an '@' symbol and a valid domain."));
++    }
++
++    @Test
++    void ensureNullEmailThrowsException() {
++        // Act
++        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
++                () -> new Email(null));
++
++        // Assert
++        assertTrue(exception.getMessage().contains("Invalid email format. Email must contain an '@' symbol and a valid domain."));
++    }
++}
+Index: docs/domain_model/domain_model.puml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>@startuml DomainModel\r\n\r\npackage \"Common\" {\r\n    class Money <<ValueObject>>\r\n    class Address <<ValueObject>>\r\n    class Email <<ValueObject>>\r\n}\r\n\r\npackage \"CustomerAggregate\" {\r\n    class User <<Root>> {\r\n      +userId: UUID\r\n      +role: UserRole\r\n    }\r\n\r\n    class UserRole <<ValueObject>>\r\n\r\n    class Customer <<Entity>> {\r\n      +customerId: UUID\r\n      +nif: NIF\r\n    }\r\n\r\n    class NIF <<ValueObject>>\r\n\r\n    User --> Customer : can be a\r\n    User --> Email\r\n    User --> UserRole\r\n    Customer --> NIF\r\n    Customer \"1\" --> \"1..*\" Address : delivery addresses\r\n}\r\n\r\npackage \"CategoryAggregate\" {\r\n    class Category <<Root>>\r\n}\r\n\r\npackage \"ProductAggregate\" {\r\n    class Product <<Root>>\r\n    Product \"1\" --> \"1\" Category\r\n    Product \"1\" --> \"1\" Money\r\n}\r\n\r\npackage \"CartAggregate\" {\r\n    class Cart <<Root>> {\r\n      +userId: UUID\r\n    }\r\n\r\n    class CartItem <<Entity>> {\r\n      +productId: UUID\r\n    }\r\n\r\n    Cart --> CartItem\r\n    CartItem \"1\" --> \"1\" Product : has\r\n}\r\n\r\npackage \"OrderAggregate\" {\r\n    class Order <<Root>> {\r\n      +userId: UUID\r\n    }\r\n\r\n    class OrderItem <<Entity>> {\r\n      +productId: UUID\r\n    }\r\n\r\n    enum OrderStatus <<ValueObject>>\r\n\r\n    Order --> OrderItem\r\n    Order --> OrderStatus\r\n    Order \"1\" --> \"1\" Money\r\n    OrderItem \"1\" --> \"1\" Money\r\n    Order \"1\" --> \"1\" Address : delivery address\r\n}\r\n\r\nUser \"1\" --> \"0..1\" Cart : owns\r\nUser \"1\" --> \"0..*\" Order : places\r\n\r\n@enduml
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/docs/domain_model/domain_model.puml b/docs/domain_model/domain_model.puml
+--- a/docs/domain_model/domain_model.puml	(revision a5bed73d83bbf0697173efa31276982616fbf055)
++++ b/docs/domain_model/domain_model.puml	(date 1774292366282)
+@@ -6,25 +6,34 @@
+     class Email <<ValueObject>>
+ }
+ 
+-package "CustomerAggregate" {
++package "UserAggregate" {
+     class User <<Root>> {
+       +userId: UUID
+-      +role: UserRole
+     }
++
++    enum Role <<ValueObject>> {
++      MANAGER,
++      CUSTOMER,
++      CARRIER
++    }
++
++    User --> Email
++    User --> Role
++}
+ 
+-    class UserRole <<ValueObject>>
++package "CustomerAggregate" {
+ 
+     class Customer <<Entity>> {
+       +customerId: UUID
+-      +nif: NIF
+     }
+ 
+     class NIF <<ValueObject>>
+ 
+-    User --> Customer : can be a
+-    User --> Email
+-    User --> UserRole
++    class Name <<ValueObject>>
++    
+     Customer --> NIF
++    Customer --> Name
++    Customer "1" --> "1" User : has
+     Customer "1" --> "1..*" Address : delivery addresses
+ }
+ 
+@@ -34,7 +43,7 @@
+ 
+ package "ProductAggregate" {
+     class Product <<Root>>
+-    Product "1" --> "1" Category
++    Product "*" --> "1" Category
+     Product "1" --> "1" Money
+ }
+ 
+Index: backend/src/test/java/com/techstore/app/domain/user/RoleTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/test/java/com/techstore/app/domain/user/RoleTest.java b/backend/src/test/java/com/techstore/app/domain/user/RoleTest.java
+new file mode 100644
+--- /dev/null	(date 1774292366276)
++++ b/backend/src/test/java/com/techstore/app/domain/user/RoleTest.java	(date 1774292366276)
+@@ -0,0 +1,57 @@
++package com.techstore.app.domain.user;
++
++import org.junit.jupiter.api.Test;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++public class RoleTest {
++
++    @Test
++    void ensureFromStringReturnsExpectedRole() {
++        // Arrange
++        String roleName = "MANAGER";
++
++        // Act
++        Role role = Role.fromString(roleName);
++
++        // Assert
++        assertEquals(Role.MANAGER, role);
++        assertEquals(Role.MANAGER.getDescription(), role.getDescription());
++    }
++
++    @Test
++    void ensureFromStringIsCaseInsensitive() {
++        // Arrange
++        String roleName = "customer";
++
++        // Act
++        Role role = Role.fromString(roleName);
++
++        // Assert
++        assertEquals(Role.CUSTOMER, role);
++        assertEquals(Role.CUSTOMER.getDescription(), role.getDescription());
++    }
++
++    @Test
++    void ensureFromStringWithInvalidRoleThrowsException() {
++        // Arrange
++        String invalidRoleName = "INVALID_ROLE";
++
++        // Act
++        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
++                () -> Role.fromString(invalidRoleName));
++
++        // Assert
++        assertEquals("Invalid role: " + invalidRoleName, exception.getMessage());
++    }
++
++    @Test
++    void ensureFromStringWithNullRoleThrowsException() {
++        // Act
++        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
++                () -> Role.fromString(null));
++
++        // Assert
++        assertEquals("Role cannot be null", exception.getMessage());
++    }
++}
+Index: backend/src/test/java/com/techstore/app/domain/user/UserTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/test/java/com/techstore/app/domain/user/UserTest.java b/backend/src/test/java/com/techstore/app/domain/user/UserTest.java
+new file mode 100644
+--- /dev/null	(date 1774392332975)
++++ b/backend/src/test/java/com/techstore/app/domain/user/UserTest.java	(date 1774392332975)
+@@ -0,0 +1,74 @@
++package com.techstore.app.domain.user;
++
++import org.junit.jupiter.api.Test;
++import org.junit.jupiter.api.extension.ExtendWith;
++import org.mockito.junit.jupiter.MockitoExtension;
++
++import java.time.LocalDateTime;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.Mockito.mock;
++
++@ExtendWith(MockitoExtension.class)
++public class UserTest {
++
++    @Test
++    void ensureNewUserStartsWithExpectedDefaults() {
++        // Arrange & Act
++        User user = new User();
++
++        // Assert
++        assertNull(user.getId());
++        assertNull(user.getVersion());
++        assertNull(user.getEmail());
++        assertNull(user.getRole());
++        assertNull(user.getCreatedAt());
++        assertNull(user.getUpdatedAt());
++    }
++
++    @Test
++    void ensureSettersPersistAssignedValues() {
++        // Arrange
++        User user = new User();
++        Email email = mock(Email.class);
++
++        // Act
++        user.setEmail(email);
++        user.setRole(Role.CUSTOMER);
++
++        // Assert
++        assertEquals(email, user.getEmail());
++        assertEquals(Role.CUSTOMER, user.getRole());
++    }
++
++    @Test
++    void ensureOnCreateSetsCreatedAndUpdatedAt() {
++        // Arrange
++        User user = new User();
++
++        // Act
++        user.onCreate();
++
++        // Assert
++        assertNotNull(user.getCreatedAt());
++        assertNotNull(user.getUpdatedAt());
++        assertEquals(user.getCreatedAt(), user.getUpdatedAt());
++    }
++
++    @Test
++    void ensureOnUpdateRefreshesOnlyUpdatedAt() {
++        // Arrange
++        User user = new User();
++        user.onCreate();
++        LocalDateTime createdAt = user.getCreatedAt();
++        LocalDateTime firstUpdatedAt = user.getUpdatedAt();
++
++        // Act
++        user.onUpdate();
++
++        // Assert
++        assertEquals(createdAt, user.getCreatedAt());
++        assertNotNull(user.getUpdatedAt());
++        assertFalse(user.getUpdatedAt().isBefore(firstUpdatedAt));
++    }
++}
+Index: backend/src/main/java/com/techstore/app/service/interfaces/AuthService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/service/interfaces/AuthService.java b/backend/src/main/java/com/techstore/app/service/interfaces/AuthService.java
+new file mode 100644
+--- /dev/null	(date 1774553453517)
++++ b/backend/src/main/java/com/techstore/app/service/interfaces/AuthService.java	(date 1774553453517)
+@@ -0,0 +1,16 @@
++package com.techstore.app.service.interfaces;
++
++import com.techstore.app.dto.auth.InviteSignupRequest;
++
++import java.util.Map;
++
++public interface AuthService {
++
++    /**
++     * Invites a user to sign up with the specified email and role.
++     * @param inviteSignupRequest The request containing the email and role for the user to be invited.
++     */
++    void inviteUser(InviteSignupRequest inviteSignupRequest);
++
++    boolean confirmInvite(String secret, Map<String, Object> payload);
++}
+Index: backend/src/main/java/com/techstore/app/service/interfaces/AuthServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/service/interfaces/AuthServiceImpl.java b/backend/src/main/java/com/techstore/app/service/interfaces/AuthServiceImpl.java
+new file mode 100644
+--- /dev/null	(date 1774553447715)
++++ b/backend/src/main/java/com/techstore/app/service/interfaces/AuthServiceImpl.java	(date 1774553447715)
+@@ -0,0 +1,60 @@
++package com.techstore.app.service.interfaces;
++
++import com.techstore.app.client.SupabaseAuthClient;
++import com.techstore.app.dto.auth.InviteSignupRequest;
++import com.techstore.app.dto.auth.SupabaseUserResponse;
++import org.springframework.beans.factory.annotation.Value;
++import org.springframework.http.ResponseEntity;
++import org.springframework.stereotype.Service;
++
++import java.util.Map;
++
++@Service
++public class AuthServiceImpl implements AuthService {
++
++    @Value("${supabase.webhook-secret}")
++    private String webhookSecret;
++
++    private final UserService userService;
++
++    private final SupabaseAuthClient supabaseAuthClient;
++
++    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient) {
++        this.userService = userService;
++        this.supabaseAuthClient = supabaseAuthClient;
++    }
++
++    public void inviteUser(InviteSignupRequest inviteSignupRequest) {
++        supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
++    }
++
++    @Override
++    public boolean confirmInvite(String secret, Map<String, Object> payload) {
++
++        if (!webhookSecret.equals(secret)) {
++            return false;
++        }
++
++        Map<String, Object> record = (Map<String, Object>) payload.get("record");
++        Map<String, Object> oldRecord = (Map<String, Object>) payload.get("old_record");
++
++        String emailConfirmedAt = (String) record.get("email_confirmed_at");
++        String oldEmailConfirmedAt = (String) oldRecord.get("email_confirmed_at");
++
++        // só interessa quando email_confirmed_at passa de null para preenchido
++        if (emailConfirmedAt == null || oldEmailConfirmedAt != null) {
++            return true;
++        }
++
++        String supabaseUserId = (String) record.get("id");
++        String email = (String) record.get("email");
++        Map<String, Object> metadata = (Map<String, Object>) record.get("raw_user_meta_data");
++        String role = (String) metadata.get("role");
++
++        if (role != null) {
++            userService.registerUser(supabaseUserId, email, role);
++        }
++
++        return true;
++    }
++}
+Index: backend/src/main/java/com/techstore/app/service/interfaces/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/service/interfaces/UserService.java b/backend/src/main/java/com/techstore/app/service/interfaces/UserService.java
+new file mode 100644
+--- /dev/null	(date 1774359178589)
++++ b/backend/src/main/java/com/techstore/app/service/interfaces/UserService.java	(date 1774359178589)
+@@ -0,0 +1,15 @@
++package com.techstore.app.service.interfaces;
++
++import com.techstore.app.domain.user.User;
++
++public interface UserService {
++
++    /**
++     * Registers a new user with the provided Supabase user ID, email, and role.
++     * @param supabaseUserId The unique identifier from Supabase for the user.
++     * @param email The email address of the user.
++     * @param role The role assigned to the user (e.g., "customer", "manager", "carrier").
++     * @return The registered User object.
++     */
++    User registerUser(String supabaseUserId, String email, String role);
++}
+Index: backend/src/main/java/com/techstore/app/service/interfaces/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/service/interfaces/UserServiceImpl.java b/backend/src/main/java/com/techstore/app/service/interfaces/UserServiceImpl.java
+new file mode 100644
+--- /dev/null	(date 1774551833447)
++++ b/backend/src/main/java/com/techstore/app/service/interfaces/UserServiceImpl.java	(date 1774551833447)
+@@ -0,0 +1,30 @@
++package com.techstore.app.service.interfaces;
++
++import com.techstore.app.domain.user.Email;
++import com.techstore.app.domain.user.Role;
++import com.techstore.app.domain.user.User;
++import com.techstore.app.repository.interfaces.UserRepository;
++import org.springframework.stereotype.Service;
++
++import java.util.UUID;
++
++@Service
++public class UserServiceImpl implements UserService {
++
++    private final UserRepository userRepository;
++
++    public UserServiceImpl(UserRepository userRepository) {
++        this.userRepository = userRepository;
++    }
++
++    @Override
++    public User registerUser(String supabaseUserId, String email, String role) {
++        Email emailVO = new Email(email);
++        if(userRepository.findByEmail(emailVO).isPresent()){
++            throw new IllegalArgumentException("Email already in use");
++        }
++        User user = new User(emailVO, Role.fromString(role), UUID.fromString(supabaseUserId));
++
++        return userRepository.save(user);
++    }
++}
+Index: backend/src/main/java/com/techstore/app/controller/AuthController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/src/main/java/com/techstore/app/controller/AuthController.java b/backend/src/main/java/com/techstore/app/controller/AuthController.java
+new file mode 100644
+--- /dev/null	(date 1774559525134)
++++ b/backend/src/main/java/com/techstore/app/controller/AuthController.java	(date 1774559525134)
+@@ -0,0 +1,45 @@
++package com.techstore.app.controller;
++
++import com.techstore.app.dto.auth.InviteSignupRequest;
++import com.techstore.app.service.interfaces.AuthService;
++import jakarta.validation.Valid;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++
++/**
++ * Controller for handling authentication-related endpoints.
++ */
++@RestController
++@RequestMapping("/auth")
++public class AuthController {
++
++    private final AuthService authService;
++
++    public AuthController(AuthService authService) {
++        this.authService = authService;
++    }
++
++    @PostMapping("/invite")
++    public ResponseEntity<Void> invite(@RequestBody @Valid InviteSignupRequest request) {
++        authService.inviteUser(request);
++        return ResponseEntity.ok().build();
++    }
++
++    @GetMapping("/callback")
++    public ResponseEntity<String> callback(@RequestParam(required = false) String accessToken,
++            @RequestParam(required = false) String error, @RequestParam(required = false) String errorDescription) {
++
++        if (error != null) {
++            throw new IllegalArgumentException("Error: "
++                    + (errorDescription != null && !errorDescription.isBlank()
++                    ? errorDescription
++                    : "invalid callback"));
++        }
++
++        if (accessToken == null || accessToken.isBlank()) {
++            throw new IllegalArgumentException("Access token is missing in the callback");
++        }
++
++        return ResponseEntity.ok("Account created successfully. You can now close this page.");
++    }
++}
+Index: backend/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n\t<modelVersion>4.0.0</modelVersion>\r\n\t<parent>\r\n\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t<artifactId>spring-boot-starter-parent</artifactId>\r\n\t\t<version>4.0.4</version>\r\n\t\t<relativePath/> <!-- lookup parent from repository -->\r\n\t</parent>\r\n\t<groupId>com.techstore</groupId>\r\n\t<artifactId>app</artifactId>\r\n\t<version>0.0.1-SNAPSHOT</version>\r\n\t<name/>\r\n\t<description/>\r\n\t<url/>\r\n\t<licenses>\r\n\t\t<license/>\r\n\t</licenses>\r\n\t<developers>\r\n\t\t<developer/>\r\n\t</developers>\r\n\t<scm>\r\n\t\t<connection/>\r\n\t\t<developerConnection/>\r\n\t\t<tag/>\r\n\t\t<url/>\r\n\t</scm>\r\n\t<properties>\r\n\t\t<java.version>17</java.version>\r\n\t</properties>\r\n\t<dependencies>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-actuator</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-jpa</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-security</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-validation</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-webmvc</artifactId>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-devtools</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.postgresql</groupId>\r\n\t\t\t<artifactId>postgresql</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-actuator-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-jpa-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-security-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-validation-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-webmvc-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\r\n        <!-- Swagger / OpenAPI -->\r\n        <dependency>\r\n            <groupId>org.springdoc</groupId>\r\n            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\r\n            <version>3.0.2</version>\r\n        </dependency>\r\n\t</dependencies>\r\n\r\n\t<build>\r\n\t\t<plugins>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.apache.maven.plugins</groupId>\r\n\t\t\t\t<artifactId>maven-compiler-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<annotationProcessorPaths>\r\n\t\t\t\t\t\t<path>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t</path>\r\n\t\t\t\t\t</annotationProcessorPaths>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t\t<artifactId>spring-boot-maven-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<excludes>\r\n\t\t\t\t\t\t<exclude>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t</exclude>\r\n\t\t\t\t\t</excludes>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t</plugins>\r\n\t</build>\r\n\r\n</project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/backend/pom.xml b/backend/pom.xml
+--- a/backend/pom.xml	(revision a5bed73d83bbf0697173efa31276982616fbf055)
++++ b/backend/pom.xml	(date 1774292366222)
+@@ -92,6 +92,10 @@
+ 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+ 			<scope>test</scope>
+ 		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-webflux</artifactId>
++		</dependency>
+ 
+         <!-- Swagger / OpenAPI -->
+         <dependency>
