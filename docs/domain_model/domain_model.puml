@@ -6,25 +6,34 @@ package "Common" {
     class Email <<ValueObject>>
 }
 
-package "CustomerAggregate" {
+package "UserAggregate" {
     class User <<Root>> {
       +userId: UUID
-      +role: UserRole
     }
 
-    class UserRole <<ValueObject>>
+    enum Role <<ValueObject>> {
+      MANAGER,
+      CUSTOMER,
+      CARRIER
+    }
+
+    User --> Email
+    User --> Role
+}
+
+package "CustomerAggregate" {
 
     class Customer <<Entity>> {
       +customerId: UUID
-      +nif: NIF
     }
 
     class NIF <<ValueObject>>
 
-    User --> Customer : can be a
-    User --> Email
-    User --> UserRole
+    class Name <<ValueObject>>
+    
     Customer --> NIF
+    Customer --> Name
+    Customer "1" --> "1" User : has
     Customer "1" --> "1..*" Address : delivery addresses
 }
 
@@ -34,7 +43,7 @@ package "CategoryAggregate" {
 
 package "ProductAggregate" {
     class Product <<Root>>
-    Product "1" --> "1" Category
+    Product "*" --> "1" Category
     Product "1" --> "1" Money
 }
 
