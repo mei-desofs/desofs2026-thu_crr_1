@@ -33,4 +33,4 @@
 
 - **SR13.** All logs of sensitive actions must be securely stored and protected against unauthorized access to ensure integrity and confidentiality.
 
-- **SR14.** All logs must perform two backup copies, one stored locally and another stored in a secure cloud storage service, to ensure data durability and availability in case of local failures.
+- **SR14.** All logs must perform three backup copies, one stored locally and another two stored in a secure cloud storage service, to ensure data durability and availability in case of local failures.
