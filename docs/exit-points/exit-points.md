@@ -1,3 +1,5 @@
+# Exit Points
+
 | ID | Name | Description | Data Sent | Potential Vulnerabilities |
 |---|---|---|---|---|
 | 1 | TLS-Encrypted Responses | Secure transport for all API traffic. | All HTTP responses wrapped in TLS encryption | TLS downgrade, weak ciphers, missing HSTS header, certificate pinning absence |
