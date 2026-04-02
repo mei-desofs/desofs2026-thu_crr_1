@@ -1,28 +1,37 @@
-# Exit Points
-
-This document identifies system exit points (outbound responses/interfaces) based on:
-- current backend implementation in `backend/src/main`
-- functional requirements listed in `docs/README.md`
-
-Because the project is still incomplete, each entry includes a status:
-- Implemented: exists in code now
-- Planned: required/documented but not implemented yet
-
-## Exit Points Table
-
-| ID | Name | Description | Data Sent | Potential Vulnerabilities | Status |
-|---|---|---|---|---|---|
-| EP-1 | HTTPS API Responses | All backend responses should be returned over encrypted HTTPS channels. | JSON responses and error payloads | TLS misconfiguration, weak ciphers, missing HSTS | Planned |
-| EP-1.1 | Create Product Response | Response after creating a product (`POST /api/products`). | `id`, `name`, `description`, `price`, `categoryName` | Broken access control (currently open), mass assignment risk, input validation bypass | Implemented |
-| EP-1.2 | Search Products Response | Paginated product search result (`GET /api/products/search?productName=`). | Page metadata + list of product summaries (`id`, `name`, `description`, `price`, `categoryName`) | Excessive data exposure, enumeration via broad search, query abuse without rate limit | Implemented |
-| EP-1.3 | Error Response Contract | Standardized error output from global exception handler. | `status`, `message`, `error`, `timestamp`, `path`, optional `fieldErrors`/`errors` | Internal path disclosure, verbose error details, inconsistent error sanitization | Implemented |
-| EP-1.4 | API Documentation Endpoints | OpenAPI docs and Swagger UI endpoints. | API schema and endpoint metadata (`/api/v3/api-docs`, `/api/swagger-ui.html`) | Endpoint reconnaissance, unauthenticated API discovery | Implemented |
-| EP-1.5 | Health and Info Endpoints | Actuator management endpoints for service status. | Application health/info (`/api/actuator/health`, `/api/actuator/info`) | Environment intelligence leakage, monitoring endpoint abuse | Implemented |
-| EP-2.1 | Authentication Responses | Login/logout/register/password recovery flows required in FR1-FR4. | Tokens/session data, auth status, user identity metadata | Token leakage, credential stuffing feedback, user enumeration | Planned |
-| EP-2.2 | Profile Management Responses | Customer profile read/update responses from FR3. | Personal data updates and confirmation status | PII exposure, broken object-level authorization | Planned |
-| EP-2.3 | Product Catalog Detail/List Responses | Product listing/detail/filter responses from FR5-FR8/FR21-FR23. | Product catalog and stock data | Excessive data disclosure, insecure direct object reference | Partially implemented |
-| EP-2.4 | Cart Operation Responses | Add/remove/update cart operations and totals from FR9-FR12. | Cart contents, quantity updates, total amounts | Price tampering, race conditions, parameter manipulation | Planned |
-| EP-2.5 | Order Workflow Responses | Place order, stock validation, order history/status, confirmations from FR13-FR17. | Order IDs, status, stock validation result, notifications | Order enumeration, inconsistent stock checks, privacy leaks | Planned |
-| EP-2.6 | Carrier Operation Responses | Pickup list/details/status updates for carrier role from FR18-FR20. | Order pickup queue and pickup confirmations | Unauthorized status updates, workflow tampering | Planned |
-| EP-2.7 | Manager Backoffice Responses | Product/category/order/report management from FR21-FR27. | Admin operation results, order views, sales report data | Privilege escalation, insecure role checks, report data leakage | Planned |
-
+| ID | Name | Description | Data Sent | Potential Vulnerabilities |
+|---|---|---|---|---|
+| 1 | TLS-Encrypted Responses | Secure transport for all API traffic. | All HTTP responses wrapped in TLS encryption | TLS downgrade, weak ciphers, missing HSTS header, certificate pinning absence |
+| 2 | API Documentation Endpoints | Public API specification and interactive documentation. | OpenAPI schema `/api/v3/api-docs`, Swagger UI `/api/swagger-ui.html` | Unauthenticated API reconnaissance, endpoint list leakage |
+| 3 | Actuator Endpoints | Operational health and information exposure. | Health `/api/actuator/health`, Info `/api/actuator/info` | System fingerprinting, version disclosure, operational metadata leakage |
+| 4 | Register Success Response | Returns the created customer account and authentication data after registration. | `{ id, email, role: "CUSTOMER", token, createdAt }` | User enumeration via email validation, race condition on duplicate registration, weak password requirements |
+| 5 | Register Error Response | Returns validation errors for invalid registration input. | `{ status: 400, message, error, fieldErrors: { email: "...", password: "..." } }` | Information disclosure, user enumeration through validation feedback |
+| 6 | Login Success Response | Returns access and refresh tokens after successful login. | `{ token, refreshToken, userId, role, expiresIn }` | Token leakage via logs, JWT secrets hardcoded, no token rotation policy |
+| 7 | Login Failure Response | Returns a generic authentication failure message. | `{ status: 401, message: "Invalid credentials" }` | User enumeration, brute force vulnerability |
+| 8 | Logout Response | Confirms session termination after logout. | `{ message: "Logged out successfully", timestamp }` | Token not revoked server-side, no audit trail |
+| 9 | Refresh Token Response | Issues a new token pair before the current access token expires. | `{ token, refreshToken, expiresIn }` | Refresh token theft, no rotation policy, unlimited refresh cycles |
+| 10 | Invite Created Response | Returns invitation metadata for a newly created user invite. | `{ invitationId, email, role, invitationToken, expiresAt }` | Invitation link forgery, no expiration enforcement, lateral privilege escalation |
+| 11 | Confirm Invite Response | Confirms a successful invitation acceptance flow. | `{ userId, email, role, token }` | Token reuse, weak invite validation, role manipulation via token tampering |
+| 12 | Reset Password Email Sent | Sends password reset instructions by email. | `{ message: "Reset link sent to email", resetTokenSent: true }` and email body with reset link/token | Email token interception, infinite reset attempts, no rate limiting, weak link expiration |
+| 13 | Reset Password Confirmation | Confirms that the password reset operation completed successfully. | `{ message: "Password reset successfully", timestamp }` | No previous password history validation, weak password enforcement |
+| 14 | Product List Response | Returns the catalog listing for all visible products. | `{ content: [ { id, name, description, price, categoryName, stock, active } ], page, size, totalElements, totalPages }` | Mass enumeration, excessive data exposure, information leakage of inactive products |
+| 15 | Product Search Response | Returns products matching a name-based search query. | `{ content: [ matching products ], page, size, totalElements, totalPages }` | Query injection if not parameterized, search abuse, result enumeration |
+| 16 | Create Product Response | Returns the created product details after a new product is saved. | `ProductResponseDTO: { id, name, description, price, categoryName }` | Broken access control, mass assignment, price manipulation |
+| 17 | Create Product Error | Returns the error payload when product creation fails. | `ErrorResponse: { status: 400, message, fieldErrors }` or `{ status: 409, message: "Duplicate product" }` | Category not found disclosure, information about existing products |
+| 18 | Update Product Response | Returns the updated product details after a patch operation. | `ProductResponseDTO: { id, name, description, price, categoryName }` | Broken access control, insecure direct object reference, no audit trail of changes |
+| 19 | Update Not Found | Returns the not-found response for an invalid product identifier. | `{ status: 404, message: "Product not found" }` | Predictable product IDs, enumeration attack |
+| 20 | Get Cart Response | Returns the current authenticated user's cart contents. | `{ id, userId, items: [ { productId, name, quantity, price, subtotal } ], total, lastUpdated }` | Broken object-level authorization, price field exploitable for manipulation |
+| 21 | Add to Cart Response | Returns the updated cart after adding an item. | `{ id, items, total, message: "Item added" }` | Broken object-level authorization, negative quantity bypass, price override attempt via JSON manipulation |
+| 22 | Add to Cart - Out of Stock | Returns the conflict response when stock is not sufficient. | `{ status: 409, message: "Product out of stock" }` | Race condition, information leakage of real stock counts |
+| 23 | Update Cart Item Response | Returns the cart after a quantity update. | `{ id, items, total, message: "Quantity updated" }` | Price tampering, quantity bypass, race conditions on stock |
+| 24 | Remove from Cart Response | Returns the cart after an item removal. | `{ id, items, total, message: "Item removed" }` or empty array if last item | Incomplete CSRF protection, cross-user cart deletion |
+| 25 | Place Order Success | Returns the created order summary after checkout. | `{ orderId, userId, items, total, status: "PENDING", shippingAddress, createdAt }` and triggers email | TOCTOU race condition, price from client cache, broken authorization |
+| 26 | Place Order - Validation Error | Returns validation errors for invalid order data. | `{ status: 400, message, fieldErrors: { address: "...", paymentMethod: "..." } }` | PII exposure in error messages |
+| 27 | Place Order - Insufficient Stock | Returns a conflict response when inventory is insufficient. | `{ status: 409, message: "Some items out of stock", unavailableItems: [ { productId, name, requested, available } ] }` | Inventory manipulation feedback, real stock counts disclosed |
+| 28 | Get Order History | Returns the order history for the authenticated customer. | `[ { orderId, createdAt, status, total, items, shippingAddress } ]` | Broken object-level authorization, PII in response, order ID enumeration |
+| 29 | Get Order Details | Returns the full details of a single order. | `{ orderId, userId, items, total, status, shippingAddress, trackingInfo }` | IDOR, information leakage of payment method and full address details |
+| 30 | Email Notification | Sends the order confirmation email to the customer. | Email body: `Order #{orderId} confirmed. Total: ${total}. Estimated delivery: ${date}. Items: [...]` | Email spoofing risk, customer data in unencrypted emails, confirmation email delay |
+| 31 | Carrier Order Queue | Returns the list of orders assigned to a carrier. | `[ { orderId, customerId, customerName, email, address, items, status, assignedAt } ]` | PII exposure, broken authorization, information leakage |
+| 32 | Mark as Picked Up Success | Confirms that an order was marked as picked up. | `{ orderId, status: "PICKED_UP", pickedUpAt, nextStatus: "IN_TRANSIT" }` | Broken authorization, no integrity check, state machine bypass |
+| 33 | Invalid State Transition | Returns the conflict response for an invalid pickup transition. | `{ status: 409, message: "Order cannot be marked picked up. Current status: CANCELLED" }` | State machine enumeration, status disclosure |
+| 34 | Backup Initiated Response | Returns the response for a backup generation request. | `{ backupId, status: "PROCESSING", initiatedBy, timestamp, estimatedCompletionTime }` or file download `[ ZIP/SQL dump ]` | Unencrypted backup download, no access control, backup contains PII, no audit trail |
+| 35 | Backup Completion Notification | Returns the notification that the backup is ready. | Webhook/email: `{ backupId, status: "COMPLETED", fileSize, downloadUrl, expiresAt }` | URL tampering, no signature verification, link expiration bypass |
