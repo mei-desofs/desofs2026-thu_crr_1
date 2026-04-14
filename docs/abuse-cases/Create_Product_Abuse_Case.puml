@@ -1,0 +1,53 @@
+@startuml
+
+left to right direction
+
+together{
+actor Manager
+}
+
+together{
+    (Create new product) as A1 #LightBlue
+    (Validate manager JWT) as A2 #LightBlue
+    (Sanitize input field) as A3 #LightBlue
+    (Enforce rate limiting) as A4 #LightBlue
+    (Log product creation) as A5 #LightBlue
+}
+together{
+(Forge manager token) as AT1
+(Store XSS via fields) as AT2
+(Catalogue flood ) as AT3
+}
+
+together{
+actor Malicious_User #red
+}
+
+
+Manager -- A1
+
+Malicious_User -right[#red]- AT1
+Malicious_User -right[#red]- AT2
+Malicious_User -right[#red]- AT3
+
+AT1 -[#red,dashed]left-> A1 : threatens
+AT2 -[#red,dashed]left-> A1 : threatens
+AT3 -[#red,dashed]left-> A1 : threatens
+
+A2 -[#green,dashed]-> AT1 : mitigates
+A3 -[#green,dashed]-> AT2 : mitigates
+A4 -[#green,dashed]-> AT3 : mitigates
+A5 -[#green,dashed]-> AT3 : mitigates
+
+A1 .> A2 : <<Includes>>
+A1 .> A3 : <<Includes>>
+A1 .> A4 : <<Includes>>
+A1 .> A5 : <<Includes>>
+
+
+
+
+
+
+
+@enduml
