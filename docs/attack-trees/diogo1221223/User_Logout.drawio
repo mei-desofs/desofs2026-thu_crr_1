@@ -1,0 +1,181 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="W0USMQTnJaJZXolGxaAn">
+    <mxGraphModel dx="1414" dy="799" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-2" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="110" />
+            </Array>
+            <mxPoint x="159.9999999999999" y="200" as="sourcePoint" />
+            <mxPoint x="354" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-3" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="200" as="sourcePoint" />
+            <mxPoint x="414" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-4" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="670" y="200" as="sourcePoint" />
+            <mxPoint x="474" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-5" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="290" />
+              <mxPoint x="130" y="290" />
+            </Array>
+            <mxPoint x="129.9999999999999" y="310" as="sourcePoint" />
+            <mxPoint x="129.9999999999999" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-6" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="59.999999999999886" y="420" as="sourcePoint" />
+            <mxPoint x="59.999999999999886" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=light-dark(#000000,#000000);" value="Abuse logout endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Session hijacking" vertex="1">
+          <mxGeometry height="60" width="120" x="70" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Token revocation bypass" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="DoS / forced logout" vertex="1">
+          <mxGeometry height="60" width="120" x="640" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Reuse stolen JWT token" vertex="1">
+          <mxGeometry height="60" width="120" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No token ownership check" vertex="1">
+          <mxGeometry height="60" width="120" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-13" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="240" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="540" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-15" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="290" />
+              <mxPoint x="130" y="290" />
+            </Array>
+            <mxPoint x="269.9999999999999" y="310" as="sourcePoint" />
+            <mxPoint x="269.9999999999999" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-16" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-17">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="199.9999999999999" y="420" as="sourcePoint" />
+            <mxPoint x="199.9999999999999" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-17" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Trigger logout for other users" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-18" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Unprotected logout endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-19" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="344" y="290" />
+              <mxPoint x="414" y="290" />
+            </Array>
+            <mxPoint x="413.9999999999999" y="310" as="sourcePoint" />
+            <mxPoint x="413.9999999999999" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-20" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="343.9999999999999" y="420" as="sourcePoint" />
+            <mxPoint x="343.9999999999999" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Continue using revoked token" vertex="1">
+          <mxGeometry height="60" width="120" x="284" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Flawed token blocklist logic" vertex="1">
+          <mxGeometry height="60" width="120" x="284" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-23" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="484" y="290" />
+              <mxPoint x="414" y="290" />
+            </Array>
+            <mxPoint x="553.9999999999999" y="310" as="sourcePoint" />
+            <mxPoint x="414" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-24" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="483.9999999999999" y="420" as="sourcePoint" />
+            <mxPoint x="483.9999999999999" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Tamper logout request payload" vertex="1">
+          <mxGeometry height="60" width="120" x="424" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Missing token validation" vertex="1">
+          <mxGeometry height="60" width="120" x="424" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-27" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="290" />
+              <mxPoint x="700" y="290" />
+            </Array>
+            <mxPoint x="700" y="310" as="sourcePoint" />
+            <mxPoint x="700" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-28" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-29">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="629.9999999999999" y="420" as="sourcePoint" />
+            <mxPoint x="629.9999999999999" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Flood logout endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="570" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No rate limit on logout" vertex="1">
+          <mxGeometry height="60" width="120" x="570" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-31" edge="1" parent="1" source="e-PMFWaUXxyMcoByzMCz-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="770" y="290" />
+              <mxPoint x="700" y="290" />
+            </Array>
+            <mxPoint x="840" y="310" as="sourcePoint" />
+            <mxPoint x="700" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-32" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="e-PMFWaUXxyMcoByzMCz-33">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="770" y="420" as="sourcePoint" />
+            <mxPoint x="770" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Force logouts" vertex="1">
+          <mxGeometry height="60" width="120" x="710" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="e-PMFWaUXxyMcoByzMCz-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No auth required" vertex="1">
+          <mxGeometry height="60" width="120" x="710" y="420" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
