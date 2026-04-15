@@ -1,0 +1,155 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="RefreshTokenAttackTree">
+    <mxGraphModel dx="1076" dy="582" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="edge-1" edge="1" parent="1" source="branch-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="root-node">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="85" y="150" />
+            </Array>
+            <mxPoint x="115" y="240" as="sourcePoint" />
+            <mxPoint x="309" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-2" edge="1" parent="1" source="branch-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="root-node">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="369" y="240" as="sourcePoint" />
+            <mxPoint x="369" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-3" edge="1" parent="1" source="branch-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="root-node">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="625" y="240" as="sourcePoint" />
+            <mxPoint x="429" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="root-node" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=light-dark(#000000,#000000);" value="Abuse refresh token endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="309" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="branch-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Token theft / replay" vertex="1">
+          <mxGeometry height="60" width="120" x="25" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="branch-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Forgery / tampering" vertex="1">
+          <mxGeometry height="60" width="120" x="309" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="branch-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="DoS / error probing" vertex="1">
+          <mxGeometry height="60" width="120" x="625" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Steal refresh token from storage or transport" vertex="1">
+          <mxGeometry height="60" width="120" x="25" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Insecure token storage or HTTP interception" vertex="1">
+          <mxGeometry height="60" width="120" x="25" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Submit forged or modified refresh token" vertex="1">
+          <mxGeometry height="60" width="120" x="395" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Weak token verification" vertex="1">
+          <mxGeometry height="60" width="120" x="395" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Reuse an old refresh token after rotation" vertex="1">
+          <mxGeometry height="60" width="120" x="225" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Missing rotation or revocation checks" vertex="1">
+          <mxGeometry height="60" width="120" x="225" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="EFjL1agjWSmevXVwRw2N-2" edge="1" parent="1" source="leaf-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="branch-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="595" y="330" />
+              <mxPoint x="685" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leaf-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Flood the refresh endpoint with requests" vertex="1">
+          <mxGeometry height="60" width="120" x="535" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No throttling or rate limiting" vertex="1">
+          <mxGeometry height="60" width="120" x="535" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="EFjL1agjWSmevXVwRw2N-3" edge="1" parent="1" source="leaf-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="branch-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="765" y="330" />
+              <mxPoint x="685" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leaf-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Probe refresh failure messages" vertex="1">
+          <mxGeometry height="60" width="120" x="705" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="leaf-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Verbose validation errors" vertex="1">
+          <mxGeometry height="60" width="120" x="705" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="or-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="195" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="or-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="495" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-6" edge="1" parent="1" source="leaf-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="branch-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="85" y="330" />
+              <mxPoint x="85" y="330" />
+            </Array>
+            <mxPoint x="225" y="350" as="sourcePoint" />
+            <mxPoint x="225" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-7" edge="1" parent="1" source="leaf-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="leaf-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="155" y="460" as="sourcePoint" />
+            <mxPoint x="155" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-8" edge="1" parent="1" source="leaf-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="branch-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="330" />
+              <mxPoint x="369" y="330" />
+            </Array>
+            <mxPoint x="299" y="330" as="sourcePoint" />
+            <mxPoint x="369" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-9" edge="1" parent="1" source="leaf-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="leaf-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="299" y="460" as="sourcePoint" />
+            <mxPoint x="299" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-10" edge="1" parent="1" source="leaf-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="branch-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="330" />
+              <mxPoint x="369" y="330" />
+            </Array>
+            <mxPoint x="509" y="350" as="sourcePoint" />
+            <mxPoint x="369" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-11" edge="1" parent="1" source="leaf-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="leaf-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="439" y="460" as="sourcePoint" />
+            <mxPoint x="439" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-13" edge="1" parent="1" source="leaf-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDy=0;entryDx=0;fontColor=light-dark(#000000,#000000);" target="leaf-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="570" as="sourcePoint" />
+            <mxPoint x="585" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-15" edge="1" parent="1" source="leaf-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDy=0;entryDx=0;fontColor=light-dark(#000000,#000000);" target="leaf-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="725" y="570" as="sourcePoint" />
+            <mxPoint x="725" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
