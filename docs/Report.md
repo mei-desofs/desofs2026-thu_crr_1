@@ -185,6 +185,38 @@ External dependencies are items external to the code of the application that may
 
 ## Assets
 
+| ID | Name | Description | Trust Levels |
+|---|---|---|---|
+| 1 | Stored Data | Persistent data maintained by the application, including product, category, cart, order, and user-related data. | Customer, Carrier, Manager/Admin |
+| 1.1 | User Credentials | Identity and credential data used for authentication and RBAC. Includes account identity and login-related information. | Customer, Carrier, Manager/Admin |
+| 1.2 | User Personal Data | Customer and invited-user personal data handled by the system for account and order-related flows. | Customer, Carrier, Manager/Admin |
+| 1.3 | Product Data | Product information such as name, description, price, category, and timestamps. | Customer, Carrier, Manager/Admin |
+| 1.4 | Category Data | Product category records with unique names and timestamps. | Customer, Carrier, Manager/Admin |
+| 1.5 | Cart Data | Shopping cart items, quantities, and computed totals. | Customer |
+| 1.6 | Order and Fulfillment Data | Orders, statuses, pickup lifecycle, and order history. | Customer, Carrier, Manager/Admin |
+| 1.7 | Reporting Data | Aggregated sales and operational reports used in the backoffice. | Manager/Admin |
+| 1.8 | Error and Validation Responses | Error payloads and validation feedback returned by the API. | Customer, Carrier, Manager/Admin |
+| 2 | System Services | Services required to operate the platform, including backend, authentication, email, and logging integrations. | Manager/Admin |
+| 2.1 | Spring Boot Backend API | Main application service exposing the API endpoints and business logic. | Customer, Carrier, Manager/Admin |
+| 2.2 | Authentication Service | External identity provider used for authentication, JWT issuance, and RBAC. | Customer, Carrier, Manager/Admin |
+| 2.3 | PostgreSQL Database | Relational database used to store application data. | Manager/Admin |
+| 2.4 | Email Service | SMTP service used for registration confirmation, password recovery, and notifications. | Customer, Carrier, Manager/Admin |
+| 2.5 | Syslog Server | Centralized logging service used for security-relevant events and auditing. | Manager/Admin |
+| 2.6 | API Documentation Service | OpenAPI and Swagger UI endpoints for the backend API. | Customer, Carrier, Manager/Admin |
+| 2.7 | Monitoring Endpoints | Actuator health and info endpoints exposed by the backend. | Manager/Admin |
+| 3 | Sessions and Tokens | JWTs or session artifacts used to access protected endpoints. | Customer, Carrier, Manager/Admin |
+| 4 | Deployment Infrastructure | Runtime and delivery infrastructure used to build, deploy, and host the system. | Manager/Admin |
+| 4.1 | Docker Runtime | Containerized backend and supporting services used for deployment. | Manager/Admin |
+| 4.2 | Firewall and Network Security | Network controls restricting exposed ports and protecting internal services. | Manager/Admin |
+| 4.3 | HTTPS / TLS Certificates | Certificates enforcing encrypted communication on API endpoints. | Manager/Admin |
+| 4.4 | CI/CD Pipeline | Automated build, test, and deployment pipeline. | Manager/Admin |
+| 4.5 | SAST / SCA Tools | Static analysis and dependency scanning tools integrated into the pipeline. | Manager/Admin |
+| 4.6 | Java Runtime Environment | Runtime required to execute the backend application. | Manager/Admin |
+| 4.7 | Third-party Libraries | External libraries used by the backend, including Spring Boot, Spring Security, Hibernate, and Bucket4j. | Manager/Admin |
+| 4.8 | Bucket4j Rate Limiter | Rate limiting component used on authentication entry points. | Manager/Admin |
+| 5 | Configuration Secrets | Environment-based database URL, username, password, JWT secrets, and SMTP credentials. | Manager/Admin |
+| 6 | Backups and Recovery Artifacts | Backups and snapshots used for persistent data recovery. | Manager/Admin |
+
 ## Data Flow Diagrams
 
 ### Register Unauthenticated User
@@ -207,17 +239,131 @@ External dependencies are items external to the code of the application that may
 
 ### Categorization
 
-### Analysis
+|Category|Property Violated|Description|
+|---|---|---|
+|Spoofing|Authentication|Pretending to be something or someone other than yourself.|
+|Tampering|Integrity|Modifying something on disk, network,memory, or elsewhere.|
+|Repudiation|Non-repudiation|Claiming that you did not do something or we were not responsible. Can be honest or false.|
+|Information Disclosure|Confidentiality|Providing information to someone notauthorized to access it.|
+|Denial of Service|Availability|Exhausting resources needed to provideservice.|
+|Elevation of Privilege|Authorization|Allowing someone to do something that they are not authorized to do.|
 
-### STRIDE
+### Analysis - STRIDE
+
+#### Register Unauthenticated User
+| STRIDE | Identified Threats |
+|--------|-------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could register using someone else’s email address if email verification is not enforced, leading to account impersonation. |
+| **Tampering** | **Tampering Threat 1:** An attacker could manipulate request payload fields (e.g., role, account_type) to register as a privileged user (e.g., admin) if server-side validation is weak.<br>**Tampering Threat 2:** Client-side validation could be bypassed, allowing malformed or malicious input (e.g., script injection in name fields). |
+| **Repudiation** | **Repudiation Threat 1:** A user could deny having created an account if registration events (IP, timestamp, user agent) are not logged.<br>**Repudiation Threat 2:** Lack of verification (email confirmation) weakens proof of ownership of the registered identity. |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Detailed error messages (e.g., “email already exists”) could allow attackers to enumerate valid user accounts.<br>**Information Disclosure Threat 2:** Sensitive data (e.g., password, internal validation logic) could be exposed via improper error handling or logging. |
+| **Denial of Service** | **Denial of Service Threat 1:** Attackers could flood the registration endpoint with requests, exhausting resources or filling the database with junk accounts.<br>**Denial of Service Threat 2:** Abuse of expensive operations (e.g., password hashing) at scale could degrade system performance. |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** An attacker could inject privileged roles (e.g., admin=true) in the registration payload if role assignment is not strictly controlled server-side.<br>**Elevation of Privilege Threat 2:** Misconfigured backend logic could automatically assign elevated permissions based on manipulated input fields or missing defaults. |
+
+---
+
+#### User Login
+| STRIDE | Identified Threats |
+|--------|-------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could attempt credential stuffing or brute-force attacks to impersonate legitimate users.<br>**Spoofing Threat 2:** If authentication tokens are stolen, an attacker could impersonate a valid user. |
+| **Tampering** | **Tampering Threat 1:** An attacker could manipulate the login request payload (e.g., injecting malicious input) if input validation is not properly enforced.<br>**Tampering Threat 2:** Interception and modification of authentication requests could occur if transport security (HTTPS) is not enforced. |
+| **Repudiation** | **Repudiation Threat 1:** A user could deny having attempted or performed a login if authentication attempts (successful or failed) are not logged.<br>**Repudiation Threat 2:** Lack of logging for failed login attempts reduces traceability of suspicious activity. |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Detailed error messages could allow attackers to enumerate valid accounts.<br>**Information Disclosure Threat 2:** Sensitive data (e.g., passwords or tokens) could be exposed if transmitted or logged insecurely. |
+| **Denial of Service** | **Denial of Service Threat 1:** Attackers could flood the login endpoint with repeated authentication attempts, exhausting backend resources.<br>**Denial of Service Threat 2:** Excessive failed login attempts could overload authentication services or trigger cascading failures. |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** An attacker could exploit flaws in authentication logic to gain access without valid credentials.<br>**Elevation of Privilege Threat 2:** Improper validation of issued tokens (e.g., accepting forged or expired JWTs) could allow unauthorized access to protected resources. |
+
+---
+
+#### User Logout
+
+| STRIDE | Identified Threats |
+|--------|-------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could reuse a stolen authentication token (JWT) to perform a logout request on behalf of a legitimate user.<br>**Spoofing Threat 2:** If logout endpoints are not protected, an attacker could trigger logout requests for other users. |
+| **Tampering** | **Tampering Threat 1:** An attacker could manipulate logout requests (e.g., altering token data) if token validation is not properly enforced. |
+| **Repudiation** | **Repudiation Threat 1:** A user could deny having logged out if logout events are not logged (timestamp, IP, user ID).<br>**Repudiation Threat 2:** Lack of logging for token revocation actions reduces traceability in case of session-related incidents. |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Logout responses or logs could inadvertently expose sensitive token information if not handled securely.<br>**Information Disclosure Threat 2:** Improper error handling could reveal implementation details about session or token management. |
+| **Denial of Service** | **Denial of Service Threat 1:** Attackers could flood the logout endpoint with requests, potentially affecting backend performance (especially if token revocation is involved).<br>**Denial of Service Threat 2:** Repeated forced logout attempts (if exploitable) could disrupt user sessions and degrade user experience. |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** If token revocation mechanisms are flawed, an attacker could bypass logout and continue using a valid token.<br>**Elevation of Privilege Threat 2:** Improper validation of logout requests could allow attackers to interfere with session management beyond their authorization scope. |
+
+---
+
+#### Refresh User Token
+| STRIDE | Identified Threats |
+|--------|-------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could use a stolen refresh token to obtain new access tokens and impersonate a legitimate user.<br>**Spoofing Threat 2:** If refresh tokens are not securely bound to a client (e.g., device or session), attackers could reuse them across different environments. |
+| **Tampering** | **Tampering Threat 1:** An attacker could manipulate the refresh request payload (e.g., altering token values) if proper validation is not enforced.<br>**Tampering Threat 2:** If tokens are not cryptographically verified, forged or modified tokens could be accepted by the system. |
+| **Repudiation** | **Repudiation Threat 1:** A user could deny having refreshed a session if refresh events are not logged (timestamp, IP, device info).<br>**Repudiation Threat 2:** Lack of traceability for token rotation events reduces the ability to investigate session abuse. |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Exposure of refresh tokens (e.g., via insecure storage or transmission) could allow attackers to continuously generate valid access tokens.<br>**Information Disclosure Threat 2:** Verbose error messages during refresh failures could reveal token validity or system behavior. |
+| **Denial of Service** | **Denial of Service Threat 1:** Attackers could flood the refresh endpoint with requests, exhausting authentication resources.<br>**Denial of Service Threat 2:** Abuse of refresh logic (e.g., rapid token rotation) could degrade performance or overwhelm token management systems. |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** Improper validation of refresh tokens could allow attackers to obtain valid access tokens without proper authentication.<br>**Elevation of Privilege Threat 2:** If token rotation is not enforced, reuse of old refresh tokens could allow persistent unauthorized access. |
 
 ## Attack Trees
 
+### Register Unauthenticated User - Information Disclosure
+
+![Register Unauthenticated User - Information Disclosure](./attack-trees/diogo1221223/images/Register_Unauthenticated_User-v2.drawio.svg)
+
+### User Login - Brute Force Attack
+
+![User Login - Brute Force Attack](./attack-trees/diogo1221223/images/User_Login-v2.drawio.svg)
+
 ## Abuse Cases
+
+### Register Unauthenticated User - Information Disclosure
+
+![Register Unauthenticated User - Information Disclosure](./abuse-cases/diogo1221223/images/Register_Unauthenticated_User-v2.drawio.svg)
+
+### User Login - Brute Force Attack
+
+![User Login - Brute Force Attack](./abuse-cases/diogo1221223/images/User_Login-v2.drawio.svg)
 
 ## Ranking of Threats - DREAD
 
+### Information Disclosure - Register Unauthenticated User
+
+| DREAD Factor | Question | Score |
+|-------------|----------|-------|
+| Damage | How big would the damage be if the attack succeeded? (1- Low; 10- High) |   6   |
+| Reproducibility | How easy is it to reproduce an attack? (1- Hard; 10- Easy) |   9   |
+| Exploitability | How much time, effort, and expertise is needed to exploit the threat? (1- Hard; 10- Easy) |   8   |
+| Affected Users | If a threat were exploited, what percentage of users would be affected? (1- None; 10- All) |  7    |
+| Discoverability | How easy is it for an attacker to discover this threat? (1- Hard; 10- Easy) |  9    |
+
+**Threat Score: 7.8 (High)**
+
+---
+
+### Brute Force Attack - User Login
+
+| DREAD Factor | Question | Score |
+|-------------|----------|-------|
+| Damage | How big would the damage be if the attack succeeded? (1- Low; 10- High) |   9   |
+| Reproducibility | How easy is it to reproduce an attack? (1- Hard; 10- Easy) |   9   |
+| Exploitability | How much time, effort, and expertise is needed to exploit the threat? (1- Hard; 10- Easy) |   7   |
+| Affected Users | If a threat were exploited, what percentage of users would be affected? (1- None; 10- All) |  8    |
+| Discoverability | How easy is it for an attacker to discover this threat? (1- Hard; 10- Easy) |   10   |
+
+**Threat Score: 8.6 (High)**
+
+---
+
 ## Qualitative Risk Model
+
+### Information Disclosure - Register Unauthenticated User
+
+| Likelihood | Impact | Risk |
+|------------|--------|------|
+|    High    | Medium | High |
+
+---
+
+### Brute Force Attack - User Login
+
+| Likelihood | Impact |   Risk   |
+|------------|--------|----------|
+|    High    |  High  | Critical |
+
+---
 
 ## Countermeasures and Mitigations
 
@@ -241,3 +387,7 @@ In the next table we can see the implementation of the countermeasures in the pr
 ## Secure Design
 
 ## Conclusion
+
+# Attachments
+
+![Matrix](./qualitative-risk-model/matrix.png)
