@@ -1,0 +1,63 @@
+@startuml Register_Unauthenticated_User
+
+left to right direction
+
+together{
+actor Anonymous_User
+}
+
+together{
+    (Register an Anonymous User) as A1 #LightBlue
+    (Enter user details) as A2 #LightBlue
+    (Rate limit by IP) as A3 #LightBlue
+    (Validate user input) as A4 #LightBlue
+    (Log security events) as A5 #LightBlue
+    (Email verification) as A6 #LightBlue
+    (Generic error responses) as A7 #LightBlue
+    (Enforce default user role) as A8 #LightBlue
+}
+
+together{
+    (Account impersonation) as AT1
+    (Denial Of Service attack) as AT2
+    (User registration flooding) as AT3
+    (Privilege escalation by payload tampering) as AT4
+    (Email enumeration) as AT5
+}
+
+together{
+actor Malicious_User #red
+}
+
+Anonymous_User -- A1
+
+Malicious_User -up[#red]- AT1
+Malicious_User -up[#red]- AT2
+Malicious_User -up[#red]- AT3
+Malicious_User -up[#red]- AT4
+Malicious_User -up[#red]- AT5
+
+AT2 .right.> AT3 : <<Includes>>
+
+AT1 -[#red,dashed]up--> A1 : threatens
+AT2 -[#red,dashed]up--> A1 : threatens
+AT4 -[#red,dashed]up--> A1 : threatens
+AT5 -[#red,dashed]up--> A1 : threatens
+
+A3 -[#green,dashed]-> AT3 : mitigates
+A3 -[#green,dashed]-> AT5 : mitigates
+A4 -[#green,dashed]-> AT4 : mitigates
+A5 -[#green,dashed]-> AT4 : mitigates
+A6 -[#green,dashed]-> AT1 : mitigates
+A7 -[#green,dashed]-> AT5 : mitigates
+A8 -[#green,dashed]-> AT4 : mitigates
+
+A1 ..> A2 : <<Includes>>
+A1 .> A3 : <<Includes>>
+A1 .> A4 : <<Includes>>
+A1 .> A5 : <<Includes>>
+A1 .> A6 : <<Includes>>
+A1 .> A7 : <<Includes>>
+A1 .> A8 : <<Includes>>
+
+@enduml
