@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Page-1" id="11689QpjbwAMuYM3GsUZ">
-    <mxGraphModel dx="1237" dy="669" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1178" dy="637" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -47,13 +47,13 @@
         <mxCell id="-fcvZyZ5f_SS24ROwmxz-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Credential attacks" vertex="1">
           <mxGeometry height="60" width="120" x="130" y="230" as="geometry" />
         </mxCell>
-        <mxCell id="-fcvZyZ5f_SS24ROwmxz-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Enumeration support" vertex="1">
+        <mxCell id="-fcvZyZ5f_SS24ROwmxz-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Password spraying" vertex="1">
           <mxGeometry height="60" width="120" x="364" y="230" as="geometry" />
         </mxCell>
         <mxCell id="-fcvZyZ5f_SS24ROwmxz-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="DoS / enumeration" vertex="1">
           <mxGeometry height="60" width="120" x="610" y="230" as="geometry" />
         </mxCell>
-        <mxCell id="-fcvZyZ5f_SS24ROwmxz-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="&lt;div style=&quot;&quot;&gt;Brute-force&lt;/div&gt;" vertex="1">
+        <mxCell id="-fcvZyZ5f_SS24ROwmxz-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Automate login attempts" vertex="1">
           <mxGeometry height="60" width="120" x="130" y="340" as="geometry" />
         </mxCell>
         <mxCell id="-fcvZyZ5f_SS24ROwmxz-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No rate limit or lockout" vertex="1">
@@ -96,10 +96,10 @@
         <mxCell id="fX_p55Qa1lNRt8PEs89j-1" edge="1" parent="1" source="-fcvZyZ5f_SS24ROwmxz-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="-fcvZyZ5f_SS24ROwmxz-8">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="-fcvZyZ5f_SS24ROwmxz-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Probe errors" vertex="1">
+        <mxCell id="-fcvZyZ5f_SS24ROwmxz-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Try common passwords list&amp;nbsp;" vertex="1">
           <mxGeometry height="60" width="120" x="364" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="-fcvZyZ5f_SS24ROwmxz-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Verbose errors" vertex="1">
+        <mxCell id="-fcvZyZ5f_SS24ROwmxz-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No multi-factor authentication" vertex="1">
           <mxGeometry height="60" width="120" x="364" y="450" as="geometry" />
         </mxCell>
       </root>

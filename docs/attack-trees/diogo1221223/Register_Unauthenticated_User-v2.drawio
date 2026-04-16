@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Page-1" id="ltxN3Hv5_AOFUGornJVJ">
-    <mxGraphModel dx="990" dy="535" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1237" dy="669" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -81,6 +81,24 @@
         </mxCell>
         <mxCell id="sclEqUJUgDqNeVnp9EBK-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Sensitive data exposure" vertex="1">
           <mxGeometry height="60" width="120" x="601" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-6" edge="1" parent="1" source="7H65ojfCC6EHWk9AV-Lv-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="sclEqUJUgDqNeVnp9EBK-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="User Enumeration via Registration Responses" vertex="1">
+          <mxGeometry height="60" width="120" x="125" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-4" edge="1" parent="1" source="7H65ojfCC6EHWk9AV-Lv-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="sclEqUJUgDqNeVnp9EBK-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Excessive Information Disclosure" vertex="1">
+          <mxGeometry height="60" width="120" x="364" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-5" edge="1" parent="1" source="7H65ojfCC6EHWk9AV-Lv-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="sclEqUJUgDqNeVnp9EBK-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7H65ojfCC6EHWk9AV-Lv-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Sensitive Data Exposure through Improper Logging" vertex="1">
+          <mxGeometry height="60" width="120" x="601" y="440" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
