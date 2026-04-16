@@ -1,0 +1,59 @@
+@startuml
+
+left to right direction
+
+together{
+actor User
+}
+
+together{
+    (Search by product name) as A1 #LightBlue
+    (Create product) as A2 #LightBlue
+    (Update product) as A3 #LightBlue
+
+
+    (Validate input) as A4 #LightBlue
+    (Parameterized queries) as A5 #LightBlue
+    (Input sanitization) as A6 #LightBlue
+    (Log requests) as A7 #LightBlue
+    }
+together{
+(SQL/NoSQL Injection) as AT1
+
+}
+
+together{
+actor Malicious_User #red
+}
+
+
+User -- A1
+User -- A2
+User -- A3
+
+Malicious_User -right[#red]- AT1
+
+AT1 -[#red,dashed]-> A1 : threatens
+AT1 -[#red,dashed]-> A2 : threatens
+AT1 -[#red,dashed]-> A3 : threatens
+
+A4 -[#green,dashed]-> AT1 : mitigates
+A5 -[#green,dashed]-> AT1 : mitigates
+A6 -[#green,dashed]-> AT1 : mitigates
+A7 -[#green,dashed]-> AT1 : mitigates
+
+A1 .> A4 : <<Includes>>
+A2 .> A4 : <<Includes>>
+A3 .> A4 : <<Includes>>
+
+A4 .> A5 : <<Includes>>
+A5 .> A6 : <<Includes>>
+A6 .> A7 : <<Includes>>
+
+
+
+
+
+
+
+@enduml
