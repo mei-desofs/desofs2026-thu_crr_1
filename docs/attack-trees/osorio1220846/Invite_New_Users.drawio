@@ -1,0 +1,72 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="meI16eDJFYFUjwn5gHQB">
+    <mxGraphModel dx="1178" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-2" edge="1" parent="1" source="cnLnZGJMMHcMzr4LYeoa-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.462;exitY=0.993;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="cnLnZGJMMHcMzr4LYeoa-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="424" y="170" />
+            </Array>
+            <mxPoint x="280" y="230" as="sourcePoint" />
+            <mxPoint x="350" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-4" edge="1" parent="1" source="cnLnZGJMMHcMzr4LYeoa-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontColor=light-dark(#000000,#000000);" target="cnLnZGJMMHcMzr4LYeoa-10">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="260" />
+            </Array>
+            <mxPoint x="190" y="329.97" as="sourcePoint" />
+            <mxPoint x="364" y="249.99857142857135" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=light-dark(#000000,#000000);" value="Identify valid email&amp;nbsp;registered in the system" vertex="1">
+          <mxGeometry height="60" width="120" x="364" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Bulk enumeration" vertex="1">
+          <mxGeometry height="60" width="120" x="364" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Send multiple invite requests with different email addresses" vertex="1">
+          <mxGeometry height="60" width="120" x="200" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No rate limiting or request throttling" vertex="1">
+          <mxGeometry height="60" width="120" x="200" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-12" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="AND" vertex="1">
+          <mxGeometry height="30" width="60" x="394" y="355" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-18" edge="1" parent="1" source="cnLnZGJMMHcMzr4LYeoa-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);" target="cnLnZGJMMHcMzr4LYeoa-21">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="344" y="440" as="sourcePoint" />
+            <mxPoint x="344" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-19" edge="1" parent="1" source="cnLnZGJMMHcMzr4LYeoa-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="cnLnZGJMMHcMzr4LYeoa-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="260" />
+            </Array>
+            <mxPoint x="484.0000000000002" y="260" as="sourcePoint" />
+            <mxPoint x="610" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="&lt;span&gt;Analyse response differences&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="520" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Different error messages reveal account existence" vertex="1">
+          <mxGeometry height="60" width="120" x="520" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="cnLnZGJMMHcMzr4LYeoa-24" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="259.66" y="400" as="sourcePoint" />
+            <mxPoint x="259.66" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
