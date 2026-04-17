@@ -284,6 +284,14 @@ External dependencies are items external to the code of the application that may
 
 ## Attack Trees
 
+### Invite New Users (managers and carriers)
+
+![Invite New Users Attack Tree](./attack-trees/osorio1220846/images/Invite_New_Users.drawio.svg)
+
+### Confirm Invite
+
+![Confirm Invite Attack Tree](./attack-trees/osorio1220846/images/Confirm_Invite.drawio.svg)
+
 ## Abuse Cases
 
 ## Ranking of Threats - DREAD
