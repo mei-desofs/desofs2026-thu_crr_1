@@ -330,6 +330,18 @@ External dependencies are items external to the code of the application that may
 
 ## Qualitative Risk Model
 
+### Information Disclosure (Email Enumeration) - Invite New Users (managers and carriers)
+
+| Likelihood | Impact | Risk |
+|------------|--------|------|
+| High     | Medium   | High |
+
+### Elevation of Privilege (Webhook Forgery) - Confirm Invite
+
+| Likelihood | Impact | Risk |
+|------------|--------|------|
+| Medium     |  High  | High |
+
 ## Countermeasures and Mitigations
 
 These are the terms used in the context of cybersecurity to describe actions taken to reduce or eliminate the vulnerabilities and risks associated with cyber threats. Once the threats and the corresponding vulnerabilities have been identified, it is possible to derive a threat profile with the following criteria:
