@@ -203,6 +203,22 @@ External dependencies are items external to the code of the application that may
 
 ![Refresh User Token](./dfds/diogo12212123/images/5.png)
 
+### Invite New User
+
+![Invite New User](./dfds/osorio1220846/images/6.png)
+
+### Confirm Invite
+
+![Confirm Invite](./dfds/osorio1220846/images/7.png)
+
+### Reset Password
+
+![Reset Password](./dfds/osorio1220846/images/8.png)
+
+### View the Contents of the Shopping Cart
+
+![View the Contents of the Shopping Cart](./dfds/osorio1220846/images/9.png)
+
 ## Determine and Rank Threats
 
 ### Categorization
