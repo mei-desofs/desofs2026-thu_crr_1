@@ -136,7 +136,7 @@ External dependencies are items external to the code of the application that may
 | 4  | **Docker** - Containerizes the backend and supporting services for consistent, isolated deployment across environments.                                                                                                                                                                                                  |
 | 5  | **Firewall and Network Security** - Restricts exposed ports to 443 (HTTPS) and filters all other inbound/outbound traffic at the infrastructure level.                                                                                                                                                                   |
 | 6  | **HTTPS / TLS Certificates** - Enforces encrypted communication on all API endpoints. Plaintext HTTP is rejected; certificates must be publicly trusted and kept current.                                                                                                                                                |
-| 7  | **Syslog Server** - Centralized logging service that aggregates security-relevant events (authentication and orders) from the backend for auditing, monitoring, and incident response.                                                                                                                                   |
+| 7  | **Syslog Server** - Centralized logging service that aggregates security-relevant events from the backend for auditing, monitoring, and incident response.                                                                                                                                                               |
 | 8  | **Backup Storage Services** - Stores encrypted backups of all application data following the 3-2-1 rule: at least three copies, on two separate storage media, with one kept off-site. Backups are performed with a defined frequency and all copies are encrypted at rest to prevent unauthorized access or disclosure. |
 | 9  | **Java Runtime Environment (JRE)** - Required to run the backend. Must be kept on an actively maintained version to avoid known runtime vulnerabilities.                                                                                                                                                                 |
 | 10 | **Third-party Libraries (SBOM)** - External libraries used in development (e.g., Spring Boot, Spring Security, Hibernate). An SBOM will be maintained and libraries scanned via SCA tooling.                                                                                                                             |
@@ -251,6 +251,22 @@ External dependencies are items external to the code of the application that may
 
 ![View the Contents of the Shopping Cart](./dfds/osorio1220846/images/9.png)
 
+### Retrieve List of available Products
+
+![Retrieve List of available Products](./dfds/joao1220663/images/Get%20Products.png)
+
+### Search Product by Name
+
+![Search Products by Name](./dfds/joao1220663/images/Get%20Product%20by%20Name.png)
+
+### Create New Product
+
+![Create New Product](./dfds/joao1220663/images/Create%20Product.png)
+
+### Update Existing Product
+
+![Update Existing Product](./dfds/joao1220663/images/Update%20Product.png)
+
 ## Determine and Rank Threats
 
 ### Categorization (STRIDE)
@@ -334,7 +350,7 @@ External dependencies are items external to the code of the application that may
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A user without permission to access the invite endpoint could send invitation requests due to missing or weak access control. **Elevation of Privilege Threat 2:** A user could assign roles they are not authorized to assign if role assignment rules are not enforced on the backend. |
 
 
-## Confirm Invite
+#### Confirm Invite
 
 | STRIDE| Identified Threats|
 |-------|-------------------|
@@ -368,6 +384,60 @@ External dependencies are items external to the code of the application that may
 | **Denial of Service** | **Denial of Service Threat 1:** An attacker could repeatedly access the cart retrieval endpoint with valid or forged credentials, exhausting backend resources or causing performance degradation for legitimate users. |
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** An attacker could gain unauthorized access to cart contents beyond their permissions if access control is not properly enforced. |
 
+---
+
+#### Retrieve List of available Products
+
+| STRIDE | Identified Threats                                                                                                                                                                |
+|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could spoof IP addresses (via proxies or botnets) to bypass rate limiting or IP-based protections. |
+| **Tampering** | **Tampering Threat 1:** An attacker could manipulate query parameters (e.g., pagination or filter fields) to retrieve unintended data or cause unexpected backend behaviour.      |
+| **Repudiation** | **Repudiation Threat 1:** A user could deny having browsed specific products if product listing access is not logged, hindering audit trails.                                     |
+| **Information Disclosure** | **Information Disclosure Threat 1:** The response may expose internal fields (e.g., supplier cost, internal IDs) that should not be visible to anonymous or low-privilege users.  |
+| **Denial of Service** | **Denial of Service Threat 1:** An unauthenticated attacker could flood the endpoint with requests, exhausting backend resources since no authentication is required.             |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** If the endpoint reuses internal logic without proper filtering, it may unintentionally expose data intended only for privileged contexts.         |
+
+---
+
+#### Search Product by Name
+
+| STRIDE | Identified Threats                                                                                                                                                                                   |
+|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker may use proxies/botnets to rotate IPs and bypass rate limiting or detection mechanisms.                                                       |
+| **Tampering** | **Tampering Threat 1:** An attacker could inject SQL or NoSQL operators via the productName parameter if input is not properly sanitized, leading to injection attacks.                              |
+| **Repudiation** | **Repudiation Threat 1:** Malicious or abusive search queries could go undetected if search requests are not logged with user context.                                                               |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Unfiltered search results may expose draft or deactivated products not intended for public visibility.                                                          |
+| **Denial of Service** | **Denial of Service Threat 1:** An attacker could submit a high volume of search requests with varying inputs to exhaust database query capacity.                                                    |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** If the search endpoint reuses internal services without proper filtering, it may return fields or records normally restricted to higher-privilege contexts. |
+
+---
+
+#### Create New Product
+
+| STRIDE | Identified Threats                                                                                                                                                                      |
+|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could forge or steal a Manager JWT to impersonate a manager and create fraudulent products in the catalogue.                                         |
+| **Tampering** | **Tampering Threat 1:** A malicious manager or intercepted request could inject unexpected field values to corrupt the product catalogue.                                               |
+| **Repudiation** | **Repudiation Threat 1:** A manager could deny having created a fraudulent or erroneous product if creation events are not logged with the responsible user identity and timestamp.     |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Validation error responses could reveal internal data model structure (e.g., field names, constraints, database error messages).                   |
+| **Denial of Service** | **Denial of Service Threat 1:** An attacker with a valid Manager token could create a large number of products in rapid succession, polluting the catalogue and exhausting storage.     |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A non-manager user could attempt to call this endpoint directly and gain unauthorized access if server-side authorization is not properly enforced |
+
+---
+
+#### Update Existing Product
+
+| STRIDE | Identified Threats                                                                                                                                                                                                     |
+|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Spoofing** | **Spoofing Threat 1:** An attacker could forge a Manager token to gain write access and modify product information such as price or stock levels.                                                                      |
+| **Tampering** | **Tampering Threat 1:** A malicious actor could manipulate the product ID in the URL path to modify a product other than the intended one (mass assignment or IDOR).                                                   |
+| **Repudiation** | **Repudiation Threat 1:** A manager could deny having altered a product's price or stock if update events are not logged with the previous and new values alongside the responsible user.                              |
+| **Information Disclosure** | **Information Disclosure Threat 1:** The response body after a successful PATCH could expose fields beyond what was updated, leaking internal product data to the requester.                                           |
+| **Denial of Service** | **Denial of Service Threat 1:** Rapid repeated PATCH requests to the same or multiple products could lock database rows or overwhelm the update pipeline if no rate limiting is applied to write operations.           |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A non-manager user could attempt to call this endpoint directly to alter product prices or stock in their favour if server-side role validation is not enforced on every request. |
+
+---
+
 ## Attack Trees
 
 ### Register Unauthenticated User - Information Disclosure
@@ -386,6 +456,14 @@ External dependencies are items external to the code of the application that may
 
 ![Confirm Invite Attack Tree](./attack-trees/osorio1220846/images/Confirm_Invite.drawio.svg)
 
+### Product Management - Broken Authorization
+
+|![Product Management - Broken Authorization](./attack-trees/joao1220663/svg/Broken_Authorization_Product_Attack_Tree.drawio.svg)
+
+### Product Management - Code Injection
+
+|![Product Management - Code Injection](./attack-trees/joao1220663/svg/Code_Injection_Product_Attack_Tree.drawio.svg)
+
 ## Abuse Cases
 
 ### Register Unauthenticated User - Information Disclosure
@@ -403,6 +481,14 @@ External dependencies are items external to the code of the application that may
 ### Confirm Invite
 
 ![Confirm Invite Abuse Case](./abuse-cases/osorio1220846/images/Confirm_Invite.drawio.svg)
+
+### Product Management - Broken Authorization
+
+![Product Management - Broken Authorization](./abuse-cases/joao1220663/images/Broken_Authorizon_Product.drawio.svg)
+
+### Product Management - Code Injection
+
+![Product Management - Code Injection](./abuse-cases/joao1220663/images/Code_Injection_Product.drawio.svg)
 
 ## Ranking of Threats - DREAD
 
@@ -460,6 +546,34 @@ External dependencies are items external to the code of the application that may
 
 ---
 
+###  Product Management - Broken Authorization
+
+| DREAD Factor | Question | Score |
+|-------------|----------|-------|
+| Damage | How big would the damage be if the attack succeeded? (1- Low; 10- High) | 9     |
+| Reproducibility | How easy is it to reproduce an attack? (1- Hard; 10- Easy) | 7     |
+| Exploitability | How much time, effort, and expertise is needed to exploit the threat? (1- Hard; 10- Easy) | 8     |
+| Affected Users | If a threat were exploited, what percentage of users would be affected? (1- None; 10- All) | 7     |
+| Discoverability | How easy is it for an attacker to discover this threat? (1- Hard; 10- Easy) | 7     |
+
+**Threat Score: 7.6 (High)**
+
+---
+
+### Product Management - Code Injection
+
+| DREAD Factor | Question | Score |
+|-------------|----------|-------|
+| Damage | How big would the damage be if the attack succeeded? (1- Low; 10- High) | 9     |
+| Reproducibility | How easy is it to reproduce an attack? (1- Hard; 10- Easy) | 8     |
+| Exploitability | How much time, effort, and expertise is needed to exploit the threat? (1- Hard; 10- Easy) | 8     |
+| Affected Users | If a threat were exploited, what percentage of users would be affected? (1- None; 10- All) | 8     |
+| Discoverability | How easy is it for an attacker to discover this threat? (1- Hard; 10- Easy) | 7     |
+
+**Threat Score: 8.0 (High)**
+
+---
+
 ## Qualitative Risk Model
 
 ### Information Disclosure - Register Unauthenticated User
@@ -484,6 +598,22 @@ External dependencies are items external to the code of the application that may
 | High     | Medium   | High |
 
 ### Elevation of Privilege (Webhook Forgery) - Confirm Invite
+
+| Likelihood | Impact | Risk |
+|------------|--------|------|
+| Medium     |  High  | High |
+
+---
+
+### Product Management - Broken Authorization
+
+| Likelihood | Impact | Risk |
+|------------|--------|------|
+| Medium     | High   | High |
+
+---
+
+### Product Management - Code Injection
 
 | Likelihood | Impact | Risk |
 |------------|--------|------|

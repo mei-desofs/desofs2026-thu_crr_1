@@ -773,8 +773,8 @@
             },
             "vertices": [
               {
-                "x": 200,
-                "y": 660
+                "x": 210,
+                "y": 730
               }
             ]
           },
@@ -1544,6 +1544,7 @@
             "shape": "trust-boundary-curve",
             "width": 200,
             "height": 100,
+            "zIndex": 21,
             "connector": "smooth",
             "data": {
               "type": "tm.Boundary",
@@ -1571,8 +1572,7 @@
                 "x": -60,
                 "y": 340
               }
-            ],
-            "zIndex": 21
+            ]
           }
         ]
       }

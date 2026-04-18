@@ -1,7 +1,7 @@
 {
   "version": "2.6.0",
   "summary": {
-    "title": "Threat Model Create Product",
+    "title": "Threat Model Get Product by Name",
     "owner": "",
     "description": "",
     "id": 0
@@ -11,7 +11,7 @@
     "diagrams": [
       {
         "id": 0,
-        "title": "Create Product",
+        "title": "Get Product by Name",
         "diagramType": "STRIDE",
         "placeholder": "New STRIDE diagram description",
         "thumbnail": "./public/content/images/thumbnail.stride.jpg",
@@ -362,7 +362,7 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Create Product SQL Query",
+              "name": "Get Product By Name SQL Query",
               "description": "",
               "outOfScope": false,
               "isTrustBoundary": false,
@@ -376,7 +376,7 @@
               "trustBoundaryIds": []
             },
             "labels": [
-              "Create Product SQL Query"
+              "Get Product By Name SQL Query"
             ],
             "id": "ce17e001-1b87-4c85-88de-e1f25b8b993a",
             "source": {
@@ -414,7 +414,7 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "Create Product SQL Query Result",
+              "name": "Get Product By Name SQL Query Result",
               "description": "",
               "outOfScope": false,
               "isTrustBoundary": false,
@@ -428,7 +428,7 @@
               "trustBoundaryIds": []
             },
             "labels": [
-              "Create Product SQL Query Result"
+              "Get Product By Name SQL Query Result"
             ],
             "id": "194cee41-d9c8-458f-b62c-f245dd06b3d1",
             "source": {
@@ -773,8 +773,8 @@
             },
             "vertices": [
               {
-                "x": 200,
-                "y": 660
+                "x": 210,
+                "y": 730
               }
             ]
           },
@@ -1544,6 +1544,7 @@
             "shape": "trust-boundary-curve",
             "width": 200,
             "height": 100,
+            "zIndex": 21,
             "connector": "smooth",
             "data": {
               "type": "tm.Boundary",
@@ -1571,8 +1572,7 @@
                 "x": -60,
                 "y": 340
               }
-            ],
-            "zIndex": 21
+            ]
           }
         ]
       }
