@@ -12,6 +12,11 @@
 
 # Introduction
 
+In this report, its presentend the phase 1 of the DESOFS project, which consists in documenting operations related to SSDLS Analysis and Design. The project is focused on the development of a E-commerce Restful API focused on sellig technology products, such as computers, smartphones, electonics and more.
+
+The main topics covered in this report includes functional and non-functional requirements, security requirements, use cases, domain model,
+threat modelling, secure design, secure archtecture and security test plan.
+
 # Analysis
 
 ## Functional Requirements
@@ -106,6 +111,8 @@
 ## Use Cases
 
 ## Domain Model
+
+![Domain Model](../docs/domain_model/domain_model/DomainModel.svg)
 
 # Design
 
@@ -349,6 +356,7 @@ External dependencies are items external to the code of the application that may
 | **Denial of Service** | **Denial of Service Threat 1:** An attacker could repeatedly call the invite endpoint, triggering excessive invitation emails and potentially exhausting backend or Supabase rate limits. |
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A user without permission to access the invite endpoint could send invitation requests due to missing or weak access control. **Elevation of Privilege Threat 2:** A user could assign roles they are not authorized to assign if role assignment rules are not enforced on the backend. |
 
+---
 
 #### Confirm Invite
 
@@ -361,6 +369,7 @@ External dependencies are items external to the code of the application that may
 | **Denial of Service** | **Denial of Service Threat 1:** An attacker could repeatedly trigger the webhook endpoint with forged or replayed payloads, exhausting backend resources or causing duplicate user creation attempts in the internal database. |
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** An attacker could forge a webhook request to the backend endpoint, creating a user with an arbitrary role in the internal database, if the webhook origin is not properly authenticated (e.g., via secret validation or HMAC signature). |
 
+---
 
 #### Reset Password
 
@@ -372,6 +381,8 @@ External dependencies are items external to the code of the application that may
 | **Information Disclosure** | **Information Disclosure Threat 1:** The system could reveal whether an email is registered or not through different responses to reset requests, allowing an attacker to enumerate valid accounts. |
 | **Denial of Service** | **Denial of Service Threat 1:** An attacker could repeatedly submit reset requests for the same or different email addresses, exhausting backend resources, Supabase rate limits or flooding target users with unsolicited reset emails. |
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** An attacker could exploit the reset flow to gain unauthorized access to another user's account if the reset token is not properly validated or bound to the requesting email by Supabase. |
+
+---
 
 #### View the Contents of the Shopping Cart
 
@@ -576,6 +587,10 @@ External dependencies are items external to the code of the application that may
 
 ## Qualitative Risk Model
 
+To qualitatively assess the risks associated with the identified threats, we can use the OWASP Risk Matrix, which categorizes risks based on their likelihood and impact. The following image illustrates the OWASP Risk Matrix:
+
+<img src="../docs/qualitative-risk-model/matrix.png" alt="OWASP Risk Matrix" width="500"/>
+
 ### Information Disclosure - Register Unauthenticated User
 
 | Likelihood | Impact | Risk |
@@ -590,12 +605,15 @@ External dependencies are items external to the code of the application that may
 |------------|--------|----------|
 |    High    |  High  | Critical |
 
+---
 
 ### Information Disclosure (Email Enumeration) - Invite New Users (managers and carriers)
 
 | Likelihood | Impact | Risk |
 |------------|--------|------|
 | High     | Medium   | High |
+
+---
 
 ### Elevation of Privilege (Webhook Forgery) - Confirm Invite
 
@@ -642,8 +660,128 @@ In the next table we can see the implementation of the countermeasures in the pr
 
 ## Secure Design
 
+## Secure Architecture
+
+The architecture is designed to minimize attack surfaces, enforce separation of concerns, and facilitate secure development practices.
+To represent the architecture of our system, we use C4 diagrams at different levels of abstraction, following the C4 model for software architecture.
+
+**Level 1 - Logical View**:
+
+![Logical View](./views/level-1/logical-view/logical-view.svg)
+
+**Level 2 - Logical View**:
+
+![Logical View](./views/level-2/logical-view/logical-view.svg)
+
+**Level 2 - Deployment View**:
+
+![Deployment View](./views/level-2/deployment-view/deployment-view.svg)
+
+**Level 3 - Logical View**:
+
+![Logical View](./views/level-3/logical-view/logical-view.svg)
+
+As illustrated in the level 3 logical view, our system is designed with a layered architecture that promotes separation of concerns and encapsulation of business logic. The layers are organized as follows:
+
+- **Enterprise Business Rules Layer**
+  - Represents the core of the system and contains the domain entities and fundamental business rules.  
+  - This layer models real-world concepts and behaviors specific to the problem domain.
+  - It is independent of any external systems, frameworks, or technologies, ensuring that the core business logic remains unaffected by changes in the outer layers.
+  - This isolation ensures that vulnerabilities in outer layers cannot directly compromise the core business logic.
+
+- **Application Business Rules Layer**
+  - Encapsulates the application-specific business logic and use cases.
+  - This layer coordinates operations between entities and repository interfaces, enforcing the business rules of the application.  
+  - It depends only on the Enterprise Business Rules layer and defines interfaces for interactions with external systems, while remaining isolated from implementation details.
+  - Centralizing business logic here ensures that security rules such as access control and role validation are applied consistently across all use cases.
+
+- **Interface Adapters Layer**
+  - Acts as a bridge between the outer and inner layers
+  - It adapts data to and from the format required by the application and domain layers.
+  - This layer houses controllers, request validation, and authentication enforcement, making it the primary security boundary where unauthorized or malicious requests are rejected before reaching the business logic.
+
+- **Frameworks & Drivers Layer**
+  - The outermost layer that interacts with frameworks, external systems, and infrastructure.
+  - This layer depends on the inner layers but is never depended upon by them, allowing the system to replace or modify technologies without impacting business logic.
+  - Isolating external dependencies here limits the blast radius of third-party vulnerabilities, ensuring a compromise at this level does not directly expose core business logic.
+
+### Security Testing Plan
+
+#### Testing Methodology
+
+| Test Type | Purpose |
+|------------|------|
+| Unit Tests | Validate security rules and logic in isolated components |
+| Integration Tests | Validate interactions between components and security controls |
+| Functional Automatic Tests | Validate endpoint behavior in CI/CD (using tools like Postman/Newman) |
+| Functional Manual Tests | Validate realistic attack/use flows and edge cases |
+| SAST | Detect vulnerabilities in code/dependencies |
+| DAST | Detect vulnerabilities while API is running |
+
+#### Abuse Cases (Reference for Test Planning)
+
+Below are two examples of how abuse cases map to security tests:
+
+| Abuse Case | Security Test Type | Expected Result |
+|------------|--------------------|--------------|
+| Forge webhook request to create user with other role| Functional test: call webhook endpoint without valid secret or with manipulated payload | Request rejected with 403; no user created |
+| Email enumeration in invite | Functional test: submit existing and non-existing emails to invite and reset endpoints | Both return equivalent responses with no account disclosure |
+
+#### Threat Modelling Review Process
+
+Threat model must be reviewed when:
+
+1. A new endpoint/feature is added.
+2. Architecture or trust boundaries change.
+3. Before each release.
+
+Simple workflow:
+
+1. Update DFD/abuse case.
+2. Re-check STRIDE threats.
+3. Confirm mitigations and residual risk.
+4. Add or update related security tests.
+
+#### ASVS Assessment
+
+The system will be assessed against the OWASP ASVS v5.0.0 Level 2, which is appropriate for an e-commerce API handling personal data such as emails, addresses, and tax identification numbers, with role-based authentication.
+
+This assessment will be document in a xlsx file that contains a checklist of all ASVS requirements. For each requirement, its is necessary indicates the status of implementation (not started, in progress, complient, not applicable), the observations and the reference / link to the related code, test, or documentation that demonstrates compliance. This document will be updated as the system evolves and will be used as a reference for security reviews and audits.
+
+The document is here: [ASVS Assessment](./asvs-assessment/ASVS_5.0_Tracker.xlsx)
+
+#### Traceability (Security Requirements to Tests)
+
+Use the table below as a living checklist.
+
+| Security Requirement | Test Type | Example Test |
+|----------------------|-----------|--------------|
+| SR1 MFA | functional automatic + manual | Login requires second factor |
+| SR2 Lockout | functional automatic | 5 failed logins trigger lockout |
+| SR3 Password policy | unit + functional automatic | Password rejected if under 12 chars or missing required character types |
+| SR4 Registration email | manual | Confirmation email sent after successful registration |
+| SR5 RBAC | unit + integration + functional automatic | Customer blocked from manager routes |
+| SR6 Session Expiry | functional automatic | Session invalidated after inactivity period |
+| SR7 Rate limiting | functional automatic + integration + manual | Burst requests return throttling response |
+| SR8 Encryption at rest and in transit | review + functional automatic | Sensitive data encrypted in database and transmitted over HTTPS |
+| SR9 Password hashing | review + unit + integration | Passwords hashed with bcrypt and verified correctly |
+| SR10 GDPR compliance | review + manual | Personal data handling reviewed for GDPR compliance |
+| SR11 Input validation | unit + DAST | Malicious payload rejected safely |
+| SR12 Data format validation | unit + functional automatic | Malformed input rejected with appropriate error response |
+| SR13 Secure logs | functional automatic + review | Sensitive action logged without secret exposure |
+| SR14 Log backup | review + manual | Three backup copies verified across local and cloud storage |
+
+#### Release Security Gate
+
+Before each release, the following security gate must be passed:
+
+1. Critical vulnerabilities: 0 open.
+2. Unit tests: 100% passing.
+3. Integration tests: 100% passing.
+4. Functional tests: 100% passing.
+5. High-priority abuse-case tests: passing.
+6. Threat model review: completed.
+7. ASVS assessment; updated.
+8. Traceability table: updated.
+
 ## Conclusion
-
-# Attachments
-
-![Matrix](./qualitative-risk-model/matrix.png)
