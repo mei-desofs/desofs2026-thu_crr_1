@@ -14,6 +14,18 @@ package "TechStore" {
   }
 }
 
+node " : " as Supabase {
+  component "External Auth API" as ExternalAuthAPI <<component>> {
+  }
+}
+
+node " : " as ExternalEmail {
+  component "External Email API" as ExternalEmailAPI <<component>> {
+  }
+}
+
 Backend --> Database :TCP/IP
+Backend <--> ExternalAuthAPI : HTTPS
+Backend --> ExternalEmailAPI : SMTP
 
 @enduml

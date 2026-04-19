@@ -4,72 +4,107 @@ package "Common" {
     class Money <<ValueObject>>
     class Address <<ValueObject>>
     class Email <<ValueObject>>
+    class Quantity <<ValueObject>>
+}
+
+package "UserAggregate" {
+    class User <<Root>> {
+    }
+
+    enum UserRole <<ValueObject>> {
+      MANAGER
+      CUSTOMER
+      CARRIER
+    }
+
+    class UserId <<ValueObject>>
+
+    User --> Email
+    User --> UserRole
+    User "1" --> "1" UserId
 }
 
 package "CustomerAggregate" {
-    class User <<Root>> {
-      +userId: UUID
-      +role: UserRole
-    }
-
-    class UserRole <<ValueObject>>
-
-    class Customer <<Entity>> {
-      +customerId: UUID
-      +nif: NIF
+    class Customer <<Root>> {
     }
 
     class NIF <<ValueObject>>
+    class CustomerId <<ValueObject>>
 
-    User --> Customer : can be a
-    User --> Email
-    User --> UserRole
+    Customer --> CustomerId
     Customer --> NIF
     Customer "1" --> "1..*" Address : delivery addresses
+    Customer "1" --> "1" User : has a
 }
 
 package "CategoryAggregate" {
     class Category <<Root>>
+    class CategoryName <<ValueObject>>
+    class CategoryId <<ValueObject>>
+
+    Category --> CategoryId
+    Category --> CategoryName
 }
 
 package "ProductAggregate" {
     class Product <<Root>>
+    class ProductName <<ValueObject>>
+    class ProductDescription <<ValueObject>>
+    class ProductId <<ValueObject>>
+
     Product "1" --> "1" Category
     Product "1" --> "1" Money
+    Product --> ProductId
+    Product --> ProductName
+    Product --> ProductDescription
 }
 
 package "CartAggregate" {
     class Cart <<Root>> {
-      +userId: UUID
     }
 
     class CartItem <<Entity>> {
-      +productId: UUID
     }
 
-    Cart --> CartItem
+    class CartId <<ValueObject>>
+    class CartItemId <<ValueObject>>
+
+    Cart --> "1..*" CartItem
     CartItem "1" --> "1" Product : has
+    CartItem --> CartItemId 
+    CartItem "1" --> "1" Quantity
+    Cart --> CartId
 }
 
 package "OrderAggregate" {
     class Order <<Root>> {
-      +userId: UUID
     }
 
     class OrderItem <<Entity>> {
-      +productId: UUID
     }
 
-    enum OrderStatus <<ValueObject>>
+    class OrderId <<ValueObject>>
+    class OrderItemId <<ValueObject>> 
 
-    Order --> OrderItem
+    enum OrderStatus <<ValueObject>> {
+      PENDING
+      SHIPPED
+      DELIVERED
+      CANCELLED
+    }
+
+    Order --> "1..*" OrderItem
     Order --> OrderStatus
     Order "1" --> "1" Money
     OrderItem "1" --> "1" Money
+    OrderItem "1" --> "1" Product : has
+    OrderItem "1" --> "1" Quantity
+    OrderItem --> OrderItemId
+    Order --> OrderId
     Order "1" --> "1" Address : delivery address
 }
 
-User "1" --> "0..1" Cart : owns
-User "1" --> "0..*" Order : places
+Customer "1" --> "0..1" Cart : owns
+Customer "1" --> "0..*" Order : places
 
 @enduml
