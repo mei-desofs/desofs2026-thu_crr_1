@@ -1,0 +1,45 @@
+# STRIDE Threat Analysis
+
+## View Orders Ready for Pickup (FR18)
+
+| STRIDE                     | Identified Threats                                                                                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Spoofing**               | **Spoofing Threat 1:** An attacker could use a stolen JWT to impersonate a carrier and list assigned pickup orders.                                                                                         |
+| **Tampering**              | **Tampering Threat 1:** An attacker could tamper with query parameters (pagination/filter/order status) to retrieve orders outside the intended "ready for pickup" scope if server-side validation is weak. |
+| **Repudiation**            | **Repudiation Threat 1:** A carrier could deny having accessed the pickup order list if access events (user ID, timestamp, IP, request ID) are not audited.                                                 |
+| **Information Disclosure** | **Information Disclosure Threat 1:** The order list response could leak customer PII (full address, phone, internal notes) beyond what is required for pickup.                                              |
+| **Denial of Service**      | **Denial of Service Threat 1:** Attackers could repeatedly call the carrier order list endpoint with high-frequency requests, degrading service for legitimate carriers.                                    |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A non-carrier user (e.g., customer) could access carrier order listings if RBAC checks are missing or misconfigured.                                                   |
+
+## Display Relevant Order Information for Pickup (FR19)
+
+| STRIDE                     | Identified Threats                                                                                                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Spoofing**               | **Spoofing Threat 1:** An attacker could impersonate an assigned carrier and request detailed pickup information for an order.                                                      |
+| **Tampering**              | **Tampering Threat 1:** An attacker could manipulate the `orderId` in the request path to access another carrier's order details (IDOR) if ownership checks are absent.             |
+| **Repudiation**            | **Repudiation Threat 1:** A carrier could deny viewing sensitive order details if read operations are not logged with immutable audit records.                                      |
+| **Information Disclosure** | **Information Disclosure Threat 1:** The endpoint could expose unnecessary order fields (payment metadata, customer email, internal fraud flags) not required for pickup execution. |
+| **Denial of Service**      | **Denial of Service Threat 1:** Attackers could automate order detail lookups over large ID ranges, overloading read paths and starving legitimate traffic.                         |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A carrier could access detailed information for orders not assigned to them if authorization enforces role only and not resource ownership.    |
+
+## Mark Order as Picked Up (FR20)
+
+| STRIDE                     | Identified Threats                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Spoofing**               | **Spoofing Threat 1:** An attacker with a compromised carrier token could falsely mark orders as picked up.                                                                                                                                                                                                                                                   |
+| **Tampering**              | **Tampering Threat 1:** An attacker could tamper with status update payloads to force invalid state transitions (e.g., directly to delivered/canceled) if business rule validation is weak.<br>**Tampering Threat 2:** Replay of a previously valid pickup request could create duplicate or inconsistent status changes if idempotency controls are missing. |
+| **Repudiation**            | **Repudiation Threat 1:** A carrier could deny having changed an order status if the system does not log actor identity, previous state, new state, and timestamp.                                                                                                                                                                                            |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Error responses during pickup updates could leak internal workflow logic and order existence details to unauthorized users.                                                                                                                                                                                              |
+| **Denial of Service**      | **Denial of Service Threat 1:** Attackers could flood pickup update requests, causing lock contention and performance degradation in order-processing services.                                                                                                                                                                                               |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** A carrier could update any order state by guessing `orderId` values if endpoint authorization does not enforce per-order assignment checks.                                                                                                                                                                              |
+
+## Add New Products (FR21)
+
+| STRIDE                     | Identified Threats                                                                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Spoofing**               | **Spoofing Threat 1:** An attacker could impersonate a manager via token theft and submit malicious product creation requests.                                                                                                              |
+| **Tampering**              | **Tampering Threat 1:** An attacker could inject malicious data into product fields (name/description/category/price/stock), causing stored XSS in downstream UIs or corrupt catalog data if input validation/sanitization is insufficient. |
+| **Repudiation**            | **Repudiation Threat 1:** A manager could deny creating or modifying a product if create events are not logged with actor identity and change details.                                                                                      |
+| **Information Disclosure** | **Information Disclosure Threat 1:** Verbose validation or exception messages could reveal internal schema details, IDs, or stack traces useful for further attacks.                                                                        |
+| **Denial of Service**      | **Denial of Service Threat 1:** Attackers could submit oversized product payloads or high-rate create requests, exhausting application/database resources.                                                                                  |
+| **Elevation of Privilege** | **Elevation of Privilege Threat 1:** Non-manager users could create products if endpoint authorization is not enforced server-side (e.g., global `permitAll` or missing role checks).                                                       |
