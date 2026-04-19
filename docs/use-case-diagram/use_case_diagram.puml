@@ -17,7 +17,6 @@ actor "Invited User" as InvitedUser
 Customer --|> User
 Carrier --|> User
 Manager --|> User
-InvitedUser --|> Anonymous_User
 
 rectangle "TechStore System" {
 
