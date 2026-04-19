@@ -110,6 +110,8 @@ threat modelling, secure design, secure archtecture and security test plan.
 
 ## Use Cases
 
+![Use Case Diagram](../docs/use-case-diagram/use_case_diagram/use_case_diagram.svg)
+
 ## Domain Model
 
 ![Domain Model](../docs/domain_model/domain_model/DomainModel.svg)
