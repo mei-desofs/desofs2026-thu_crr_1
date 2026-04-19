@@ -787,3 +787,7 @@ Before each release, the following security gate must be passed:
 8. Traceability table: updated.
 
 ## Conclusion
+
+This report presents Phase 1 of the DESOFS project and establishes the baseline for building a secure TechStore RESTful API for technology products. Through SSDLC Analysis and Design activities, the team defined the core functional and non-functional requirements, identified security requirements, and structured the system using use cases and domain modelling.
+
+In addition, the project documented threat modelling, secure design, secure architecture, and an initial security testing plan to ensure risks are identified and addressed early. This phase provides a clear foundation for the next implementation stages, where the defined controls and requirements will be validated, refined, and continuously improved.
