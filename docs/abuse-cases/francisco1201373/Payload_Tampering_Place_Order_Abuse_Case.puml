@@ -1,0 +1,54 @@
+@startuml
+
+left to right direction
+
+together {
+actor Customer
+}
+
+together {
+    (Place Order Integrity Validation) as A1 #LightBlue
+    (Recompute totals server-side) as A2 #LightBlue
+    (Validate trusted cart snapshot) as A3 #LightBlue
+
+    (Reject client-provided price/total fields) as A4 #LightBlue
+    (Create tamper-evident financial audit log) as A5 #LightBlue
+    (Integrity verification before commit) as A6 #LightBlue
+    (Log integrity violations and anomalies) as A7 #LightBlue
+}
+
+together {
+(Tampered place-order payload) as AT1
+(Replay place-order request abuse) as AT2
+(Inconsistent or undercharged order persisted) as AT3
+}
+
+together {
+actor Malicious_User #red
+}
+
+Customer -- A1
+A2 ..> A1 : <<Extend>>
+A3 ..> A1 : <<Extend>>
+
+A2 ..> A4 : <<Includes>>
+A3 ..> A4 : <<Includes>>
+A4 ..> A5 : <<Includes>>
+A5 ..> A6 : <<Includes>>
+A6 ..> A7 : <<Includes>>
+
+Malicious_User -right[#red]- AT1
+Malicious_User -right[#red]- AT2
+Malicious_User -right[#red]- AT3
+
+AT1 ..> AT2 : <<Includes>>
+AT2 ..> AT3 : <<Includes>>
+
+AT1 -[#red,dashed]left-> A1 : threatens
+
+A4 -[#green,dashed]-> AT2 : mitigates
+A5 -[#green,dashed]-> AT1 : mitigates
+A6 -[#green,dashed]-> AT1 : mitigates
+A7 -[#green,dashed]-> AT1 : mitigates
+
+@enduml
