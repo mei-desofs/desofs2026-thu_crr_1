@@ -3178,7 +3178,7 @@
             },
             "attrs": {
               "text": {
-                "text": "Customer"
+                "text": "Cart"
               },
               "body": {
                 "stroke": "#333333",
@@ -3274,7 +3274,7 @@
             "id": "b1969db1-0df0-4577-ae29-a58cde8f09d7",
             "data": {
               "type": "tm.Actor",
-              "name": "Customer",
+              "name": "Cart",
               "description": "",
               "isTrustBoundary": false,
               "outOfScope": false,
@@ -3862,44 +3862,6 @@
             ]
           },
           {
-            "shape": "trust-boundary-curve",
-            "width": 200,
-            "height": 100,
-            "zIndex": 10,
-            "connector": "smooth",
-            "data": {
-              "type": "tm.Boundary",
-              "name": "Customer / TechStore System Boundary",
-              "description": "",
-              "isTrustBoundary": true,
-              "hasOpenThreats": false,
-              "crossingFlows": [],
-              "containedElements": []
-            },
-            "labels": [
-              "Customer / TechStore System Boundary"
-            ],
-            "id": "815e7758-75e7-464d-9950-d86ab5ed5e08",
-            "source": {
-              "x": 380,
-              "y": 120
-            },
-            "target": {
-              "x": 850,
-              "y": 140
-            },
-            "vertices": [
-              {
-                "x": 580,
-                "y": 160
-              },
-              {
-                "x": 820,
-                "y": 140
-              }
-            ]
-          },
-          {
             "shape": "flow",
             "attrs": {
               "line": {
@@ -4000,6 +3962,48 @@
               {
                 "x": 710,
                 "y": 190
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Cart / TechStore System Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false,
+              "crossingFlows": [],
+              "containedElements": []
+            },
+            "labels": [
+              "Cart / TechStore System Boundary"
+            ],
+            "id": "815e7758-75e7-464d-9950-d86ab5ed5e08",
+            "source": {
+              "x": 380,
+              "y": 120
+            },
+            "target": {
+              "x": 850,
+              "y": 140
+            },
+            "vertices": [
+              {
+                "x": 530,
+                "y": 160
+              },
+              {
+                "x": 580,
+                "y": 160
+              },
+              {
+                "x": 820,
+                "y": 140
               }
             ]
           },
