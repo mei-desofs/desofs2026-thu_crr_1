@@ -1,0 +1,126 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Malicious Data Injection Attack Tree" id="0">
+    <mxGraphModel dx="233217" dy="156157" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-1" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-2" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-3" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-4" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-5" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-6" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-7" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-8" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-9" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-10" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-11" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-12" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-13" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-14" edge="1" parent="1" />
+        <mxCell id="eXU7T_EjzGN5p9kSgNAD-15" edge="1" parent="1" />
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-34" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-48">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-35" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-39">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-36" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-57">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-37" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6aa84f;fontColor=#ffffff;" value="&lt;span style=&quot;white-space: nowrap;&quot;&gt;Replay valid pickup request to alter order state&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="260" x="-139160" y="-93110" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-38" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-41">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-39" parent="1" style="rounded=1;fillColor=#8e7cc3;fontColor=#ffffff;" value="Capture valid pickup request" vertex="1">
+          <mxGeometry height="60" width="240" x="-139550" y="-93000" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-40" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-41" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="Intercept request &#xa;(proxy/logs/device compromise)" vertex="1">
+          <mxGeometry height="60" width="240" x="-139550" y="-92890" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-42" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-45">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-43" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-46">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-44" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="Extract reusable request data &#xa;(token, payload)" vertex="1">
+          <mxGeometry height="60" width="240" x="-139550" y="-92790" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-45" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="No request binding &#xa;(nonce/timestamp)" vertex="1">
+          <mxGeometry height="60" width="180" x="-139620" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-46" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="Token reusable without constraints" vertex="1">
+          <mxGeometry height="60" width="180" x="-139420" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-47" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-50">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-48" parent="1" style="rounded=1;fillColor=#8e7cc3;fontColor=#ffffff;" value="Replay captured request" vertex="1">
+          <mxGeometry height="60" width="260" x="-139160" y="-93000" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-49" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-50" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="Resend identical request multiple times" vertex="1">
+          <mxGeometry height="60" width="260" x="-139160" y="-92890" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-51" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-54">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-52" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-53" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="System processes duplicate state changes" vertex="1">
+          <mxGeometry height="60" width="260" x="-139160" y="-92790" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-54" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="No idempotency controls" vertex="1">
+          <mxGeometry height="60" width="180" x="-139220" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-55" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="No replay detection" vertex="1">
+          <mxGeometry height="60" width="180" x="-139020" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-56" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-57" parent="1" style="rounded=1;fillColor=#8e7cc3;fontColor=#ffffff;" value="Automate replay or modify timing" vertex="1">
+          <mxGeometry height="60" width="260" x="-138760" y="-93000" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-58" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-62">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-59" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="Script repeated requests or parallel calls" vertex="1">
+          <mxGeometry height="60" width="260" x="-138760" y="-92890" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-60" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-63">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-61" edge="1" parent="1" source="dB-Kb_Rfp-JNLgGBOPNl-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dB-Kb_Rfp-JNLgGBOPNl-64">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-138530" y="-92690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-62" parent="1" style="rounded=1;fillColor=#3d85c6;fontColor=#ffffff;" value="Cause inconsistent or invalid order states" vertex="1">
+          <mxGeometry height="60" width="260" x="-138760" y="-92790" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-63" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="No rate limiting" vertex="1">
+          <mxGeometry height="60" width="180" x="-138820" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-64" parent="1" style="rounded=1;fillColor=#e06666;fontColor=#ffffff;" value="Weak state transition validation" vertex="1">
+          <mxGeometry height="60" width="180" x="-138620" y="-92690" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-65" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="-139260" y="-92985" as="geometry" />
+        </mxCell>
+        <mxCell id="dB-Kb_Rfp-JNLgGBOPNl-66" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="-138860" y="-92985" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
