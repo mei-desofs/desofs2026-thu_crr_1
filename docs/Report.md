@@ -549,6 +549,14 @@ External dependencies are items external to the code of the application that may
 
 ![Payload Tampering - Place Order](./attack-trees/francisco1201373/images/Payload_Tampering_Place_Order_Attack_Tree.drawio.svg)
 
+### Product Creation - Malicious Data
+
+|![Product Creation - Malicious Data](./attack-trees/marco1250685/images/malicious-data.png)
+
+### Order Pick - Replay
+
+|![Order Pick - Replay](./attack-trees/marco1250685/images/replay-pickup.png)
+
 ## Abuse Cases
 
 ### Register Unauthenticated User - Information Disclosure
