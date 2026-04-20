@@ -801,6 +801,22 @@ To qualitatively assess the risks associated with the identified threats, we can
 
 ---
 
+### 1. Malicious Data Injection - Create Product
+
+| Likelihood | Impact | Risk |
+| ---------- | ------ | ---- |
+| High       | High   | High |
+
+---
+
+### 2. Replay Attack on Order Pickup - Confirm Order Pickup
+
+| Likelihood | Impact | Risk   |
+| ---------- | ------ | ------ |
+| Medium     | Medium | Medium |
+
+---
+
 ## Countermeasures and Mitigations
 
 These are the terms used in the context of cybersecurity to describe actions taken to reduce or eliminate the vulnerabilities and risks associated with cyber threats. Once the threats and the corresponding vulnerabilities have been identified, it is possible to derive a threat profile with the following criteria:
