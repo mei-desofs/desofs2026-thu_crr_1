@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="D43CUvSCUPPBVSiNSWq4">
+    <mxGraphModel dx="1854" dy="556" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="REafiIFtqGhm1sxLle64-11" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-22">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="40" y="70" />
+            </Array>
+            <mxPoint x="159.9999999999999" y="160" as="sourcePoint" />
+            <mxPoint x="354" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-12" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="160" as="sourcePoint" />
+            <mxPoint x="414" y="100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-13" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="670" y="160" as="sourcePoint" />
+            <mxPoint x="474" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-17" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-26">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="39.999999999999886" y="270" as="sourcePoint" />
+            <mxPoint x="39.999999999999886" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-16" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dWwc_J_OzFg2lzUlGKz0-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="39.999999999999886" y="380" as="sourcePoint" />
+            <mxPoint x="39.999999999999886" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-14" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-27">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="270" as="sourcePoint" />
+            <mxPoint x="440" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-18" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-28">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="767" y="270" as="sourcePoint" />
+            <mxPoint x="810" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#111111;" value="Gain unauthorized access to add-product-to-cart endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=#111111;" value="Direct Unauthorized Add-to-Cart Access" vertex="1">
+          <mxGeometry height="60" width="120" x="-20" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=#111111;" value="Cart Ownership/Authorization Manipulation" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=#111111;" value="Token Reuse for Add-to-Cart Session" vertex="1">
+          <mxGeometry height="60" width="120" x="730" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=#111111;" value="&lt;div style=&quot;&quot;&gt;Send request to victim add-to-cart endpoint without ownership&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-20" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;strokeColor=none;fontColor=#111111;" value="Modify token/context to target victim cart" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;strokeColor=none;fontColor=#111111;" value="Reuse captured customer token in add-to-cart request" vertex="1">
+          <mxGeometry height="60" width="120" x="730" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-2" edge="1" parent="1" source="dWwc_J_OzFg2lzUlGKz0-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=#111111;" value="Missing server-side ownership enforcement" vertex="1">
+          <mxGeometry height="60" width="120" x="-20" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-5" edge="1" parent="1" source="dWwc_J_OzFg2lzUlGKz0-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=#111111;" value="Weak token validation" vertex="1">
+          <mxGeometry height="60" width="120" x="260" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-7" edge="1" parent="1" source="dWwc_J_OzFg2lzUlGKz0-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-31">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="810" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=#111111;" value="Lack of token expiration or revocation" vertex="1">
+          <mxGeometry height="60" width="120" x="730" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-32" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="200" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-33" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="570" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=#111111;" value="&lt;div style=&quot;&quot;&gt;Observe whether unauthorized add-product action is executed&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-20" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-4" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dWwc_J_OzFg2lzUlGKz0-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="414" y="360" />
+              <mxPoint x="414" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=#111111;" value="&lt;div style=&quot;&quot;&gt;Resend request to restricted add-to-cart endpoint&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-8" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dWwc_J_OzFg2lzUlGKz0-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dWwc_J_OzFg2lzUlGKz0-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=#111111;" value="&lt;div style=&quot;&quot;&gt;Access restricted add-to-cart operation&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="730" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="KwvUR5QdUhYljjH0lAR3-1" edge="1" parent="1" source="dWwc_J_OzFg2lzUlGKz0-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="KwvUR5QdUhYljjH0lAR3-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KwvUR5QdUhYljjH0lAR3-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=#111111;" value="Missing cart-to-user binding verification" vertex="1">
+          <mxGeometry height="60" width="120" x="440" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="KwvUR5QdUhYljjH0lAR3-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="380" y="505" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

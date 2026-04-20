@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="D43CUvSCUPPBVSiNSWq4">
+    <mxGraphModel dx="1803" dy="528" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="REafiIFtqGhm1sxLle64-11" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-22">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="70" />
+            </Array>
+            <mxPoint x="159.9999999999999" y="160" as="sourcePoint" />
+            <mxPoint x="354" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-12" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="160" as="sourcePoint" />
+            <mxPoint x="430" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-13" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="670" y="160" as="sourcePoint" />
+            <mxPoint x="474" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-17" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-26">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="59.999999999999886" y="270" as="sourcePoint" />
+            <mxPoint x="80" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-16" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ior-pmSwyp7fFIDGQtfH-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="59.999999999999886" y="380" as="sourcePoint" />
+            <mxPoint x="90" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-14" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-27">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="414" y="270" as="sourcePoint" />
+            <mxPoint x="430" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-18" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-28">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="780" y="270" as="sourcePoint" />
+            <mxPoint x="780" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-21" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#111111;strokeColor=#2D7600;" value="Corrupt place-order data via payload tampering" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;fontColor=#111111;strokeColor=none;" value="Identify tamperable place-order input" vertex="1">
+          <mxGeometry height="60" width="120" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;fontColor=#111111;strokeColor=none;" value="Manipulate place-order processing data" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;fontColor=#111111;strokeColor=none;" value="Request replay/race abuse" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;fontColor=#111111;strokeColor=none;" value="&lt;div style=&quot;&quot;&gt;Send crafted payloads in place-order inputs&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;fontColor=#111111;strokeColor=none;" value="Inject tampered values to bypass business validation" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-28" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;fontColor=#111111;strokeColor=none;" value="Replay/parallelize requests to force inconsistent order state" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-2" edge="1" parent="1" source="Ior-pmSwyp7fFIDGQtfH-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-29" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;fontColor=#111111;strokeColor=none;" value="Unsanitized or unvalidated user input" vertex="1">
+          <mxGeometry height="60" width="120" x="-90" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-8" edge="1" parent="1" source="Ior-pmSwyp7fFIDGQtfH-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-30">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-30" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;fontColor=#111111;strokeColor=none;" value="Missing server-side recomputation of trusted values" vertex="1">
+          <mxGeometry height="60" width="120" x="270" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-11" edge="1" parent="1" source="Ior-pmSwyp7fFIDGQtfH-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="REafiIFtqGhm1sxLle64-31">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="780" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-31" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;fontColor=#111111;strokeColor=none;" value="Weak atomicity and idempotency controls" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-32" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="210" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="REafiIFtqGhm1sxLle64-33" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="560" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;fontColor=#111111;strokeColor=none;" value="&lt;div style=&quot;&quot;&gt;Observe inconsistent place-order behavior&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-4" edge="1" parent="1" source="Ior-pmSwyp7fFIDGQtfH-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ior-pmSwyp7fFIDGQtfH-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;fontColor=#111111;strokeColor=none;" value="Unsafe request handling logic" vertex="1">
+          <mxGeometry height="60" width="120" x="90" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="30" y="515" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-9" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ior-pmSwyp7fFIDGQtfH-6">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;fontColor=#111111;strokeColor=none;" value="&lt;div style=&quot;&quot;&gt;Execute unauthorized place-order state transitions&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="354" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-10" edge="1" parent="1" source="REafiIFtqGhm1sxLle64-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ior-pmSwyp7fFIDGQtfH-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="780" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;fontColor=#111111;strokeColor=none;" value="&lt;div style=&quot;&quot;&gt;Persist inconsistent totals/items across checkout&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-13" edge="1" parent="1" source="Ior-pmSwyp7fFIDGQtfH-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="Ior-pmSwyp7fFIDGQtfH-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;fontColor=#111111;strokeColor=none;" value="Missing place-order business-rule validation" vertex="1">
+          <mxGeometry height="60" width="120" x="450" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="Ior-pmSwyp7fFIDGQtfH-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="390" y="510" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
