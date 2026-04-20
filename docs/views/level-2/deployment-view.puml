@@ -12,6 +12,11 @@ package "TechStore" {
     component "Database" as Database <<component>> {
     }
   }
+
+  node "Server 3: ?" as SERVER3 {
+    component "Syslog" as Syslog <<component>> {
+    }
+  }
 }
 
 node " : " as Supabase {
@@ -27,5 +32,6 @@ node " : " as ExternalEmail {
 Backend --> Database :TCP/IP
 Backend <--> ExternalAuthAPI : HTTPS
 Backend --> ExternalEmailAPI : SMTP
+Backend --> Syslog : TCP/IP
 
 @enduml
