@@ -2,11 +2,13 @@
 
 left to right direction
 
-together{
-actor Carrier
+title Replay Attack on Order Pickup - Abuse Case
+
+together {
+    actor Carrier
 }
 
-together{
+together {
     (Mark Order as Picked Up) as A1 #LightBlue
     (Send pickup request) as A2 #LightBlue
     (Enforce idempotency keys) as A3 #LightBlue
@@ -16,32 +18,44 @@ together{
     (Bind request to nonce/timestamp) as A7 #LightBlue
 }
 
-together{
-    (Replay valid pickup request) as AT1
-    (Duplicate state transitions) as AT2
-    (Inconsistent order state) as AT3
-    (Automated request flooding) as AT4
+together {
+    (Replay valid pickup request) as AT1 #LightPink
+    (Duplicate state transitions) as AT2 #LightPink
+    (Inconsistent order state) as AT3 #LightPink
+    (Automated request flooding) as AT4 #LightPink
 }
 
-together{
-actor Malicious_User #red
+together {
+    actor Malicious_User #red
 }
 
+' === Legitimate flow ===
 Carrier -- A1
 
+A1 ..> A2 : <<Includes>>
+A1 .> A3  : <<Includes>>
+A1 .> A4  : <<Includes>>
+A1 .> A5  : <<Includes>>
+A1 .> A6  : <<Includes>>
+A1 .> A7  : <<Includes>>
+
+' === Threats from Malicious User ===
 Malicious_User -up[#red]- AT1
 Malicious_User -up[#red]- AT2
 Malicious_User -up[#red]- AT3
 Malicious_User -up[#red]- AT4
 
-AT1 .right.> AT2 : <<Includes>>
-AT2 .right.> AT3 : <<Includes>>
-
+' === Threatens relationships ===
 AT1 -[#red,dashed]up--> A1 : threatens
 AT2 -[#red,dashed]up--> A1 : threatens
 AT3 -[#red,dashed]up--> A1 : threatens
 AT4 -[#red,dashed]up--> A1 : threatens
 
+' === Logical includes chain between threats (kept because it is correct here) ===
+AT1 .right.> AT2 : <<Includes>>
+AT2 .right.> AT3 : <<Includes>>
+
+' === Mitigates relationships (unchanged - they were already correct) ===
 A3 -[#green,dashed]-> AT1 : mitigates
 A3 -[#green,dashed]-> AT2 : mitigates
 A4 -[#green,dashed]-> AT3 : mitigates
@@ -49,12 +63,5 @@ A5 -[#green,dashed]-> AT4 : mitigates
 A6 -[#green,dashed]-> AT2 : mitigates
 A6 -[#green,dashed]-> AT3 : mitigates
 A7 -[#green,dashed]-> AT1 : mitigates
-
-A1 ..> A2 : <<Includes>>
-A1 .> A3 : <<Includes>>
-A1 .> A4 : <<Includes>>
-A1 .> A5 : <<Includes>>
-A1 .> A6 : <<Includes>>
-A1 .> A7 : <<Includes>>
 
 @enduml

@@ -2,11 +2,13 @@
 
 left to right direction
 
-together{
-actor Manager
+title Malicious Product Data Injection - Abuse Case
+
+together {
+    actor Manager
 }
 
-together{
+together {
     (Create Product) as A1 #LightBlue
     (Submit product data) as A2 #LightBlue
     (Validate input server side) as A3 #LightBlue
@@ -16,31 +18,40 @@ together{
     (Safe rendering in UI) as A7 #LightBlue
 }
 
-together{
-    (Stored XSS via product fields) as AT1
-    (Corrupt product catalog data) as AT2
-    (Injection into downstream systems) as AT3
-    (Oversized payload DoS) as AT4
+together {
+    (Stored XSS via product fields) as AT1 #LightPink
+    (Corrupt product catalog data) as AT2 #LightPink
+    (Injection into downstream systems) as AT3 #LightPink
+    (Oversized payload DoS) as AT4 #LightPink
 }
 
-together{
-actor Malicious_User #red
+together {
+    actor Malicious_User #red
 }
 
+' === Legitimate flow ===
 Manager -- A1
 
+A1 ..> A2 : <<Includes>>
+A1 .> A3  : <<Includes>>
+A1 .> A4  : <<Includes>>
+A1 .> A5  : <<Includes>>
+A1 .> A6  : <<Includes>>
+A1 .> A7  : <<Includes>>
+
+' === Threats from Malicious User ===
 Malicious_User -up[#red]- AT1
 Malicious_User -up[#red]- AT2
 Malicious_User -up[#red]- AT3
 Malicious_User -up[#red]- AT4
 
-AT3 .right.> AT2 : <<Includes>>
-
+' === Threatens relationships (removed incorrect AT3 includes AT2) ===
 AT1 -[#red,dashed]up--> A1 : threatens
 AT2 -[#red,dashed]up--> A1 : threatens
 AT3 -[#red,dashed]up--> A1 : threatens
 AT4 -[#red,dashed]up--> A1 : threatens
 
+' === Mitigates relationships (unchanged - they were already correct) ===
 A3 -[#green,dashed]-> AT1 : mitigates
 A3 -[#green,dashed]-> AT2 : mitigates
 A4 -[#green,dashed]-> AT1 : mitigates
@@ -48,12 +59,5 @@ A4 -[#green,dashed]-> AT3 : mitigates
 A5 -[#green,dashed]-> AT4 : mitigates
 A6 -[#green,dashed]-> AT2 : mitigates
 A7 -[#green,dashed]-> AT1 : mitigates
-
-A1 ..> A2 : <<Includes>>
-A1 .> A3 : <<Includes>>
-A1 .> A4 : <<Includes>>
-A1 .> A5 : <<Includes>>
-A1 .> A6 : <<Includes>>
-A1 .> A7 : <<Includes>>
 
 @enduml
