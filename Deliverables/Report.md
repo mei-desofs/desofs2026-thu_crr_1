@@ -110,11 +110,11 @@ threat modelling, secure design, secure archtecture and security test plan.
 
 ## Use Cases
 
-![Use Case Diagram](../docs/use-case-diagram/use_case_diagram/use_case_diagram.svg)
+![Use Case Diagram](./use-case-diagram/use_case_diagram/use_case_diagram.svg)
 
 ## Domain Model
 
-![Domain Model](../docs/domain_model/domain_model/DomainModel.svg)
+![Domain Model](./domain_model/domain_model/DomainModel.svg)
 
 # Design
 
@@ -305,15 +305,6 @@ External dependencies are items external to the code of the application that may
 |Denial of Service|Availability|Exhausting resources needed to provideservice.|
 |Elevation of Privilege|Authorization|Allowing someone to do something that they are not authorized to do.|
 
-|Category|Property Violated|Description|
-|---|---|---|
-|Spoofing|Authentication|Pretending to be something or someone other than yourself.|
-|Tampering|Integrity|Modifying something on disk, network,memory, or elsewhere.|
-|Repudiation|Non-repudiation|Claiming that you did not do something or we were not responsible. Can be honest or false.|
-|Information Disclosure|Confidentiality|Providing information to someone notauthorized to access it.|
-|Denial of Service|Availability|Exhausting resources needed to provideservice.|
-|Elevation of Privilege|Authorization|Allowing someone to do something that they are not authorized to do.|
-
 ### Analysis - STRIDE
 
 #### Register Unauthenticated User
@@ -422,7 +413,7 @@ External dependencies are items external to the code of the application that may
 | **Spoofing** | **Spoofing Threat 1:** An attacker could spoof IP addresses (via proxies or botnets) to bypass rate limiting or IP-based protections. |
 | **Tampering** | **Tampering Threat 1:** An attacker could manipulate query parameters (e.g., pagination or filter fields) to retrieve unintended data or cause unexpected backend behaviour.      |
 | **Repudiation** | **Repudiation Threat 1:** A user could deny having browsed specific products if product listing access is not logged, hindering audit trails.                                     |
-| **Information Disclosure** | **Information Disclosure Threat 1:** The response may expose internal fields (e.g., supplier cost, internal IDs) that should not be visible to anonymous or low-privilege users.  |
+| **Information Disclosure** | **Information Disclosure Threat 1:** The response may expose internal fields (e.g., internal IDs) that should not be visible to anonymous or low-privilege users.  |
 | **Denial of Service** | **Denial of Service Threat 1:** An unauthenticated attacker could flood the endpoint with requests, exhausting backend resources since no authentication is required.             |
 | **Elevation of Privilege** | **Elevation of Privilege Threat 1:** If the endpoint reuses internal logic without proper filtering, it may unintentionally expose data intended only for privileged contexts.         |
 
@@ -743,7 +734,7 @@ External dependencies are items external to the code of the application that may
 
 To qualitatively assess the risks associated with the identified threats, we can use the OWASP Risk Matrix, which categorizes risks based on their likelihood and impact. The following image illustrates the OWASP Risk Matrix:
 
-<img src="../docs/qualitative-risk-model/matrix.png" alt="OWASP Risk Matrix" width="500"/>
+<img src="./qualitative-risk-model/matrix.png" alt="OWASP Risk Matrix" width="500"/>
 
 ### Information Disclosure - Register Unauthenticated User
 
