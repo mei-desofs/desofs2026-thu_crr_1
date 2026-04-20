@@ -44,7 +44,7 @@ Malicious_User -right[#red]- AT3
 AT1 ..> AT2 : <<Includes>>
 AT2 ..> AT3 : <<Includes>>
 
-AT1 -[#red,dashed]left-> A1 : threatens
+AT1 -[#red,dashed]left-> A4 : threatens
 
 A4 -[#green,dashed]-> AT2 : mitigates
 A5 -[#green,dashed]-> AT1 : mitigates
