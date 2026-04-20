@@ -583,6 +583,14 @@ External dependencies are items external to the code of the application that may
 
 ![Payload Tampering - Place Order](./abuse-cases/francisco1201373/images/Payload_Tampering_Place_Order_Abuse_Case.drawio.svg)
 
+### Create Product - Malicious Data
+
+![Create Product - Malicious Data](./abuse-cases/marco1250685/images/malicious-data.png)
+
+### Confirm Order Pickup - Replay confirmation
+
+![Confirm Order Pickup - Replay confirmation](./abuse-cases/marco1250685/images/replay-pickup.png)
+
 ## Ranking of Threats - DREAD
 
 ### Information Disclosure - Register Unauthenticated User
