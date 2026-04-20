@@ -477,6 +477,14 @@ External dependencies are items external to the code of the application that may
 
 |![Product Management - Code Injection](./attack-trees/joao1220663/svg/Code_Injection_Product_Attack_Tree.drawio.svg)
 
+### Product Creation - Malicious Data
+
+|![Product Creation - Malicious Data](./attack-trees/marco1250685/images/malicious-data.png)
+
+### Order Pick - Replay
+
+|![Order Pick - Replay](./attack-trees/marco1250685/images/replay-pickup.png)
+
 ## Abuse Cases
 
 ### Register Unauthenticated User - Information Disclosure
