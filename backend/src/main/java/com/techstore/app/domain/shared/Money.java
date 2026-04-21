@@ -5,14 +5,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Embeddable
 @EqualsAndHashCode
 @Getter
-@Setter
 public class Money {
 
     @DecimalMin("0.0")
@@ -22,14 +20,6 @@ public class Money {
     protected Money() {}
 
     public Money(BigDecimal value) {
-        if (!isValid(value)) {
-            throw new BusinessException("Value is null or zero or negative");
-        }
-
-        this.value = value;
-    }
-
-    public void setValue(BigDecimal value) {
         if (!isValid(value)) {
             throw new BusinessException("Value is null or zero or negative");
         }
