@@ -2,9 +2,12 @@ spring:
   application:
     name: TechStore
 
+<<<<<<< Updated upstream
   profiles:
     active: bootstrap
 
+=======
+>>>>>>> Stashed changes
   datasource:
     url: ${DB_URL}
     username: ${POSTGRES_USER}
@@ -32,3 +35,8 @@ management:
     web:
       exposure:
         include: info, health
+
+supabase:
+  url: ${SUPABASE_URL}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  redirect-url: ${SUPABASE_REDIRECT_URL}
