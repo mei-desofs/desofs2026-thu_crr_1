@@ -1,6 +1,7 @@
 package com.techstore.app.service;
 
 import com.techstore.app.domain.category.Category;
+import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
@@ -25,7 +26,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO save(ProductRequestDTO dto) {
-        Category category = categoryRepository.findById(dto.categoryId())
+        Category category = categoryRepository.findById(new CategoryId(dto.categoryId()))
                 .orElseThrow(() -> new BusinessException("Category not found"));
 
         Product product = ProductMapper.toEntity(dto, category);

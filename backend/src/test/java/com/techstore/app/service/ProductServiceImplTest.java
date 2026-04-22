@@ -1,6 +1,7 @@
 package com.techstore.app.service;
 
 import com.techstore.app.domain.category.Category;
+import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.dto.ProductResponseDTO;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,14 +44,14 @@ class ProductServiceImplTest {
 
     @Test
     void shouldSaveProductAndReturnResponse() {
-        ProductRequestDTO dto = mockProductRequest("Keyboard", "Mechanical keyboard", new BigDecimal("89.99"), 2L);
+        UUID categoryId = UUID.randomUUID();
+        ProductRequestDTO dto = mockProductRequest("Keyboard", "Mechanical keyboard", new BigDecimal("89.99"), categoryId);
         Category category = new Category("Peripherals");
-        category.setId(2L);
 
         Product savedProduct = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), category);
         savedProduct.setId(100L);
 
-        when(categoryRepository.findById(2L)).thenReturn(Optional.of(category));
+        when(categoryRepository.findById(new CategoryId(categoryId))).thenReturn(Optional.of(category));
         when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
         ProductResponseDTO response = productService.save(dto);
@@ -63,9 +65,10 @@ class ProductServiceImplTest {
 
     @Test
     void shouldThrowWhenCategoryDoesNotExist() {
-        ProductRequestDTO dto = mockProductRequestWithCategoryId(999L);
+        UUID uuid = UUID.randomUUID();
+        ProductRequestDTO dto = mockProductRequestWithCategoryId(uuid);
 
-        when(categoryRepository.findById(999L)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(new CategoryId(uuid))).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> productService.save(dto));
 
@@ -147,7 +150,7 @@ class ProductServiceImplTest {
         assertEquals(0, response.getContent().size());
     }
 
-    private ProductRequestDTO mockProductRequest(String name, String description, BigDecimal price, Long categoryId) {
+    private ProductRequestDTO mockProductRequest(String name, String description, BigDecimal price, UUID categoryId) {
         ProductRequestDTO dto = mock(ProductRequestDTO.class);
         when(dto.name()).thenReturn(name);
         when(dto.description()).thenReturn(description);
@@ -156,7 +159,7 @@ class ProductServiceImplTest {
         return dto;
     }
 
-    private ProductRequestDTO mockProductRequestWithCategoryId(Long categoryId) {
+    private ProductRequestDTO mockProductRequestWithCategoryId(UUID categoryId) {
         ProductRequestDTO dto = mock(ProductRequestDTO.class);
         when(dto.categoryId()).thenReturn(categoryId);
         return dto;
