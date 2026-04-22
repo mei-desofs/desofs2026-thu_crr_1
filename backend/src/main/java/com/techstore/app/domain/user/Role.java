@@ -5,6 +5,8 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+import com.techstore.app.exception.BusinessException;
+
 /**
  * Enum representing user roles in the system.
  */
@@ -19,12 +21,12 @@ public enum Role {
 
     public static Role fromString(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("Role cannot be null");
+            throw new BusinessException("Role cannot be null");
         }
 
         return Arrays.stream(Role.values())
                 .filter(role -> role.name().equalsIgnoreCase(value))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + value));
+                .orElseThrow(() -> new BusinessException("Invalid role: " + value));
     }
 }

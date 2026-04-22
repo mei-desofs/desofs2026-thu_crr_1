@@ -1,5 +1,7 @@
 package com.techstore.app.domain.user;
 
+import com.techstore.app.exception.BusinessException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
@@ -22,7 +24,7 @@ public class Email {
 
     public Email(String email) {
         if(!isValidEmail(email)) {
-            throw new IllegalArgumentException("Invalid email format. Email must contain an '@' symbol and a valid domain.");
+            throw new BusinessException("Invalid email format. Email must contain an '@' symbol and a valid domain.");
         }
         this.email = email;
     }

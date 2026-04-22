@@ -1,10 +1,10 @@
-package com.techstore.app.service.interfaces;
+package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.dto.auth.InviteSignupRequest;
-import com.techstore.app.dto.auth.SupabaseUserResponse;
+import com.techstore.app.service.interfaces.AuthService;
+import com.techstore.app.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -41,7 +41,6 @@ public class AuthServiceImpl implements AuthService {
         String emailConfirmedAt = (String) record.get("email_confirmed_at");
         String oldEmailConfirmedAt = (String) oldRecord.get("email_confirmed_at");
 
-        // só interessa quando email_confirmed_at passa de null para preenchido
         if (emailConfirmedAt == null || oldEmailConfirmedAt != null) {
             return true;
         }
