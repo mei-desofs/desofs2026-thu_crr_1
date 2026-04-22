@@ -3,6 +3,7 @@ package com.techstore.app.service;
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -49,14 +51,12 @@ class ProductServiceImplTest {
         Category category = new Category("Peripherals");
 
         Product savedProduct = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), category);
-        savedProduct.setId(100L);
 
         when(categoryRepository.findById(new CategoryId(categoryId))).thenReturn(Optional.of(category));
         when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
         ProductResponseDTO response = productService.save(dto);
 
-        assertEquals(100L, response.id());
         assertEquals("Keyboard", response.name());
         assertEquals("Mechanical keyboard", response.description());
         assertEquals(new BigDecimal("89.99"), response.price());
@@ -81,22 +81,18 @@ class ProductServiceImplTest {
         Category audio = new Category("Audio");
 
         Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals);
-        keyboard.setId(100L);
         Product headset = new Product("Keyboard", "Gaming headset", new Money(new BigDecimal("59.90")), audio);
-        headset.setId(101L);
 
-        when(productRepository.findByName("Keyboard")).thenReturn(List.of(keyboard, headset));
+        when(productRepository.findByName(new ProductName("Keyboard"))).thenReturn(List.of(keyboard, headset));
 
-        List<ProductResponseDTO> response = productService.findByName("Keyboard");
+        List<ProductResponseDTO> response = productService.findByName(new ProductName("Keyboard"));
 
         assertEquals(2, response.size());
-        assertEquals(100L, response.get(0).id());
         assertEquals("Keyboard", response.get(0).name());
         assertEquals("Mechanical keyboard", response.get(0).description());
         assertEquals(new BigDecimal("89.99"), response.get(0).price());
         assertEquals("Peripherals", response.get(0).categoryName());
 
-        assertEquals(101L, response.get(1).id());
         assertEquals("Keyboard", response.get(1).name());
         assertEquals("Gaming headset", response.get(1).description());
         assertEquals(new BigDecimal("59.90"), response.get(1).price());
@@ -109,28 +105,24 @@ class ProductServiceImplTest {
         Category audio = new Category("Audio");
 
         Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals);
-        keyboard.setId(100L);
         Product headset = new Product("Gaming Keyboard", "RGB keyboard", new Money(new BigDecimal("59.90")), audio);
-        headset.setId(101L);
 
         Pageable pageable = PageRequest.of(0, 5);
         Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
 
-        when(productRepository.findByNameLike("Key", pageable)).thenReturn(productsPage);
+        when(productRepository.findByNameLike(new ProductName("Key"), pageable)).thenReturn(productsPage);
 
-        Page<ProductResponseDTO> response = productService.findByNameLike("Key", pageable);
+        Page<ProductResponseDTO> response = productService.findByNameLike(new ProductName("Key"), pageable);
 
         assertEquals(2, response.getTotalElements());
         assertEquals(1, response.getTotalPages());
         assertEquals(2, response.getContent().size());
 
-        assertEquals(100L, response.getContent().get(0).id());
         assertEquals("Keyboard", response.getContent().get(0).name());
         assertEquals("Mechanical keyboard", response.getContent().get(0).description());
         assertEquals(new BigDecimal("89.99"), response.getContent().get(0).price());
         assertEquals("Peripherals", response.getContent().get(0).categoryName());
 
-        assertEquals(101L, response.getContent().get(1).id());
         assertEquals("Gaming Keyboard", response.getContent().get(1).name());
         assertEquals("RGB keyboard", response.getContent().get(1).description());
         assertEquals(new BigDecimal("59.90"), response.getContent().get(1).price());
@@ -142,9 +134,9 @@ class ProductServiceImplTest {
         Pageable pageable = PageRequest.of(0, 5);
         Page<Product> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        when(productRepository.findByNameLike("unknown", pageable)).thenReturn(emptyPage);
+        when(productRepository.findByNameLike(new ProductName("unknown"), pageable)).thenReturn(emptyPage);
 
-        Page<ProductResponseDTO> response = productService.findByNameLike("unknown", pageable);
+        Page<ProductResponseDTO> response = productService.findByNameLike(new ProductName("unknown"), pageable);
 
         assertEquals(0, response.getTotalElements());
         assertEquals(0, response.getContent().size());

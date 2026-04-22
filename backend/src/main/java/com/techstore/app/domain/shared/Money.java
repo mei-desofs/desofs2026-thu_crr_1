@@ -15,19 +15,19 @@ public class Money {
 
     @DecimalMin("0.0")
     @Column(nullable = false)
-    private BigDecimal value;
+    private BigDecimal moneyValue;
 
     protected Money() {}
 
-    public Money(BigDecimal value) {
-        if (!isValid(value)) {
+    public Money(BigDecimal moneyValue) {
+        if (!isValid(moneyValue)) {
             throw new BusinessException("Value is null or zero or negative");
         }
 
-        this.value = value;
+        this.moneyValue = moneyValue;
     }
 
-    private boolean isValid(BigDecimal value) {
-        return value != null && value.compareTo(BigDecimal.ZERO) > 0;
+    private boolean isValid(BigDecimal moneyValue) {
+        return moneyValue != null && moneyValue.compareTo(BigDecimal.ZERO) > 0;
     }
 }

@@ -3,6 +3,7 @@ package com.techstore.app.service;
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.exception.BusinessException;
@@ -34,7 +35,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDTO> findByName(String productName) {
+    public List<ProductResponseDTO> findByName(ProductName productName) {
         List<Product> products = productRepository.findByName(productName);
 
         return products.stream().map(ProductMapper::toResponse)
@@ -42,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponseDTO> findByNameLike(String productName, Pageable pageable) {
+    public Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable) {
         Page<Product> products = productRepository.findByNameLike(productName, pageable);
 
         return products.map(ProductMapper::toResponse);

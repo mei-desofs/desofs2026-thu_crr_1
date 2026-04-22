@@ -15,7 +15,7 @@ public class MoneyTest {
 
         Money money = new Money(amount);
 
-        assertEquals(amount, money.getValue());
+        assertEquals(amount, money.getMoneyValue());
     }
 
     @Test
@@ -26,8 +26,8 @@ public class MoneyTest {
         Money updated = new Money(newAmount);
 
         assertNotSame(original, updated);
-        assertEquals(newAmount, updated.getValue());
-        assertEquals(new BigDecimal("10.00"), original.getValue());
+        assertEquals(newAmount, updated.getMoneyValue());
+        assertEquals(new BigDecimal("10.00"), original.getMoneyValue());
     }
 
     @Test
