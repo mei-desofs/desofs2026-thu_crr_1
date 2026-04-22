@@ -28,4 +28,10 @@ public class Quantity {
     private boolean isValid(Integer value) {
         return value != null && value > 0;
     }
+
+    public void incrementQuantity(Integer quantity) {
+        this.quantity += quantity;
+    }
+
+    public void decrementQuantity(Integer quantity) {}
 }
