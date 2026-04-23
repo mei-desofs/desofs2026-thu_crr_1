@@ -1,5 +1,6 @@
 package com.techstore.app.domain.cart;
 
+import com.techstore.app.domain.customer.Customer;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,8 +20,8 @@ public class Cart {
     @OneToMany
     private List<CartItem> items;
 
-//    @OneToOne
-//    private Customer customer;
+    @OneToOne
+    private Customer customer;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -1,5 +1,6 @@
 package com.techstore.app.domain.order;
 
+import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.exception.BusinessException;
@@ -31,8 +32,8 @@ public class Order {
     @OneToMany
     private List<OrderItem> orderItems;
 
-//    @OneToOne
-//    private Customer customer;
+    @OneToOne
+    private Customer customer;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
