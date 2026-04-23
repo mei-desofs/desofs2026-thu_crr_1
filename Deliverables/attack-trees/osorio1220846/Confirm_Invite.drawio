@@ -1,0 +1,140 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="tWpLJBg_4_dOn5r5TVYf">
+    <mxGraphModel dx="1178" dy="626" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="6PTJG67KWB12uiKHYDsi-39" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-45">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="70" y="140" />
+            </Array>
+            <mxPoint x="169.9999999999999" y="230" as="sourcePoint" />
+            <mxPoint x="364" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-40" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="6PTJG67KWB12uiKHYDsi-46">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="394" y="200" />
+              <mxPoint x="280" y="200" />
+            </Array>
+            <mxPoint x="280" y="230" as="sourcePoint" />
+            <mxPoint x="350" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-41" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-47">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="140" />
+            </Array>
+            <mxPoint x="680" y="230" as="sourcePoint" />
+            <mxPoint x="484" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-42" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="6PTJG67KWB12uiKHYDsi-48">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="69.99999999999989" y="340" as="sourcePoint" />
+            <mxPoint x="69.99999999999989" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-43" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-49">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="69.99999999999989" y="450" as="sourcePoint" />
+            <mxPoint x="69.99999999999989" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-44" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=light-dark(#000000,#000000);" value="Create a user in the system without going&amp;nbsp;through the legitimate invite flow" vertex="1">
+          <mxGeometry height="60" width="120" x="364" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-45" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Request forgery" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-46" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Missing authentication" vertex="1">
+          <mxGeometry height="60" width="120" x="220" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-47" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Replay attack" vertex="1">
+          <mxGeometry height="60" width="120" x="700" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-48" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Send a crafted request to the webhook endpoint" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-49" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Webhook endpoint is publicly accessible and not restricted" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-50" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="150" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-51" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="610" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-52" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-54">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="760" y="340" as="sourcePoint" />
+            <mxPoint x="760" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-53" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-55">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="759.9999999999999" y="450" as="sourcePoint" />
+            <mxPoint x="759.9999999999999" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-54" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Resend a previously captured valid webhook payload" vertex="1">
+          <mxGeometry height="60" width="120" x="700" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-55" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="No replay protection or idempotency checks" vertex="1">
+          <mxGeometry height="60" width="120" x="700" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-56" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-59">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="440" as="sourcePoint" />
+            <mxPoint x="280" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-57" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="6PTJG67KWB12uiKHYDsi-58">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-58" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Call webhook without valid secret or signature" vertex="1">
+          <mxGeometry height="60" width="120" x="220" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-59" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Webhook origin is not verified (no secret or HMAC validation)" vertex="1">
+          <mxGeometry height="60" width="120" x="220" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-60" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A680B8;strokeColor=#FFFFFF;fontColor=light-dark(#000000,#000000);" value="Payload manipulation" vertex="1">
+          <mxGeometry height="60" width="120" x="460" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-61" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-64">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="520" y="440" as="sourcePoint" />
+            <mxPoint x="520" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-62" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="6PTJG67KWB12uiKHYDsi-63">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-63" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99CCFF;align=center;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Provide arbitrary user data" vertex="1">
+          <mxGeometry height="60" width="120" x="460" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-64" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6666;strokeColor=none;fontColor=light-dark(#000000,#000000);" value="Backend trusts webhook payload without validation" vertex="1">
+          <mxGeometry height="60" width="120" x="460" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-65" edge="1" parent="1" source="6PTJG67KWB12uiKHYDsi-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;fontColor=light-dark(#000000,#000000);" target="6PTJG67KWB12uiKHYDsi-60">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="454" y="200" />
+              <mxPoint x="520" y="200" />
+            </Array>
+            <mxPoint x="548.84" y="226.58" as="sourcePoint" />
+            <mxPoint x="470.00000000000006" y="169.99999999999997" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6PTJG67KWB12uiKHYDsi-66" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#FFFFFF);" value="OR" vertex="1">
+          <mxGeometry height="30" width="60" x="370" y="245" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

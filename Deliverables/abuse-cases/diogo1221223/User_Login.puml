@@ -1,0 +1,63 @@
+@startuml User_Login
+
+left to right direction
+
+together{
+actor Anonymous_User
+}
+
+together{
+	(User login) as A1 #LightBlue
+	(Submit credentials) as A2 #LightBlue
+	(Rate limit and lockout) as A3 #LightBlue
+	(Enforce HTTPS) as A4 #LightBlue
+	(Validate and verify JWT/session) as A5 #LightBlue
+	(Use generic error messages) as A6 #LightBlue
+	(Secure token handling) as A7 #LightBlue
+	(Log authentication attempts) as A8 #LightBlue
+}
+
+together{
+	(Credential stuffing and brute-force) as AT1
+	(Token theft / session hijack) as AT2
+	(Forged or expired token abuse) as AT3
+	(Login endpoint flooding) as AT4
+	(Account enumeration via verbose errors) as AT5
+}
+
+together{
+actor Malicious_User #red
+}
+
+Anonymous_User -- A1
+
+Malicious_User -up[#red]- AT1
+Malicious_User -up[#red]- AT2
+Malicious_User -up[#red]- AT3
+Malicious_User -up[#red]- AT4
+Malicious_User -up[#red]- AT5
+
+AT1 -[#red,dashed]up--> A1 : threatens
+AT2 -[#red,dashed]up--> A1 : threatens
+AT3 -[#red,dashed]up--> A1 : threatens
+AT4 -[#red,dashed]up--> A1 : threatens
+AT5 -[#red,dashed]up--> A1 : threatens
+
+A3 -[#green,dashed]-> AT1 : mitigates
+A3 -[#green,dashed]-> AT4 : mitigates
+A4 -[#green,dashed]-> AT1 : mitigates
+A5 -[#green,dashed]-> AT3 : mitigates
+A6 -[#green,dashed]-> AT5 : mitigates
+A7 -[#green,dashed]-> AT2 : mitigates
+A8 -[#green,dashed]-> AT1 : mitigates
+A8 -[#green,dashed]-> AT4 : mitigates
+
+A1 .> A2 : <<Includes>>
+A1 .> A3 : <<Includes>>
+A1 .> A4 : <<Includes>>
+A1 .> A5 : <<Includes>>
+A1 .> A6 : <<Includes>>
+A1 .> A7 : <<Includes>>
+A1 .> A8 : <<Includes>>
+
+@enduml

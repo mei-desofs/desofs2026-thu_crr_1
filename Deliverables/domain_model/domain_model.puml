@@ -1,0 +1,110 @@
+@startuml DomainModel
+
+package "Common" {
+    class Money <<ValueObject>>
+    class Address <<ValueObject>>
+    class Email <<ValueObject>>
+    class Quantity <<ValueObject>>
+}
+
+package "UserAggregate" {
+    class User <<Root>> {
+    }
+
+    enum UserRole <<ValueObject>> {
+      MANAGER
+      CUSTOMER
+      CARRIER
+    }
+
+    class UserId <<ValueObject>>
+
+    User --> Email
+    User --> UserRole
+    User "1" --> "1" UserId
+}
+
+package "CustomerAggregate" {
+    class Customer <<Root>> {
+    }
+
+    class NIF <<ValueObject>>
+    class CustomerId <<ValueObject>>
+
+    Customer --> CustomerId
+    Customer --> NIF
+    Customer "1" --> "1..*" Address : delivery addresses
+    Customer "1" --> "1" User : has a
+}
+
+package "CategoryAggregate" {
+    class Category <<Root>>
+    class CategoryName <<ValueObject>>
+    class CategoryId <<ValueObject>>
+
+    Category --> CategoryId
+    Category --> CategoryName
+}
+
+package "ProductAggregate" {
+    class Product <<Root>>
+    class ProductName <<ValueObject>>
+    class ProductDescription <<ValueObject>>
+    class ProductId <<ValueObject>>
+
+    Product "1" --> "1" Category
+    Product "1" --> "1" Money
+    Product --> ProductId
+    Product --> ProductName
+    Product --> ProductDescription
+}
+
+package "CartAggregate" {
+    class Cart <<Root>> {
+    }
+
+    class CartItem <<Entity>> {
+    }
+
+    class CartId <<ValueObject>>
+    class CartItemId <<ValueObject>>
+
+    Cart --> "1..*" CartItem
+    CartItem "1" --> "1" Product : has
+    CartItem --> CartItemId 
+    CartItem "1" --> "1" Quantity
+    Cart --> CartId
+}
+
+package "OrderAggregate" {
+    class Order <<Root>> {
+    }
+
+    class OrderItem <<Entity>> {
+    }
+
+    class OrderId <<ValueObject>>
+    class OrderItemId <<ValueObject>> 
+
+    enum OrderStatus <<ValueObject>> {
+      PENDING
+      SHIPPED
+      DELIVERED
+      CANCELLED
+    }
+
+    Order --> "1..*" OrderItem
+    Order --> OrderStatus
+    Order "1" --> "1" Money
+    OrderItem "1" --> "1" Money
+    OrderItem "1" --> "1" Product : has
+    OrderItem "1" --> "1" Quantity
+    OrderItem --> OrderItemId
+    Order --> OrderId
+    Order "1" --> "1" Address : delivery address
+}
+
+Customer "1" --> "0..1" Cart : owns
+Customer "1" --> "0..*" Order : places
+
+@enduml

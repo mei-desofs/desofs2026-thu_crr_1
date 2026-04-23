@@ -1,0 +1,45 @@
+@startuml logical-view
+top to bottom direction
+
+interface "API" as API
+interface "External Auth API" as EXTERNAL_AUTH_API
+interface "External Email API" as EMAIL_API
+
+component "TechStore" <<component>> <<C4 System>> {
+    portin " " as TechStorePI
+    portout " " as TechStorePO
+    portout " " as TechStorePO2
+    
+    component "Backend" <<component>> {
+        portin " " as BackendPI
+        portout " " as BackendPO
+        portout " " as BackendPO2
+        portout " " as BackendPO3
+        portout " " as BackendPO4
+    }
+
+    interface "DB API" as DBAPI
+    interface "Syslog API" as SyslogAPI
+
+    component "Database" <<component>> {
+        portin " " as DBPI
+    }
+
+    component "Syslog" <<component>> {
+        portin " " as SyslogPI
+    }
+
+    BackendPO --( DBAPI
+    DBAPI -- DBPI
+    BackendPI -- TechStorePI
+    TechStorePI -u- API
+    BackendPO2 -- TechStorePO
+    BackendPO3 -- TechStorePO2
+    TechStorePO -- EXTERNAL_AUTH_API
+    TechStorePO2 -- EMAIL_API
+    SyslogAPI -- SyslogPI
+    BackendPO4 --( SyslogAPI
+}
+
+
+@enduml

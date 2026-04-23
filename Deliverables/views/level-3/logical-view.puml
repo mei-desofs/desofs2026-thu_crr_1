@@ -1,0 +1,101 @@
+@startuml logical-view
+
+top to bottom direction
+
+interface "API" as API
+interface "DB API" as DB_API
+interface "External Auth API" as EXTERNAL_AUTH_API
+interface "External Email API" as EMAIL_API
+interface "Syslog API" as SYSLOG_API
+
+component "Backend" as APP <<component>> <<container (C4)>> {
+  portin " " as P1
+  portout " " as P2
+  portout " " as P3
+  portout " " as P4
+  portout " " as P5
+
+  Interface "Controller API" as CTRL_API
+
+  folder "Frameworks & Drivers Layer" #80FFFF {
+    component "Persistence" as PERSISTENCE <<component>> {
+    }
+    component "Routers" as ROUTE <<component>> {
+    }
+
+    component "Syslog Adapter" as SYSLOG_ADAPTER <<component>> {
+    }
+  }
+
+  component "DTO" as DTO <<component>> {
+  }
+
+  Interface "App Services API" AS SRV_API
+  Interface "DTO API" AS DTO_API
+  Interface "Repo API" AS REPO_API
+  Interface "Model API" AS MODEL_API
+  Interface "Persistence API" AS PERSISTENCE_API
+  interface "Repository Interface API" as REPO_API_I
+
+  folder "Interface Adapters Layer" #80FF80 {
+    component "Controller" as CTRL <<component>> {
+    }
+    component "Repository" as REPO <<component>> {
+    }
+  }
+
+  folder "Application Business Rules" #FF8080 {
+    component "Application Service Interface" as SRV <<component>> {
+    }
+
+    component "Application Service" as SRV_IMPL <<component>> {
+    }
+  }
+
+  folder "Enterprise Business Rules" #FFC080 {
+    component "Domain Model DDD" as MODEL <<component>> {
+    }
+    component "Repository Interface" as REPO_I <<component>> {
+    }
+  }
+}
+
+API -- P1
+P2 -l-( DB_API
+P5 --( SYSLOG_API
+P5 -- SYSLOG_ADAPTER
+
+ROUTE --- P1
+PERSISTENCE -r- P2
+ROUTE --( DTO_API
+
+ROUTE --( CTRL_API
+CTRL -up- CTRL_API
+PERSISTENCE -- PERSISTENCE_API
+REPO -up-( PERSISTENCE_API
+
+CTRL --( SRV_API
+SRV -up- SRV_API
+CTRL --( DTO_API
+DTO -up- DTO_API
+
+REPO -- REPO_API
+
+REPO_I -up-( REPO_API
+REPO_I -up- REPO_API_I
+REPO_I --( MODEL_API
+
+SRV --( REPO_API_I
+SRV -- P3
+SRV -- P4
+SRV_IMPL -r-|> SRV
+
+P3 --( EXTERNAL_AUTH_API
+P4 --( EMAIL_API
+
+SRV --( MODEL_API 
+MODEL -up- MODEL_API 
+REPO --( MODEL_API
+CTRL --( MODEL_API
+
+@enduml

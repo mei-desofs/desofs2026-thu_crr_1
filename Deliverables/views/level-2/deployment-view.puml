@@ -1,0 +1,37 @@
+@startuml deployment-view
+
+package "TechStore" {
+
+  node "Server 1: " as SERVER1 {
+
+    component "Backend" as Backend <<component>>  {
+    }
+  }
+
+  node "Server 2: ?" as SERVER2 {
+    component "Database" as Database <<component>> {
+    }
+  }
+
+  node "Server 3: ?" as SERVER3 {
+    component "Syslog" as Syslog <<component>> {
+    }
+  }
+}
+
+node " : " as Supabase {
+  component "External Auth API" as ExternalAuthAPI <<component>> {
+  }
+}
+
+node " : " as ExternalEmail {
+  component "External Email API" as ExternalEmailAPI <<component>> {
+  }
+}
+
+Backend --> Database :TCP/IP
+Backend <--> ExternalAuthAPI : HTTPS
+Backend --> ExternalEmailAPI : SMTP
+Backend --> Syslog : TCP/IP
+
+@enduml

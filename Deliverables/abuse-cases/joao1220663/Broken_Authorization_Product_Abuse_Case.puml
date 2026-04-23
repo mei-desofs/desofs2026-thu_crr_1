@@ -1,0 +1,65 @@
+@startuml
+
+left to right direction
+
+together{
+actor Manager
+}
+
+together{
+    (Manage Product) as A1 #LightBlue
+    (Create product) as A2 #LightBlue
+    (Update product) as A3 #LightBlue
+
+    (Validate manager JWT) as A4 #LightBlue
+    (Enforce role-based authorization) as A5 #LightBlue
+    (Check permissions per request) as A6 #LightBlue
+    (Log actions) as A7 #LightBlue
+}
+together{
+(Role bypass attack) as AT1
+(Forged or tampered JWT) as AT2
+(Manage product data without proper authorization) as AT3
+}
+
+together{
+actor Malicious_User #red
+}
+
+
+Manager -- A1
+A2 ..> A1 : <<Extend>>
+A3 ..> A1 : <<Extend>>
+
+A3 ..> A4 : <<Includes>>
+A2 ..> A4 : <<Includes>>
+
+A4 ..> A5 : <<Includes>>
+A5 ..> A6 : <<Includes>>
+A6 ..> A7 : <<Includes>>
+
+
+Malicious_User -right[#red]- AT1
+Malicious_User -right[#red]- AT2
+Malicious_User -right[#red]- AT3
+
+AT1 ..> AT2 : <<Includes>>
+AT2 ..> AT3 : <<Includes>>
+
+AT1 -[#red,dashed]left-> A1 : threatens
+
+
+
+A4 -[#green,dashed]-> AT2 : mitigates
+A5 -[#green,dashed]-> AT1 : mitigates
+A6 -[#green,dashed]-> AT1 : mitigates
+A7 -[#green,dashed]-> AT1 : mitigates
+
+
+
+
+
+
+
+
+@enduml

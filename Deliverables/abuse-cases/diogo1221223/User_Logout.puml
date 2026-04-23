@@ -1,0 +1,66 @@
+@startuml User_Logout
+
+left to right direction
+
+together{
+actor Authenticated_User
+}
+
+together{
+	(User logout) as A1 #LightBlue
+	(Submit logout request) as A2 #LightBlue
+	(Validate token ownership and session) as A3 #LightBlue
+	(Validate token integrity) as A4 #LightBlue
+	(Enforce logout endpoint authorization) as A5 #LightBlue
+	(Rate limit logout requests) as A6 #LightBlue
+	(Revoke token and invalidate session) as A7 #LightBlue
+	(Log logout and revocation events) as A8 #LightBlue
+	(Use safe error responses) as A9 #LightBlue
+}
+
+together{
+	(Session hijacking via stolen token) as AT1
+	(Forced logout of other users) as AT2
+	(Token revocation bypass) as AT3
+	(Tampered logout request) as AT4
+	(Logout endpoint flooding) as AT5
+}
+
+together{
+actor Malicious_User #red
+}
+
+Authenticated_User -- A1
+
+Malicious_User -up[#red]- AT1
+Malicious_User -up[#red]- AT2
+Malicious_User -up[#red]- AT3
+Malicious_User -up[#red]- AT4
+Malicious_User -up[#red]- AT5
+
+AT1 -[#red,dashed]up--> A1 : threatens
+AT2 -[#red,dashed]up--> A1 : threatens
+AT3 -[#red,dashed]up--> A1 : threatens
+AT4 -[#red,dashed]up--> A1 : threatens
+AT5 -[#red,dashed]up--> A1 : threatens
+
+A3 -[#green,dashed]-> AT1 : mitigates
+A3 -[#green,dashed]-> AT2 : mitigates
+A4 -[#green,dashed]-> AT4 : mitigates
+A5 -[#green,dashed]-> AT2 : mitigates
+A6 -[#green,dashed]-> AT5 : mitigates
+A7 -[#green,dashed]-> AT3 : mitigates
+A8 -[#green,dashed]-> AT1 : mitigates
+A8 -[#green,dashed]-> AT3 : mitigates
+A9 -[#green,dashed]-> AT2 : mitigates
+
+A1 .> A2 : <<Includes>>
+A1 .> A3 : <<Includes>>
+A1 .> A4 : <<Includes>>
+A1 .> A5 : <<Includes>>
+A1 .> A6 : <<Includes>>
+A1 .> A7 : <<Includes>>
+A1 .> A8 : <<Includes>>
+A1 .> A9 : <<Includes>>
+
+@enduml
