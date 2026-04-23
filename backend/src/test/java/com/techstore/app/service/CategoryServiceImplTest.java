@@ -1,6 +1,7 @@
 package com.techstore.app.service;
 
 import com.techstore.app.domain.category.Category;
+import com.techstore.app.domain.category.CategoryName;
 import com.techstore.app.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +26,8 @@ class CategoryServiceImplTest {
     void shouldSaveCategoryWhenNameIsUnique() {
         Category input = new Category("Storage");
         Category saved = new Category("Storage");
-        saved.setId(1L);
 
-        when(categoryRepository.findByName("Storage")).thenReturn(null);
+        when(categoryRepository.findByName(new CategoryName("Storage"))).thenReturn(null);
         when(categoryRepository.save(input)).thenReturn(saved);
 
         Category result = categoryService.save(input);
@@ -39,7 +39,7 @@ class CategoryServiceImplTest {
     void shouldThrowWhenCategoryNameAlreadyExists() {
         Category input = new Category("Storage");
 
-        when(categoryRepository.findByName("Storage")).thenReturn(new Category("Storage"));
+        when(categoryRepository.findByName(new CategoryName("Storage"))).thenReturn(new Category("Storage"));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> categoryService.save(input));
@@ -51,9 +51,9 @@ class CategoryServiceImplTest {
     void shouldFindCategoryByName() {
         Category category = new Category("Peripherals");
 
-        when(categoryRepository.findByName("Peripherals")).thenReturn(category);
+        when(categoryRepository.findByName(new CategoryName("Peripherals"))).thenReturn(category);
 
-        Category result = categoryService.findByName("Peripherals");
+        Category result = categoryService.findByName(new CategoryName("Peripherals"));
 
         assertEquals(category, result);
     }

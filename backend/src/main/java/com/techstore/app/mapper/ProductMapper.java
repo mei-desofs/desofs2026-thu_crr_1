@@ -21,11 +21,11 @@ public class ProductMapper {
 
     public static ProductResponseDTO toResponse(Product product) {
         return new ProductResponseDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice().getValue(),
-                product.getCategory().getName()
+                product.getId().getId(),
+                product.getName().getProductName(),
+                product.getDescription().getDescription(),
+                product.getPrice().getMoneyValue(),
+                product.getCategory().getName().getCategoryName()
         );
     }
 }

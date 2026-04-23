@@ -4,27 +4,25 @@ import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @EqualsAndHashCode
 @Entity
 public class Category {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private CategoryId id;
 
+    @Embedded
     @Column(nullable = false, unique = true)
-    private String name;
+    private CategoryName name;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     public Category() {}
@@ -34,7 +32,8 @@ public class Category {
             throw new BusinessException("Category name must contain only letters.");
         }
 
-        this.name = name;
+        this.id = CategoryId.newId();
+        this.name = new CategoryName(name);
     }
 
     @PrePersist

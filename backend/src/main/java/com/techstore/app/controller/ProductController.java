@@ -1,5 +1,6 @@
 package com.techstore.app.controller;
 
+import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.service.interfaces.ProductService;
@@ -30,6 +31,6 @@ public class ProductController {
     @GetMapping("/search")
     public Page<ProductResponseDTO> search(@RequestParam String productName,
                                            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
-        return productService.findByNameLike(productName, pageable);
+        return productService.findByNameLike(new ProductName(productName), pageable);
     }
 }
