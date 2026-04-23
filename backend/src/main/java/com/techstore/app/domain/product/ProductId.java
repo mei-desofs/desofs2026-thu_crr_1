@@ -21,7 +21,7 @@ public class ProductId implements Serializable {
 
     public ProductId(UUID id) {
         if (id == null) {
-            throw new BusinessException("Customer ID cannot be null.");
+            throw new BusinessException("Product ID cannot be null.");
         }
         this.id = id;
     }

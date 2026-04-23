@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @EqualsAndHashCode
 @Entity
+@Table(name = "categories")
 public class Category {
 
     @EmbeddedId
