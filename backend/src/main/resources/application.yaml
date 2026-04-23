@@ -2,12 +2,9 @@ spring:
   application:
     name: TechStore
 
-<<<<<<< Updated upstream
   profiles:
     active: bootstrap
 
-=======
->>>>>>> Stashed changes
   datasource:
     url: ${DB_URL}
     username: ${POSTGRES_USER}
