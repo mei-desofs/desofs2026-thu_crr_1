@@ -1,7 +1,6 @@
 package com.techstore.app.domain.user;
 
 import com.techstore.app.exception.BusinessException;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;

@@ -86,5 +86,4 @@ public class UserTest {
 
         assertEquals("Supabase User ID cannot be null.", exception.getMessage());
     }
-
 }
