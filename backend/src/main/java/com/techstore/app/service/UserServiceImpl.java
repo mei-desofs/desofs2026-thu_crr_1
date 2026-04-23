@@ -4,7 +4,7 @@ import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.exception.BusinessException;
-import com.techstore.app.repository.interfaces.UserRepository;
+import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.UserService;
 import org.springframework.stereotype.Service;
 

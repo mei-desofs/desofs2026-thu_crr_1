@@ -1,4 +1,4 @@
-package com.techstore.app.repository.interfaces;
+package com.techstore.app.repository;
 
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.User;
