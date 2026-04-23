@@ -1,5 +1,6 @@
 package com.techstore.app.domain.user;
 
+import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +39,7 @@ public class RoleTest {
         String invalidRoleName = "INVALID_ROLE";
 
         // Act
-        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(BusinessException.class,
                 () -> Role.fromString(invalidRoleName));
 
         // Assert
@@ -48,7 +49,7 @@ public class RoleTest {
     @Test
     void ensureFromStringWithNullRoleThrowsException() {
         // Act
-        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+        BusinessException exception = org.junit.jupiter.api.Assertions.assertThrows(BusinessException.class,
                 () -> Role.fromString(null));
 
         // Assert

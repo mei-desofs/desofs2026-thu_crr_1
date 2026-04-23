@@ -1,9 +1,9 @@
 package com.techstore.app.domain.user;
 
+import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EmailTest {
 
@@ -22,7 +22,7 @@ public class EmailTest {
         String invalidEmail = "invalid-email";
 
         // Act
-        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> new Email(invalidEmail));
 
         assertTrue(exception.getMessage().contains("Invalid email format. Email must contain an '@' symbol and a valid domain."));
@@ -31,7 +31,7 @@ public class EmailTest {
     @Test
     void ensureNullEmailThrowsException() {
         // Act
-        IllegalArgumentException exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> new Email(null));
 
         // Assert

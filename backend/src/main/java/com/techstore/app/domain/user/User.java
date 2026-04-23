@@ -3,11 +3,8 @@ package com.techstore.app.domain.user;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
-
+import com.techstore.app.exception.BusinessException;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Entity representing a user in the system.
@@ -18,25 +15,21 @@ import java.util.UUID;
 @Getter
 public class User {
 
-    @Id
-    @GeneratedValue
-    @UuidGenerator
-    private UUID id;
+    @EmbeddedId
+    private UserId id;
 
     @Version
     private Long version;
 
     @Embedded
-    @Setter
     private Email email;
 
-    @Column(nullable = false, unique = true)
-    @Setter
-    private UUID supabaseUserId;
+    @Embedded
+    @AttributeOverride(name = "id", column = @Column(name = "supabase_user_id", nullable = false, unique = true))
+    private SupabaseUserId supabaseUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Setter
     private Role role;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -45,7 +38,16 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public User(Email email, Role role, UUID supabaseUserId) {
+    public User(Email email, Role role, SupabaseUserId supabaseUserId) {
+        if (email == null) {
+            throw new BusinessException("Email cannot be null.");
+        }
+        if (role == null) {
+            throw new BusinessException("Role cannot be null.");
+        }
+        if (supabaseUserId == null) {
+            throw new BusinessException("Supabase User ID cannot be null.");
+        }
         this.email = email;
         this.role = role;
         this.supabaseUserId = supabaseUserId;
