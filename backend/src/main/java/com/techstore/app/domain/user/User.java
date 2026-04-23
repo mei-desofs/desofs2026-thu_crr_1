@@ -3,9 +3,7 @@ package com.techstore.app.domain.user;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import com.techstore.app.exception.BusinessException;
-
 import java.time.LocalDateTime;
 
 /**
