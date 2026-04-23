@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MoneyTest {
+public class MoneyTest {
 
     @Test
     void shouldCreateMoneyWithValue() {
@@ -19,20 +19,15 @@ class MoneyTest {
     }
 
     @Test
-    void shouldAllowUpdatingValue() {
-        Money money = new Money(new BigDecimal("10.00"));
-        BigDecimal amount = new BigDecimal("25.50");
+    void shouldCreateNewInstanceWhenValueChanges() {
+        Money original = new Money(new BigDecimal("10.00"));
+        BigDecimal newAmount = new BigDecimal("25.50");
 
-        money.setValue(amount);
+        Money updated = new Money(newAmount);
 
-        assertEquals(amount, money.getValue());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenValueIsNull() {
-        Money money = new Money(new BigDecimal("10.00"));
-
-        assertThrows(BusinessException.class, () -> money.setValue(null));
+        assertNotSame(original, updated);
+        assertEquals(newAmount, updated.getValue());
+        assertEquals(new BigDecimal("10.00"), original.getValue());
     }
 
     @Test
@@ -48,19 +43,5 @@ class MoneyTest {
     @Test
     void shouldThrowExceptionWhenCreatingMoneyWithNegativeValue() {
         assertThrows(BusinessException.class, () -> new Money(new BigDecimal("-0.01")));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUpdatingMoneyWithZero() {
-        Money money = new Money(new BigDecimal("10.00"));
-
-        assertThrows(BusinessException.class, () -> money.setValue(BigDecimal.ZERO));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUpdatingMoneyWithNegativeValue() {
-        Money money = new Money(new BigDecimal("10.00"));
-
-        assertThrows(BusinessException.class, () -> money.setValue(new BigDecimal("-0.01")));
     }
 }
