@@ -16,8 +16,23 @@ services:
     networks:
       - tech_store_network
 
+  # Syslog Server
+  syslog:
+    image: balabit/syslog-ng:latest
+    container_name: tech-store-syslog
+    restart: unless-stopped
+    volumes:
+      - ./docker/syslog/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf  # ← path correto
+      - syslog_data:/var/log/syslog-ng
+    ports:
+      - "514:514/udp"
+      - "601:601/tcp"
+    networks:
+      - tech_store_network
+
 volumes:
   tech_store_pg_data:
+  syslog_data:
 
 networks:
   tech_store_network:
