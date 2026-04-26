@@ -2,6 +2,8 @@ package com.techstore.app.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techstore.app.dto.auth.RefreshResponse;
+import com.techstore.app.dto.auth.SupabaseLoginResponse;
 import com.techstore.app.dto.auth.SupabaseUserResponse;
 import com.techstore.app.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,6 +21,8 @@ public class SupabaseAuthClient {
     private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users";
     private static final String AUTH_INVITE = "/auth/v1/invite";
     private static final String AUTH_VERIFY = "/auth/v1/verify";
+    private static final String AUTH_TOKEN = "/auth/v1/token?grant_type=password";
+    private static final String AUTH_REFRESH = "/auth/v1/token?grant_type=refresh_token";
 
     private final String supabaseUrl;
 
@@ -128,5 +132,49 @@ public class SupabaseAuthClient {
             return "Invalid email.";
 
         return message;
+    }
+    public SupabaseLoginResponse login(String email, String password){
+        String url = supabaseUrl + AUTH_TOKEN;
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("email", email, "password", password)
+        );
+
+        try {
+            ResponseEntity<SupabaseLoginResponse> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, SupabaseLoginResponse.class
+            );
+
+            if (response.getBody() == null) {
+                throw new IllegalStateException("Empty response from Supabase.");
+            }
+
+            return response.getBody();
+
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+    public RefreshResponse refreshToken(String refreshToken) {
+        String url = supabaseUrl + AUTH_REFRESH;
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("refresh_token", refreshToken)
+        );
+
+        try {
+            ResponseEntity<RefreshResponse> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, RefreshResponse.class
+            );
+
+            if (response.getBody() == null) {
+                throw new IllegalStateException("Empty response from Supabase.");
+            }
+
+            return response.getBody();
+
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
     }
 }

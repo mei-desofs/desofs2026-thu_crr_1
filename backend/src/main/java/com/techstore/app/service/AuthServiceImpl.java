@@ -1,9 +1,12 @@
 package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
-import com.techstore.app.dto.auth.InviteSignupRequest;
+import com.techstore.app.dto.auth.*;
+import com.techstore.app.exception.BusinessException;
+import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +22,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final SupabaseAuthClient supabaseAuthClient;
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient) {
+    private final AuthAuditLogger auditLogger;
+
+    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient, AuthAuditLogger auditLogger) {
         this.userService = userService;
         this.supabaseAuthClient = supabaseAuthClient;
+        this.auditLogger = auditLogger;
     }
 
     public void inviteUser(InviteSignupRequest inviteSignupRequest) {
@@ -55,5 +61,40 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return true;
+    }
+    @Override
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+        try {
+            SupabaseLoginResponse supabaseResponse =
+                    supabaseAuthClient.login(request.email(), request.password());
+
+            auditLogger.logLoginAttempt(request.email(), true, httpRequest);
+
+            return new LoginResponse(
+                    supabaseResponse.accessToken(),
+                    supabaseResponse.refreshToken(),
+                    supabaseResponse.tokenType(),
+                    supabaseResponse.expiresIn()
+            );
+
+        } catch (BusinessException ex) {
+            auditLogger.logLoginAttempt(request.email(), false, httpRequest);
+            throw ex;
+        }
+    }
+    @Override
+    public RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest) {
+        try {
+            RefreshResponse response = supabaseAuthClient.refreshToken(refreshToken);
+
+            // To Do: extrair o userId do token para o log
+            auditLogger.logTokenRefresh("unknown", true, httpRequest);
+
+            return response;
+
+        } catch (BusinessException ex) {
+            auditLogger.logTokenRefresh("unknown", false, httpRequest);
+            throw ex;
+        }
     }
 }
