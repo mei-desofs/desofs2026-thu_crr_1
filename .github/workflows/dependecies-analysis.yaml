@@ -22,21 +22,15 @@ jobs:
         with:
           maven-version: 3.9.6
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: maven-${{ hashFiles('backend/pom.xml') }}
-
-      - name: Build project
+      - name: Build + resolve dependencies
         working-directory: backend
-        run: mvn clean compile
+        run: mvn clean install -DskipTests
 
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Run Snyk test (Java)
+      - name: Run Snyk test (Java stable mode)
         working-directory: backend
-        run: snyk test --severity-threshold=high
+        run: snyk test --file=pom.xml --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
