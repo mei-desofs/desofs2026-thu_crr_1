@@ -134,7 +134,6 @@ public class SupabaseAuthClient {
         return message;
     }
     public SupabaseLoginResponse login(String email, String password){
-        String url = supabaseUrl + AUTH_TOKEN;
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 Map.of("email", email, "password", password)
@@ -142,7 +141,7 @@ public class SupabaseAuthClient {
 
         try {
             ResponseEntity<SupabaseLoginResponse> response = restTemplate.exchange(
-                    url, HttpMethod.POST, entity, SupabaseLoginResponse.class
+                    (supabaseUrl + AUTH_TOKEN), HttpMethod.POST, entity, SupabaseLoginResponse.class
             );
 
             if (response.getBody() == null) {
@@ -156,7 +155,6 @@ public class SupabaseAuthClient {
         }
     }
     public RefreshResponse refreshToken(String refreshToken) {
-        String url = supabaseUrl + AUTH_REFRESH;
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
                 Map.of("refresh_token", refreshToken)
@@ -164,7 +162,7 @@ public class SupabaseAuthClient {
 
         try {
             ResponseEntity<RefreshResponse> response = restTemplate.exchange(
-                    url, HttpMethod.POST, entity, RefreshResponse.class
+                    (supabaseUrl + AUTH_REFRESH), HttpMethod.POST, entity, RefreshResponse.class
             );
 
             if (response.getBody() == null) {
