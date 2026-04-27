@@ -18,7 +18,7 @@ services:
 
   # Syslog Server
   syslog:
-    image: balabit/syslog-ng:latest
+    image: balabit/syslog-ng:4.6.0
     container_name: tech-store-syslog
     restart: unless-stopped
     volumes:
