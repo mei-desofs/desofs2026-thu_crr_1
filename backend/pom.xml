@@ -11,8 +11,8 @@
 	<groupId>com.techstore</groupId>
 	<artifactId>app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>TechStore API</name>
+	<description>E-commerce backend with Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
