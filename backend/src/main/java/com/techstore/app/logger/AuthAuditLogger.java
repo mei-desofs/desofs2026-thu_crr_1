@@ -13,11 +13,16 @@ public class AuthAuditLogger {
     private static final Logger auditLog = LoggerFactory.getLogger("AUDIT");
 
     public void logLoginAttempt(String email, boolean success, HttpServletRequest request) {
+
+        // Sanitize input to avoid dependency injection
+        String userAgent = request.getHeader("User-Agent");
+        userAgent = truncate(sanitize(userAgent), 200);
+
         auditLog.info("event=LOGIN_ATTEMPT | success={} | email={} | ip={} | userAgent={} | timestamp={}",
                 success,
                 maskEmail(email),
                 request.getRemoteAddr(),
-                request.getHeader("User-Agent"),
+                userAgent,
                 Instant.now()
         );
     }
@@ -38,5 +43,14 @@ public class AuthAuditLogger {
         String local = parts[0];
         if (local.length() <= 2) return "**@" + parts[1];
         return local.charAt(0) + "***" + local.charAt(local.length() - 1) + "@" + parts[1];
+    }
+    private String sanitize(String input) {
+        if (input == null) return null;
+        return input.replaceAll("[\\r\\n\\t]", "_")
+                .replaceAll("\\p{Cntrl}", "");
+    }
+    private String truncate(String input, int maxLength) {
+        if (input == null) return null;
+        return input.length() <= maxLength ? input : input.substring(0, maxLength);
     }
 }

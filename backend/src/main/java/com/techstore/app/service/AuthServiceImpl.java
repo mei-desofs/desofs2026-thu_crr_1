@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
                     supabaseResponse.expiresIn()
             );
 
-        } catch (BusinessException ex) {
+        } catch (Exception ex) {
             auditLogger.logLoginAttempt(request.email(), false, httpRequest);
             throw ex;
         }
@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
 
             return response;
 
-        } catch (BusinessException ex) {
+        } catch (Exception ex) {
             auditLogger.logTokenRefresh("unknown", false, httpRequest);
             throw ex;
         }
