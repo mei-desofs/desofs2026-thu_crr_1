@@ -42,7 +42,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=medium
+          args: --severity-threshold=medium --file=backend/pom.xml --sarif-file=snyk.sarif
         continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
