@@ -1,5 +1,4 @@
 name: Dependency Scan
-
 on:
   push:
   workflow_call:
@@ -9,13 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -28,25 +20,43 @@ jobs:
         with:
           maven-version: 3.9.6
 
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
       - name: Build + resolve dependencies
         working-directory: backend
         run: mvn clean install -DskipTests
-        env:
-          MAVEN_OPTS: "-Xmx1g -Dmaven.repo.local=$HOME/.m2/repository"
 
-      - name: Install Snyk CLI
-        run: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-            curl -Lo /usr/local/bin/snyk https://static.snyk.io/cli/latest/snyk-linux-arm64
-          else
-            curl -Lo /usr/local/bin/snyk https://static.snyk.io/cli/latest/snyk-linux
-          fi
-          chmod +x /usr/local/bin/snyk
-
-      - name: Run Snyk test
-        working-directory: backend
-        run: snyk test --file=pom.xml --severity-threshold=high --org=diogomartins1221223
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          MAVEN_OPTS: "-Xmx512m -Dmaven.repo.local=$HOME/.m2/repository"
+        with:
+          args: --severity-threshold=high --org=diogomartins1221223
+            --sarif-file-output=snyk.sarif
+
+      - name: Find SARIF file
+        id: find_sarif
+        run: |
+          if [ -f backend/snyk.sarif ]; then echo "sarif_path=backend/snyk.sarif" >> $GITHUB_OUTPUT
+          elif [ -f snyk.sarif ]; then echo "sarif_path=snyk.sarif" >> $GITHUB_OUTPUT
+          else echo "sarif_path=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload result to GitHub Code Scanning
+        if: steps.find_sarif.outputs.sarif_path != ''
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ steps.find_sarif.outputs.sarif_path }}
+
+      - name: Upload SARIF artifact
+        if: steps.find_sarif.outputs.sarif_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-sarif
+          path: ${{ steps.find_sarif.outputs.sarif_path }}
