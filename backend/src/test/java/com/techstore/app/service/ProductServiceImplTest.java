@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -110,7 +109,7 @@ class ProductServiceImplTest {
         Pageable pageable = PageRequest.of(0, 5);
         Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
 
-        when(productRepository.findByNameLike(new ProductName("Key"), pageable)).thenReturn(productsPage);
+        when(productRepository.findByNameLike("Key", pageable)).thenReturn(productsPage);
 
         Page<ProductResponseDTO> response = productService.findByNameLike(new ProductName("Key"), pageable);
 
@@ -134,9 +133,52 @@ class ProductServiceImplTest {
         Pageable pageable = PageRequest.of(0, 5);
         Page<Product> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        when(productRepository.findByNameLike(new ProductName("unknown"), pageable)).thenReturn(emptyPage);
+        when(productRepository.findByNameLike("unknown", pageable)).thenReturn(emptyPage);
 
         Page<ProductResponseDTO> response = productService.findByNameLike(new ProductName("unknown"), pageable);
+
+        assertEquals(0, response.getTotalElements());
+        assertEquals(0, response.getContent().size());
+    }
+
+    @Test
+    void shouldFindAllAndMapToResponsePage() {
+        Category peripherals = new Category("Peripherals");
+        Category audio = new Category("Audio");
+
+        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals);
+        Product headset = new Product("Headset", "Gaming headset", new Money(new BigDecimal("59.90")), audio);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
+
+        when(productRepository.findAll(pageable)).thenReturn(productsPage);
+
+        Page<ProductResponseDTO> response = productService.findAll(pageable);
+
+        assertEquals(2, response.getTotalElements());
+        assertEquals(1, response.getTotalPages());
+        assertEquals(2, response.getContent().size());
+
+        assertEquals("Keyboard", response.getContent().get(0).name());
+        assertEquals("Mechanical keyboard", response.getContent().get(0).description());
+        assertEquals(new BigDecimal("89.99"), response.getContent().get(0).price());
+        assertEquals("Peripherals", response.getContent().get(0).categoryName());
+
+        assertEquals("Headset", response.getContent().get(1).name());
+        assertEquals("Gaming headset", response.getContent().get(1).description());
+        assertEquals(new BigDecimal("59.90"), response.getContent().get(1).price());
+        assertEquals("Audio", response.getContent().get(1).categoryName());
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenFindAllHasNoMatches() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Product> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(productRepository.findAll(pageable)).thenReturn(emptyPage);
+
+        Page<ProductResponseDTO> response = productService.findAll(pageable);
 
         assertEquals(0, response.getTotalElements());
         assertEquals(0, response.getContent().size());

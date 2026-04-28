@@ -44,7 +44,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable) {
-        Page<Product> products = productRepository.findByNameLike(productName, pageable);
+        Page<Product> products = productRepository.findByNameLike(productName.getProductName(), pageable);
+
+        return products.map(ProductMapper::toResponse);
+    }
+
+    @Override
+    public Page<ProductResponseDTO> findAll(Pageable pageable) {
+        Page<Product> products = productRepository.findAll(pageable);
 
         return products.map(ProductMapper::toResponse);
     }
