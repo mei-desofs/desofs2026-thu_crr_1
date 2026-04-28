@@ -29,6 +29,6 @@ jobs:
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run Snyk test
-        run: snyk code test
+      - name: Run Sncyk test
+        run: snyk code test --org=2324a6a0-65da-44fb-922e-340f88ffea53 
         working-directory: backend
