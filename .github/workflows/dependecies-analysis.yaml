@@ -15,13 +15,19 @@ jobs:
       contents: read
 
     steps:
-      #Works but has token limit
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Pre-build to warm Maven cache
+        run: mvn clean install -DskipTests
+        working-directory: backend
+
       - name: Snyk Vulnerability Scanning
         uses: snyk/actions/maven@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=medium
+          args: --severity-threshold=medium --file=backend/pom.xml --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk.sarif
         continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
