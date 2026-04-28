@@ -21,23 +21,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      - name: Install dependencies
-        run: mvn clean install -DskipTests
+
+      - name: Build and export dependency tree
+        run: |
+          mvn clean install -DskipTests
+          mvn dependency:tree > dep-tree.txt
         working-directory: backend
         env:
-          MAVEN_OPTS: "-Xmx1536m"
-      - name: Install Snyk
-        run: npm install -g snyk
-      - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
-      - name: Run Snyk Open Source test (SCA)
-        run: snyk monitor --org=${{ secrets.SNYK_ORG_ID }} --file=pom.xml
-        working-directory: backend
+          MAVEN_OPTS: "-Xmx2g"
+
+      - uses: snyk/actions/maven@master
         env:
-          MAVEN_OPTS: "-Xmx256m -XX:+UseSerialGC"
-          JAVA_TOOL_OPTIONS: "-Xmx256m"
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: --org=${{ secrets.SNYK_ORG_ID }} --file=pom.xml
