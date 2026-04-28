@@ -30,7 +30,7 @@ jobs:
             -H "Authorization: token ${{ secrets.SNYK_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{}' \
-            "https://app.snyk.io/org/desofs/project/f776faf2-3a59-43b4-afb9-d2cd7f8f49ff/test")
+            "https://api.snyk.io/org/desofs/project/f776faf2-3a59-43b4-afb9-d2cd7f8f49ff/test")
           
           cat response.json
           
