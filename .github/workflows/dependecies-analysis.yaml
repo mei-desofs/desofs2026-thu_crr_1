@@ -30,13 +30,10 @@ jobs:
             -H "Authorization: token ${{ secrets.SNYK_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{}' \
-            "https://api.snyk.io/org/desofs/project/f776faf2-3a59-43b4-afb9-d2cd7f8f49ff/test")
-          
+            "https://api.snyk.io/v1/org/2324a6a0-65da-44fb-922e-340f88ffea53/project/f776faf2-3a59-43b4-afb9-d2cd7f8f49ff/test")
           cat response.json
-          
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "Snyk API rescan failed with status $HTTP_STATUS"
             exit 1
           fi
-          
           echo "Snyk rescan triggered successfully"
