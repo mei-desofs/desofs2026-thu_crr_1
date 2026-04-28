@@ -1,62 +1,34 @@
-name: Dependency Scan
+name: Snyk Scan
+
 on:
   push:
-  workflow_call:
+    branches: [ main ]
+  pull_request:
 
 jobs:
   snyk:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Java 17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.9.6
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
-
-      - name: Build + resolve dependencies
-        working-directory: backend
+      - name: Install dependencies
         run: mvn clean install -DskipTests
+        working-directory: backend
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --org=diogomartins1221223
-            --sarif-file-output=snyk.sarif
+      - name: Install Snyk
+        run: npm install -g snyk
 
-      - name: Find SARIF file
-        id: find_sarif
-        run: |
-          if [ -f backend/snyk.sarif ]; then echo "sarif_path=backend/snyk.sarif" >> $GITHUB_OUTPUT
-          elif [ -f snyk.sarif ]; then echo "sarif_path=snyk.sarif" >> $GITHUB_OUTPUT
-          else echo "sarif_path=" >> $GITHUB_OUTPUT
-          fi
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      - name: Upload result to GitHub Code Scanning
-        if: steps.find_sarif.outputs.sarif_path != ''
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: ${{ steps.find_sarif.outputs.sarif_path }}
-
-      - name: Upload SARIF artifact
-        if: steps.find_sarif.outputs.sarif_path != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-sarif
-          path: ${{ steps.find_sarif.outputs.sarif_path }}
+      - name: Run Snyk test
+        run: snyk test --file=pom.xml
+        working-directory: backend
