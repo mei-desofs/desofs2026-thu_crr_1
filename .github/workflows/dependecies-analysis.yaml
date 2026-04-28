@@ -18,16 +18,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
 
-      - name: Pre-build to warm Maven cache
-        run: mvn clean install -DskipTests
-        working-directory: backend
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=${{ steps.java.outputs.java-home }}" >> $GITHUB_ENV
 
       - name: Snyk Vulnerability Scanning
         uses: snyk/actions/maven@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=medium --file=backend/pom.xml --org=${{ secrets.SNYK_ORG_ID }} --sarif-file-output=snyk.sarif
+          args: --severity-threshold=medium
         continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
