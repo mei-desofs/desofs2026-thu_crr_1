@@ -1,0 +1,10 @@
+name: dev
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/reusable/build-test.yml
