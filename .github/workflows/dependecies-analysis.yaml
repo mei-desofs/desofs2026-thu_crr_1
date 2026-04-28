@@ -9,10 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Snyk
         run: npm install -g snyk
+
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
       - name: Run Snyk Code test (SAST)
         run: snyk code test --org=${{ secrets.SNYK_ORG_ID }}
         working-directory: backend
@@ -20,25 +23,19 @@ jobs:
   snyk-sca:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Build and export dependency tree
+      - name: Trigger Snyk rescan via API
         run: |
-          mvn clean install -DskipTests
-          mvn dependency:tree > dep-tree.txt
-        working-directory: backend
-        env:
-          MAVEN_OPTS: "-Xmx2g"
-
-      - uses: snyk/actions/maven@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
-          args: --org=${{ secrets.SNYK_ORG_ID }} --file=backend/pom.xml
+          HTTP_STATUS=$(curl --silent --output response.json --write-out "%{http_code}" \
+            -X POST \
+            -H "Authorization: token ${{ secrets.SNYK_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            "https://app.snyk.io/org/desofs/project/f776faf2-3a59-43b4-afb9-d2cd7f8f49ff/test")
+          
+          cat response.json
+          
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Snyk API rescan failed with status $HTTP_STATUS"
+            exit 1
+          fi
+          
+          echo "Snyk rescan triggered successfully"
