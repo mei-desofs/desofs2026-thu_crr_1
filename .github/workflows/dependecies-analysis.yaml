@@ -29,6 +29,11 @@ jobs:
       - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      - name: Run Sncyk test
-        run: snyk code test --org=2324a6a0-65da-44fb-922e-340f88ffea53 
+      - name: Run Snyk Code test (SAST)
+        run: snyk code test --org=2324a6a0-65da-44fb-922e-340f88ffea53
         working-directory: backend
+
+      - name: Run Snyk Open Source test (SCA)
+        run: snyk test --org=2324a6a0-65da-44fb-922e-340f88ffea53 --all-projects
+        working-directory: backend
+        continue-on-error: true  # remove this if you want it to block PRs on vulnerabilities
