@@ -30,10 +30,13 @@ jobs:
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
       - name: Run Snyk Code test (SAST)
-        run: snyk code test --org=2324a6a0-65da-44fb-922e-340f88ffea53
+        run: snyk code test --org=${{ secrets.SNYK_ORG_ID }}
         working-directory: backend
 
       - name: Run Snyk Open Source test (SCA)
-        run: snyk test --org=2324a6a0-65da-44fb-922e-340f88ffea53 --all-projects
+        run: snyk test --org=${{ secrets.SNYK_ORG_ID }} --file=pom.xml
         working-directory: backend
-        continue-on-error: true  # remove this if you want it to block PRs on vulnerabilities
+        env:
+          JAVA_OPTS: "-Xmx512m"
+          MAVEN_OPTS: "-Xmx512m"
+        continue-on-error: true
