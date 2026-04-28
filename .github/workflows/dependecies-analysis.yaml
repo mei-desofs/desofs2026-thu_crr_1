@@ -42,3 +42,4 @@ jobs:
         with:
           command: monitor
           args: --org=${{ secrets.SNYK_ORG_ID }} --file=pom.xml
+          directory: backend
