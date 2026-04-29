@@ -33,4 +33,9 @@ public class ProductController {
                                            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findByNameLike(new ProductName(productName), pageable);
     }
+
+    @GetMapping
+    public Page<ProductResponseDTO> findAll(@ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
+        return productService.findAll(pageable);
+    }
 }

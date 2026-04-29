@@ -6,3 +6,9 @@ spring:
     password:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+
+supabase:
+  url: http://localhost:54321
+  service-role-key: dummy-key
+  redirect-url: http://localhost/callback
+  webhook-secret: dummy-webhook-secret

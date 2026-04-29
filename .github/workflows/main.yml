@@ -1,0 +1,13 @@
+name: main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/build-test.yml
+
+  release-please:
+    uses: ./.github/workflows/release.yml 

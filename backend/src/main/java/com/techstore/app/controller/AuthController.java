@@ -1,7 +1,8 @@
 package com.techstore.app.controller;
 
-import com.techstore.app.dto.auth.InviteSignupRequest;
+import com.techstore.app.dto.auth.*;
 import com.techstore.app.service.interfaces.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +42,19 @@ public class AuthController {
         }
 
         return ResponseEntity.ok("Account created successfully. You can now close this page.");
+    }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
+
+        LoginResponse response = authService.login(request, httpRequest);
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshResponse> refresh(
+            @RequestBody @Valid RefreshRequest request,
+            HttpServletRequest httpRequest) {
+
+        RefreshResponse response = authService.refreshToken(request.refreshToken(), httpRequest);
+        return ResponseEntity.ok(response);
     }
 }
