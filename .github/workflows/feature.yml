@@ -1,0 +1,12 @@
+name: feature
+
+on:
+  push:
+    branches-ignore:
+      - dev
+      - main
+      - docs/*
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/build-test.yml
