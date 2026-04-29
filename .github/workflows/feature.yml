@@ -10,3 +10,6 @@ on:
 jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
+
+  security-secrets:
+    uses: ./.github/workflows/security-secrets.yaml
