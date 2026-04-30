@@ -13,5 +13,5 @@ public interface ProductService {
     ProductResponseDTO save(ProductRequestDTO productRequestDTO);
     List<ProductResponseDTO> findByName(ProductName productName);
     Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable);
-
+    Page<ProductResponseDTO> findAll(Pageable pageable);
 }

@@ -11,3 +11,6 @@ jobs:
 
   security-secrets:
     uses: ./.github/workflows/security-secrets.yaml
+
+  release-please:
+    uses: ./.github/workflows/release.yml 
