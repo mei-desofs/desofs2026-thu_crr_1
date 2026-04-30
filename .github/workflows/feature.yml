@@ -13,3 +13,6 @@ jobs:
 
   security-secrets:
     uses: ./.github/workflows/security-secrets.yaml
+    permissions:
+      security-events: write
+      contents: read
