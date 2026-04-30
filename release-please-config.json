@@ -1,7 +1,0 @@
-{
-  "packages": {
-    "backend": {
-      "release-type": "java"
-    }
-  }
-}
