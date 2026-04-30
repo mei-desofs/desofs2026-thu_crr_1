@@ -17,3 +17,6 @@ jobs:
 
   release-please:
     uses: ./.github/workflows/release.yml 
+    needs:
+      - build-test
+      - security-secrets
