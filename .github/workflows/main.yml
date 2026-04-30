@@ -9,5 +9,10 @@ jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
 
+  sast:
+    needs: build-test
+    uses: ./.github/workflows/reusable/security-sast.yml
+    secrets: inherit
+
   release-please:
     uses: ./.github/workflows/release.yml 
