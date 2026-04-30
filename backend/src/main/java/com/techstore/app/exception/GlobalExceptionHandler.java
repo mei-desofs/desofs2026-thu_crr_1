@@ -47,6 +47,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle BackupException - Backup operation exceptions
+     */
+    @ExceptionHandler(BackupException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleBackupException(
+            BackupException ex,
+            HttpServletRequest request) {
+        logger.error("Backup exception occurred: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ex.getMessage(),
+                "Backup Operation Error",
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
      * Handle validation exceptions - MethodArgumentNotValidException
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
