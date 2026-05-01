@@ -14,3 +14,5 @@ jobs:
     permissions:
       security-events: write
       contents: read
+    secrets:
+      GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
