@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/build-test.yml
 
   security-secrets:
-    uses: ./.github/workflows/security-secrets.yaml
+    uses: ./.github/workflows/security-secrets.yml
     permissions:
       security-events: write
       contents: read
