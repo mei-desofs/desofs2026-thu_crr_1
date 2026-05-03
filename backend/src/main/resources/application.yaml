@@ -5,6 +5,9 @@ spring:
   profiles:
     active: bootstrap
 
+  config:
+    import: optional:classpath:ratelimit.yaml
+
   datasource:
     url: ${DB_URL}
     username: ${POSTGRES_USER}
