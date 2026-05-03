@@ -1,0 +1,74 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: diogomartins00/techstore
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch support)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Define Docker metadata
+        id: meta
+        run: |
+          IMAGE="${{ env.IMAGE_NAME }}"
+
+          TAGS="$IMAGE:sha-${GITHUB_SHA::7}"
+
+          # If this is a git tag (v1.0.0)
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+            TAGS="$IMAGE:$VERSION"
+          fi
+
+          # If this is main branch push
+          if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" == "main" ]]; then
+            TAGS="$TAGS,$IMAGE:latest"
+          fi
+
+          # Optional branch tagging (ONLY non-main branches if you ever enable them)
+          if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" != "main" ]]; then
+            TAGS="$TAGS,$IMAGE:${GITHUB_REF_NAME}"
+          fi
+
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          file: backend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+
+          tags: ${{ steps.meta.outputs.tags }}
+
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,4 +1,9 @@
 spring:
+  config:
+    import: optional:classpath:ratelimit.yaml
+  web:
+    resources:
+      add-mappings: false
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
@@ -6,3 +11,11 @@ spring:
     password:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
+
+supabase:
+  url: http://localhost:54321
+  service-role-key: dummy-key
+  redirect-url: http://localhost/callback
+  webhook-secret: dummy-webhook-secret

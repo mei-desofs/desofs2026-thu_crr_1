@@ -11,8 +11,8 @@
 	<groupId>com.techstore</groupId>
 	<artifactId>app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>TechStore API</name>
+	<description>E-commerce backend with Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -109,6 +109,14 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Bucket4j for rate limiting -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j_jdk17-core</artifactId>
+			<version>8.18.0</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
