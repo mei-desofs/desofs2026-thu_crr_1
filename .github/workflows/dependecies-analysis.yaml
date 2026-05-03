@@ -37,8 +37,7 @@ jobs:
             --org=2324a6a0-65da-44fb-922e-340f88ffea53 \
             --severity-threshold=critical \
             --file=backend/pom.xml \
-            --sarif-file-output=snyk.sarif \
-            -d
+            --sarif-file-output=snyk.sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
