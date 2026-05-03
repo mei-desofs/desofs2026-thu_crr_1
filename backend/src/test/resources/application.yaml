@@ -11,3 +11,8 @@ spring:
     password:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
+
+supabase:
+  url: test-supabase-url
+  service-role-key: test-service-role-key
+  redirect-url: test-redirect-url

@@ -1,6 +1,7 @@
 package com.techstore.app.config.ratelimit;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -44,7 +45,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (annotation == null) return true;
 
         String ruleName = annotation.value();
-        RateLimitProperties.Rule rule = properties.getRules().get(ruleName);
+        Map<String, RateLimitProperties.Rule> rules = properties.getRules();
+        RateLimitProperties.Rule rule = rules != null ? rules.get(ruleName) : null;
 
         if (rule == null) return true;
 
