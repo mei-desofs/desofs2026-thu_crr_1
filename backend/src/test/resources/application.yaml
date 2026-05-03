@@ -13,6 +13,7 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
 
 supabase:
-  url: test-supabase-url
-  service-role-key: test-service-role-key
-  redirect-url: test-redirect-url
+  url: http://localhost:54321
+  service-role-key: dummy-key
+  redirect-url: http://localhost/callback
+  webhook-secret: dummy-webhook-secret
