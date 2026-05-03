@@ -28,15 +28,19 @@ jobs:
       - name: Make mvnw executable
         run: chmod +x backend/mvnw
 
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Snyk Vulnerability Scanning
-        uses: snyk/actions/maven@master
+        run: |
+          snyk test \
+            --org=2324a6a0-65da-44fb-922e-340f88ffea53 \
+            --severity-threshold=medium \
+            --file=backend/pom.xml \
+            --sarif-file-output=snyk.sarif \
+            -d
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: >-
-            --severity-threshold=medium
-            --file=backend/pom.xml
-            --sarif-file-output=snyk.sarif
         continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
