@@ -5,6 +5,18 @@ on:
     branches:
       - dev
 
+  pull_request:
+    branches:
+      - dev
+
 jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
+
+  security-secrets:
+    uses: ./.github/workflows/security-secrets.yml
+    permissions:
+      security-events: write
+      contents: read
+    secrets:
+      GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
