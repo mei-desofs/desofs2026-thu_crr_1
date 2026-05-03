@@ -22,7 +22,8 @@ jobs:
       GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
 
   release-please:
-    uses: ./.github/workflows/release.yml 
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/release.yml
     needs:
       - build-test
       - security-secrets
