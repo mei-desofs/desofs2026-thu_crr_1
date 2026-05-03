@@ -1,8 +1,6 @@
 name: Snyk Scan
 
 on:
-  push:
-    branches: [ main, 'feat/**' ]
   workflow_dispatch:
   workflow_call:
 
