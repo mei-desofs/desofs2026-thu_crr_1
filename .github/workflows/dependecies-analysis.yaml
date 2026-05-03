@@ -35,15 +35,15 @@ jobs:
         run: |
           snyk test \
             --org=2324a6a0-65da-44fb-922e-340f88ffea53 \
-            --severity-threshold=medium \
+            --severity-threshold=critical \
             --file=backend/pom.xml \
             --sarif-file-output=snyk.sarif \
             -d
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
 
       - name: Upload result to GitHub Code Scanning
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
