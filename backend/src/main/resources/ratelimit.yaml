@@ -4,3 +4,8 @@ ratelimit:
       type: USER
       capacity: 5
       duration: PT1M
+
+    create-product:
+      type: USER
+      capacity: 10
+      duration: PT1H
