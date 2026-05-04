@@ -9,8 +9,8 @@ import java.time.Instant;
 @Component
 public class ProductAuditLogger {
 
-    private static final Logger auditLog = LoggerFactory.getLogger("AUDIT");
-    private static final Logger appLog = LoggerFactory.getLogger("APPLICATION");
+    private static final Logger auditLog = LoggerFactory.getLogger("PRODUCT_AUDIT");
+    private static final Logger appLog = LoggerFactory.getLogger("PRODUCT_APP");
 
     public void logProductCreation(String productName, String categoryId, String price, String userId) {
         auditLog.info("event=PRODUCT_CREATION | productName={} | categoryId={} | price={} | userId={} | timestamp={}",

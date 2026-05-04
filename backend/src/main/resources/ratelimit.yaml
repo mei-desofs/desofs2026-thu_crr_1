@@ -6,6 +6,7 @@ ratelimit:
       duration: PT1M
 
     create-product:
-      type: USER
+      # TODO: change from IP to USER after having the authentication in place
+      type: IP
       capacity: 10
       duration: PT1H
