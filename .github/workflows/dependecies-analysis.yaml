@@ -1,0 +1,47 @@
+name: Snyk Scan
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  dependency-scanning:
+    name: Dependency Vulnerability Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Snyk Vulnerability Scanning
+        run: |
+          snyk test \
+            --org=2324a6a0-65da-44fb-922e-340f88ffea53 \
+            --severity-threshold=critical \
+            --file=backend/pom.xml \
+            --sarif-file-output=snyk.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload result to GitHub Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk.sarif
