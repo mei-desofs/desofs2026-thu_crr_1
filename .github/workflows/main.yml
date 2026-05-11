@@ -11,7 +11,7 @@ jobs:
 
   sast:
     needs: build-test
-    uses: ./.github/workflows/reusable/security-sast.yml
+    uses: ./.github/workflows/security-sast.yml
     secrets: inherit
 
   release-please:
