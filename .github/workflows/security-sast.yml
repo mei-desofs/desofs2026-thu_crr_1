@@ -25,7 +25,7 @@ jobs:
         run: mvn clean verify
 
       - name: SonarCloud Scan (with Quality Gate)
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend
           args: >
