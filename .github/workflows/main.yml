@@ -38,6 +38,9 @@ jobs:
     needs:
       - build-test
       - security-secrets
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
 
   deploy:
