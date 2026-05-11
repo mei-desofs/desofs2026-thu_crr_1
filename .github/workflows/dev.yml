@@ -20,3 +20,13 @@ jobs:
       contents: read
     secrets:
       GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
+
+  dependency-scanning:
+    uses: ./.github/workflows/dependecies-analysis.yaml
+    needs:
+      - build-test
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    secrets: inherit
