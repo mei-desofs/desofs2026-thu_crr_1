@@ -10,3 +10,8 @@ on:
 jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
+
+  sast:
+    needs: build-test
+    uses: ./.github/workflows/security-sast.yml
+    secrets: inherit
