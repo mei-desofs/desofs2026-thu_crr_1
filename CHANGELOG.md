@@ -1,0 +1,58 @@
+# Changelog
+
+## 1.0.0 (2026-04-30)
+
+
+### Features
+
+* feat:  ([1be7a18](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1be7a18edd10e323f9e91720380f518b7112ea97))
+* add build-test pipeline step, and create basic pipeline to main, dev and feature branches ([#99](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/99)) ([06000d8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/06000d8b3cb56b6efbf30b9f9508c6ed29470904))
+* add cart, order ([#87](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/87)) ([b68c2af](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b68c2af40403033fc009075daea94de882854809))
+* add missing products creation on the bootstrap ([462b389](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/462b389ee8725206d9d70c840c74ed29566fbf6b))
+* add tests and value objects implementation ([4ba734c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4ba734c6f8a2b2445c327be64cab7e39501eaa62))
+* added my part in global ([f382921](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f3829215c5f6c64ee9c9a7261b3420d227f10184))
+* added my part in global ([5fe6645](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5fe6645d9bdb444dfe68d58d93ec45aa71192c36))
+* base implementation invite users [#4](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/4) ([452e597](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/452e597c36eae02e7eba1f23d304e6ab2d6b841b))
+* base implementation invite users [#4](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/4) ([1a1cbaf](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1a1cbafba543393dd751b00c590e2ed06800228d))
+* change dto classes to records ([#6](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/6)) ([bdfb631](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/bdfb631f8dbd5a9f6bec4b113f536bffe189af8b))
+* create products WIP ([#6](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/6)) ([49322ff](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/49322ffdf159f8363f3b0faaa237eb2fbe14776e))
+* create value objects of customer aggregate ([9a157fe](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9a157fe44e91bb54b41f9e8b2fcfdcb7b003097c))
+* endpoint to get the products by a name ([#7](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/7)) ([da576ee](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/da576eeeec50f67421a2dc4c50817fdf6cb3ccb6))
+* Implement customer domain and update user domain ([#58](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/58)) ([c97da4f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c97da4fc62ef8fc21dd67602a1f007acee167586))
+* initial release ([cb8924b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/cb8924bf7182ab9ba386551a59c52b29797a7d7d))
+* initial release to Test Realise Please ([ed6895a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ed6895a3e921223f252ced30104f5b097f7e84b4))
+* syslog loggin server (local) ([#93](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/93)) ([d64f800](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d64f8002c093930a6732e35ffeacea40f9a54184))
+* trigger initial release ([#103](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/103)) ([21ee8fb](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/21ee8fbc8756edcb578587ddc35daae2264f8d8e))
+
+
+### Bug Fixes
+
+* fix:  ([ca317e7](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ca317e7f2939daf75812c9ad4baad88c73b5e198))
+* abuse cases ([#59](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/59)) ([d69182f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d69182fdec450e1231d97ebd3fbe9be68b97b5e4))
+* add created_at and updated_at ([#6](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/6)) ([d0ff3a6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d0ff3a6d73d1b90e5449a9c936b583360d75d44f))
+* add permissions for release-please workflow call ([#104](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/104)) ([268ee0e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/268ee0ec8104819e08617f699827756094d1b056))
+* added workflow_dispatch in release.yml to test in main.yml realise please [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([9dd9a75](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9dd9a75121663e2d69adc11d03fad5c3f35c63fc))
+* call release.yml in main.yml [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([d2c0f40](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d2c0f4052a99235861b00215bfbaeef6a1be6f4a))
+* category aggregate to use DDD ([382a2a2](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/382a2a2790b8f715a7498274d1831ceba66bff73))
+* dfds ([60b9f60](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/60b9f6026a8ae4953ec0a6630b148f3105c0ef55))
+* dfds, abuse cases [#59](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/59) ([a583621](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a5836215bf5c0f9786ef82cc414800c2ea698108))
+* improve based on copilot feedback ([#6](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/6)) ([835c260](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/835c260d7cd7f0d3eb4bef11f8ec82d6f89b5b2f))
+* improve based on copilot feedback ([#6](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/6)) ([bc388ae](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/bc388ae6a7cf939a4a016097e63028488fc20a70))
+* invalid or in syslog config ([48887c6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/48887c6a9b5cd24c3127b3041659f69de2f9f8b8))
+* last minute fix ([73c7000](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/73c70009da67a3c0d24091d91507b34b7184eb21))
+* merge conflict ([a80ff3c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a80ff3cdba94e3533aa3ef86488de3e428e8ca4b))
+* merge conflicts ([ad13e7f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ad13e7fa26c29c26352f41d2fa7ffac43b337505))
+* minor fixs and add things to the .env.sample ([e76853e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e76853eea13afe9689f640782da8c9d3fb0be8b9))
+* name release.please json [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([1247ed0](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1247ed0f54b25ab2a17102488698ac562948260a))
+* product aggregate to use DDD ([50a368e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/50a368eff823ec60df64622e47f16e89e3395f3c))
+* relase please manifest json version [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([8f27969](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8f2796972a9718324fbbb88143fdbc5b405e0b52))
+* release please json path [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([02415d5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/02415d5a72ae60aaadf2b867ad1478f21a20b99f))
+* release please jsons path fixx [#95](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/95) ([075a79a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/075a79aec437efbc8f8f647eb9672d82ccab6788))
+* release-please workflow call ([f42d6db](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f42d6db01d1194de45405363a90c322d2f536b5e))
+* release-please workflow call ([#105](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/105)) ([89c4788](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/89c4788f236a6439712ec5d815ce0eab5219eca5))
+* remove sensitive variables, update .gitignore and adjust local setup ([10886a4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/10886a40bb4b2fbb51cc4f39b2c929124f52fb29))
+* remove unnecessary variable criation ([b3c9e7e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b3c9e7e552cb05847992ee28d4af2762a0c6673f))
+* remove unused files ([b4dd7f9](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b4dd7f990130406939c3a8fd945ec9b5a4eba059))
+* remove use case diagram from branch ([b218490](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b218490b5f65435af81f327eb39cda7a9dba5edd))
+* syslog image version to prevent using diferent version ([216a315](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/216a315de054665272f7c6eb3269cb515ca1103e))
+* Test/realise please ([#106](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/106)) ([ce8b046](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ce8b04636170bf3df27ed7b3114f4a014ec22094))
