@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
 permissions:
   contents: write
   pull-requests: write
@@ -13,5 +17,32 @@ jobs:
   build-test:
     uses: ./.github/workflows/build-test.yml
 
+  security-secrets:
+    uses: ./.github/workflows/security-secrets.yml
+    permissions:
+      security-events: write
+      contents: read
+    secrets:
+      GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
+
   release-please:
-    uses: ./.github/workflows/release.yml 
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/release.yml
+    needs:
+      - build-test
+      - security-secrets
+
+  docker:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/docker.yml
+    needs:
+      - build-test
+      - security-secrets
+    secrets: inherit
+
+  deploy:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - docker
+    secrets: inherit
