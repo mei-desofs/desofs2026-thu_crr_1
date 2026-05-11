@@ -24,16 +24,12 @@ jobs:
         working-directory: backend
         run: mvn clean verify
 
-      - name: SonarCloud Scan
+      - name: SonarCloud Scan (with Quality Gate)
         uses: SonarSource/sonarqube-scan-action@v4
         with:
           projectBaseDir: backend
+          args: >
+            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-
-      - name: Sonar Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
