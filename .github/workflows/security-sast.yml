@@ -40,7 +40,11 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
 
       - name: SonarCloud Scan (feature branches)
-        if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev'
+        if: |
+          github.ref != 'refs/heads/main' && 
+          github.ref != 'refs/heads/dev' &&
+          github.base_ref != 'main' &&
+          github.base_ref != 'dev'
         uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend
