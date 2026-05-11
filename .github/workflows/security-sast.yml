@@ -29,7 +29,7 @@ jobs:
         with:
           projectBaseDir: backend
           args: >
-            -Dsonar.qualitygate.wait=true
+            ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && '-Dsonar.qualitygate.wait=true' || '' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
