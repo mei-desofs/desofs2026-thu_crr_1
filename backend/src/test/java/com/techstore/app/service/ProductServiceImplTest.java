@@ -7,6 +7,7 @@ import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.logger.ProductAuditLogger;
 import com.techstore.app.repository.CategoryRepository;
 import com.techstore.app.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ class ProductServiceImplTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private ProductAuditLogger productAuditLogger;
 
     @InjectMocks
     private ProductServiceImpl productService;
