@@ -27,3 +27,18 @@ jobs:
     needs:
       - build-test
       - security-secrets
+
+  docker:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/docker.yml
+    needs:
+      - build-test
+      - security-secrets
+    secrets: inherit
+
+  deploy:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - docker
+    secrets: inherit
