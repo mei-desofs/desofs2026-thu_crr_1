@@ -25,7 +25,11 @@ jobs:
         run: mvn clean verify
 
       - name: SonarCloud Scan (main/dev with Quality Gate)
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        if: |
+                  github.ref == 'refs/heads/main' ||
+                  github.ref == 'refs/heads/dev' ||
+                  github.base_ref == 'main' ||
+                  github.base_ref == 'dev'
         uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend
