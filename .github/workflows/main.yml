@@ -46,11 +46,20 @@ jobs:
       packages: write
     secrets: inherit
 
+  container-security:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/container-security.yml
+    needs:
+      - docker
+    permissions:
+      security-events: write
+      contents: read
+
   deploy:
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy.yml
     needs:
-      - docker
+      - container-security
     secrets: inherit
 
   release-please:
