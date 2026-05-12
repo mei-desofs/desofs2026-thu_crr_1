@@ -2,6 +2,7 @@ name: Container Security Scan
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   container-security:
@@ -19,13 +20,13 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Build Docker Image
+      - name: Pull image from registry
         run: |
-          docker build -t techstore:test ./backend
+          docker pull diogomartins00/techstore:sha-${GITHUB_SHA::7}
 
       - name: Run Snyk Container Scan
         run: |
-          snyk container test techstore:test \
+          snyk container test diogomartins00/techstore:sha-${GITHUB_SHA::7} \
             --severity-threshold=high \
             --sarif-file-output=snyk-container.sarif
         env:

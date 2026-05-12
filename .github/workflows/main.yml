@@ -39,7 +39,7 @@ jobs:
     if: github.event_name == 'push'
     uses: ./.github/workflows/container-security.yml
     needs:
-      - dependency-scanning
+      - docker
     permissions:
       security-events: write
       contents: read
@@ -60,10 +60,8 @@ jobs:
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy.yml
     needs:
-      - docker
       - container-security
     secrets: inherit
-
   release-please:
     if: github.event_name == 'push'
     uses: ./.github/workflows/release.yml
