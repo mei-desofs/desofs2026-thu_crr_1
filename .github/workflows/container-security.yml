@@ -1,0 +1,38 @@
+name: Container Security Scan
+
+on:
+  workflow_call:
+
+jobs:
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Build Docker Image
+        run: |
+          docker build -t techstore:test ./backend
+
+      - name: Run Snyk Container Scan
+        run: |
+          snyk container test techstore:test \
+            --severity-threshold=high \
+            --sarif-file-output=snyk-container.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Container Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-container.sarif
