@@ -25,19 +25,25 @@ jobs:
     secrets:
       GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
 
-  release-please:
-    if: github.event_name == 'push'
-    uses: ./.github/workflows/release.yml
+  dependency-scanning:
+    uses: ./.github/workflows/dependecies-analysis.yaml
     needs:
       - build-test
-      - security-secrets
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    secrets: inherit
 
   docker:
     if: github.event_name == 'push'
     uses: ./.github/workflows/docker.yml
     needs:
-      - build-test
       - security-secrets
+      - dependency-scanning
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
 
   deploy:
@@ -46,3 +52,9 @@ jobs:
     needs:
       - docker
     secrets: inherit
+
+  release-please:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/release.yml
+    needs:
+      - deploy
