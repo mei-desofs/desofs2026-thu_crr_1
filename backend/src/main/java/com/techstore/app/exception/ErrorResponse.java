@@ -18,6 +18,7 @@ public class ErrorResponse {
     private int status;
     private String message;
     private String error;
+    private String code;
     private LocalDateTime timestamp;
     private String path;
     private List<String> errors;
@@ -35,4 +36,3 @@ public class ErrorResponse {
         this.path = path;
     }
 }
-

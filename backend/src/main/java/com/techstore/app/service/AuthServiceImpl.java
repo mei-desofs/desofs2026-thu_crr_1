@@ -2,7 +2,6 @@ package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.dto.auth.*;
-import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
@@ -24,14 +23,22 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthAuditLogger auditLogger;
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient, AuthAuditLogger auditLogger) {
+    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient,
+            AuthAuditLogger auditLogger) {
         this.userService = userService;
         this.supabaseAuthClient = supabaseAuthClient;
         this.auditLogger = auditLogger;
     }
 
-    public void inviteUser(InviteSignupRequest inviteSignupRequest) {
-        supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
+    @Override
+    public void inviteUser(InviteSignupRequest inviteSignupRequest, String clientIp, String userAgent) {
+        try {
+            supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
+            auditLogger.logInviteAttempt(inviteSignupRequest.email(), true, clientIp, userAgent);
+        } catch (Exception ex) {
+            auditLogger.logInviteAttempt(inviteSignupRequest.email(), false, clientIp, userAgent);
+            throw ex;
+        }
     }
 
     @Override
@@ -62,11 +69,11 @@ public class AuthServiceImpl implements AuthService {
 
         return true;
     }
+
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            SupabaseLoginResponse supabaseResponse =
-                    supabaseAuthClient.login(request.email(), request.password());
+            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.login(request.email(), request.password());
 
             auditLogger.logLoginAttempt(request.email(), true, httpRequest);
 
@@ -74,14 +81,14 @@ public class AuthServiceImpl implements AuthService {
                     supabaseResponse.accessToken(),
                     supabaseResponse.refreshToken(),
                     supabaseResponse.tokenType(),
-                    supabaseResponse.expiresIn()
-            );
+                    supabaseResponse.expiresIn());
 
         } catch (Exception ex) {
             auditLogger.logLoginAttempt(request.email(), false, httpRequest);
             throw ex;
         }
     }
+
     @Override
     public RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest) {
         try {

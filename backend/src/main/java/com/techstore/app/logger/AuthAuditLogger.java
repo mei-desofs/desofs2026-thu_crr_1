@@ -26,6 +26,7 @@ public class AuthAuditLogger {
                 Instant.now()
         );
     }
+
     public void logTokenRefresh(String userId, boolean success, HttpServletRequest request) {
         auditLog.info("event=TOKEN_REFRESH | success={} | userId={} | ip={} | timestamp={}",
                 success,
@@ -35,6 +36,12 @@ public class AuthAuditLogger {
         );
     }
 
+    public void logInviteAttempt(String email, boolean success, String clientIp, String userAgent) {
+        userAgent = truncate(sanitize(userAgent), 200);
+
+        auditLog.info("event=INVITE_ATTEMPT | success={} | email={} | ip={} | userAgent={} | timestamp={}",
+                success, maskEmail(email), clientIp, userAgent, Instant.now());
+    }
 
     // To not expose sensitive data
     private String maskEmail(String email) {
@@ -44,11 +51,12 @@ public class AuthAuditLogger {
         if (local.length() <= 2) return "**@" + parts[1];
         return local.charAt(0) + "***" + local.charAt(local.length() - 1) + "@" + parts[1];
     }
+
     private String sanitize(String input) {
         if (input == null) return null;
-        return input.replaceAll("[\\r\\n\\t]", "_")
-                .replaceAll("\\p{Cntrl}", "");
+        return input.replaceAll("[\\r\\n\\t]", "_").replaceAll("\\p{Cntrl}", "");
     }
+
     private String truncate(String input, int maxLength) {
         if (input == null) return null;
         return input.length() <= maxLength ? input : input.substring(0, maxLength);
