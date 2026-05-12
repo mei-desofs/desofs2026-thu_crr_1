@@ -2,6 +2,7 @@ name: Snyk Scan
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   dependency-scanning:
@@ -18,7 +19,7 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Snyk Vulnerability Scanning
+      - name: Snyk Dependency Scan
         run: |
           snyk test \
             --org=2324a6a0-65da-44fb-922e-340f88ffea53 \
@@ -28,8 +29,37 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      - name: Upload result to GitHub Code Scanning
+      - name: Upload Dependency Results
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
+
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Build Docker Image
+        run: |
+          docker build -t techstore:test ./backend
+
+      - name: Run Snyk Container Scan
+        run: |
+          snyk container test techstore:test \
+            --severity-threshold=high \
+            --sarif-file-output=snyk-container.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Container Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-container.sarif
