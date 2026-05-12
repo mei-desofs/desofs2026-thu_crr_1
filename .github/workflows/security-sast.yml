@@ -1,6 +1,9 @@
 name: security-sast.yml
 on:
   workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
 
 jobs:
   sonar:
@@ -20,11 +23,15 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Download build and coverage artifacts
+      - name: Build project (skip tests)
+        working-directory: backend
+        run: mvn clean package -DskipTests
+
+      - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
-          path: backend
-          merge-multiple: true
+          name: jacoco-report
+          path: backend/target/site/jacoco
 
       - name: SonarCloud Scan (main/dev with Quality Gate)
         if: |
