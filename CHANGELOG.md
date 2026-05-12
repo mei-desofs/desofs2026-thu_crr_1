@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.1.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.0.0...v1.1.0) (2026-05-11)
+
+
+### Features
+
+* add build-test pipeline step, and create basic pipeline to main, feature and dev ([9c8bdf9](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9c8bdf9068895d8f356735e53f0800ba49286867))
+* add Docker deployment workflow and CORS configuration ([f13860c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f13860c0a4ffef2cda72f71954d394be8041cf5b))
+* add product audit logging and validation to product creation ([91876b2](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/91876b21fea1b5055199fe64aef55bf98404bc66))
+* add ProductAuditLogger mock to ProductServiceImplTest ([e1a0282](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e1a0282d4aa1c59e63ee2e4b49b6aa4c6e05389c))
+* implement rate limiting for invite requests ([#111](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/111)) ([fee3020](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fee302070a5f5ee8ae703bdbf3d6d39f8533fc6d))
+* integrate dependency scanning workflow into main and dev configurations ([50a1476](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/50a1476c526a81c5c39f39000e3dc34e143d2055))
+* integrate dependency scanning workflow into main and dev configurations ([ccad4cf](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ccad4cf29b1a5dd8d5a27db77e4c68608cff11ac))
+* refactor token generation in RateLimitIntegrationTest for improved readability ([434117a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/434117aec8d9c27c60944185e5d6def419022d30))
+* update logging categories for product audit and adjust rate limit type ([23b828d](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/23b828d635666b8a2ea822b221c373c27422fea7))
+
+
+### Bug Fixes
+
+* add debug param ([27d1216](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/27d1216baea257331b854bc117d031b3abf1f56f))
+* add org slug ([077adc3](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/077adc370fe0e8cb1da540b834697505f2d19fbc))
+* fail when found one or more critical vulnerabilitis ([629f319](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/629f31902b261c817d7e5b73180f592c265b72d7))
+* remove debug ([51f7253](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/51f72535c93a850f25115baee482836cf65b1ef1))
+* remove unnecessary dependencies from deployment workflows ([c08bd22](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c08bd229c351b113f76d39c47788ca09c2c96b06))
+* snyk step ([412e596](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/412e596ef5dddd1684ca0c41d4f79e5ae235ab1a))
+* snyk step ([8df3f0a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8df3f0a36c65db904278f2c003936145c99b1621))
+* snyk step ([9debfac](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9debfac9b72b62eb8e6f0018d4f7955b756aa526))
+* snyk step ([e0833e5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e0833e518da762778edc0c45df61c7df2e1c62e9))
+* Snyk Vulnerability Scanning ([28512c6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/28512c66ad952395022ec4b1cd62c5b05dbdb667))
+* test on feature branch ([d3a5e79](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d3a5e79c6d99e6f3edfcbdab9299c106550400ec))
+* update permissions for deployment workflow ([39fbe55](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/39fbe55ed77aac9a8dff09cd0670fddbe989ccfc))
+* update Spring Boot version to 4.0.6 in pom.xml ([c6d4490](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c6d44901b9a3255966e26c23ed5963de9ebc5c56))
+
 ## 1.0.0 (2026-04-30)
 
 

@@ -27,3 +27,12 @@ jobs:
     uses: ./.github/workflows/security-sast.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  dependency-scanning:
+    uses: ./.github/workflows/dependecies-analysis.yaml
+    needs:
+      - build-test
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    secrets: inherit
