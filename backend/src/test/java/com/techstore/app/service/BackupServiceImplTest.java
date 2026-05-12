@@ -26,7 +26,7 @@ class BackupServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		scriptsDirectory = tempDir.resolve("scripts");
-		// Inject the temp scripts directory directly — no user.dir hacks needed.
+
 		backupService = new BackupServiceImpl(scriptsDirectory);
 	}
 
@@ -47,8 +47,6 @@ class BackupServiceImplTest {
 
 		return script;
 	}
-
-	// ---------------- INVALID INPUT TESTS ----------------
 
 	@Test
 	public void testExecuteWithNullCommand() {
@@ -183,8 +181,6 @@ class BackupServiceImplTest {
 
 		assertNotNull(ex.getMessage());
 	}
-
-	// ---------------- VALID EXECUTION TESTS ----------------
 
 	@Test
 	@DisabledOnOs(OS.WINDOWS)
