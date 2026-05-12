@@ -22,7 +22,15 @@ public class BackupServiceImpl implements BackupService {
 	private static final long TIMEOUT_MINUTES = 5L;
 	private static final Pattern SAFE_TOKEN = Pattern.compile("^[A-Za-z0-9_./:@=,\\-]+$");
 
-	private final Path scriptsDirectory = Path.of("scripts").toAbsolutePath().normalize();
+	private final Path scriptsDirectory;
+
+	public BackupServiceImpl() {
+		this(Path.of("scripts"));
+	}
+
+	protected BackupServiceImpl(Path scriptsDirectory) {
+		this.scriptsDirectory = scriptsDirectory.toAbsolutePath().normalize();
+	}
 
 	@Override
 	public String execute(String command) {
