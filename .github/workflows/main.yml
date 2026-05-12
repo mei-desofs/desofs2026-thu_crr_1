@@ -28,7 +28,8 @@ jobs:
   sast:
     needs: build-test
     uses: ./.github/workflows/security-sast.yml
-    secrets: inherit
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   release-please:
     if: github.event_name == 'push'
