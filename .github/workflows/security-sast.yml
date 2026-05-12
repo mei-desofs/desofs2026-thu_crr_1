@@ -20,9 +20,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and generate coverage report
-        working-directory: backend
-        run: mvn clean verify
+      - name: Download build and coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: backend
+          merge-multiple: true
 
       - name: SonarCloud Scan (main/dev with Quality Gate)
         if: |
