@@ -1,8 +1,5 @@
 package com.techstore.app.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techstore.app.client.SupabaseAuthClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +10,6 @@ public class SupabaseConfig {
 
     @Value("${supabase.service-role-key}")
     private String supabaseKey;
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 
     @Bean
     public RestTemplate supabaseRestTemplate() {

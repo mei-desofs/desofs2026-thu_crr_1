@@ -1,5 +1,6 @@
 package com.techstore.app.controller;
 
+import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
@@ -23,6 +24,7 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @RateLimit("create-product")
     @PostMapping
     public ProductResponseDTO save(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
         return productService.save(productRequestDTO);
@@ -32,5 +34,10 @@ public class ProductController {
     public Page<ProductResponseDTO> search(@RequestParam String productName,
                                            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findByNameLike(new ProductName(productName), pageable);
+    }
+
+    @GetMapping
+    public Page<ProductResponseDTO> findAll(@ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
+        return productService.findAll(pageable);
     }
 }

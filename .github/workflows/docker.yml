@@ -2,11 +2,9 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
-  workflow_dispatch:
+  workflow_call:
 
 env:
   IMAGE_NAME: diogomartins00/techstore

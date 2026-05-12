@@ -1,0 +1,6 @@
+ratelimit:
+  rules:
+    invite:
+      type: USER
+      capacity: 5
+      duration: PT1M
