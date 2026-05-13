@@ -1,14 +1,11 @@
 package com.techstore.app.dto.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record SupabaseLoginResponse(
+public record MfaVerifyResponse(
         @JsonProperty("access_token")  String accessToken,
         @JsonProperty("refresh_token") String refreshToken,
         @JsonProperty("token_type")    String tokenType,
-        @JsonProperty("expires_in")    Long expiresIn,
-        @JsonProperty("mfa_required")  Boolean mfaRequired
+        @JsonProperty("expires_in")    Long expiresIn
 ) {
 }

@@ -2,6 +2,7 @@ package com.techstore.app.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techstore.app.dto.auth.MfaVerifyResponse;
 import com.techstore.app.dto.auth.RefreshResponse;
 import com.techstore.app.dto.auth.SupabaseLoginResponse;
 import com.techstore.app.dto.auth.SupabaseUserResponse;
@@ -23,6 +24,7 @@ public class SupabaseAuthClient {
     private static final String AUTH_VERIFY = "/auth/v1/verify";
     private static final String AUTH_TOKEN = "/auth/v1/token?grant_type=password";
     private static final String AUTH_REFRESH = "/auth/v1/token?grant_type=refresh_token";
+    private static final String AUTH_MFA_VERIFY = "/auth/v1/factors/%s/verify";
 
     private final String supabaseUrl;
 
@@ -163,6 +165,28 @@ public class SupabaseAuthClient {
         try {
             ResponseEntity<RefreshResponse> response = restTemplate.exchange(
                     (supabaseUrl + AUTH_REFRESH), HttpMethod.POST, entity, RefreshResponse.class
+            );
+
+            if (response.getBody() == null) {
+                throw new IllegalStateException("Empty response from Supabase.");
+            }
+
+            return response.getBody();
+
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+    public MfaVerifyResponse verifyMfa(String factorId, String code) {
+        String url = supabaseUrl + String.format(AUTH_MFA_VERIFY, factorId);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("code", code, "challenge_id", code)
+        );
+
+        try {
+            ResponseEntity<MfaVerifyResponse> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, MfaVerifyResponse.class
             );
 
             if (response.getBody() == null) {

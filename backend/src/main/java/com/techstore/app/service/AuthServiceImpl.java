@@ -1,5 +1,7 @@
 package com.techstore.app.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
@@ -23,11 +25,13 @@ public class AuthServiceImpl implements AuthService {
     private final SupabaseAuthClient supabaseAuthClient;
 
     private final AuthAuditLogger auditLogger;
+    private final ObjectMapper objectMapper;
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient, AuthAuditLogger auditLogger) {
+    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient, AuthAuditLogger auditLogger, ObjectMapper objectMapper) {
         this.userService = userService;
         this.supabaseAuthClient = supabaseAuthClient;
         this.auditLogger = auditLogger;
+        this.objectMapper = objectMapper;
     }
 
     public void inviteUser(InviteSignupRequest inviteSignupRequest) {
@@ -70,11 +74,15 @@ public class AuthServiceImpl implements AuthService {
 
             auditLogger.logLoginAttempt(request.email(), true, httpRequest);
 
+            boolean mfaRequired = Boolean.TRUE.equals(supabaseResponse.mfaRequired());
+
             return new LoginResponse(
                     supabaseResponse.accessToken(),
                     supabaseResponse.refreshToken(),
                     supabaseResponse.tokenType(),
-                    supabaseResponse.expiresIn()
+                    supabaseResponse.expiresIn(),
+                    mfaRequired,
+                    mfaRequired ? extractFactorId(supabaseResponse.accessToken()) : null
             );
 
         } catch (Exception ex) {
@@ -95,6 +103,34 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception ex) {
             auditLogger.logTokenRefresh("unknown", false, httpRequest);
             throw ex;
+        }
+    }
+    @Override
+    public MfaVerifyResponse verifyMfa(MfaVerifyRequest request, HttpServletRequest httpRequest) {
+        try {
+            MfaVerifyResponse response =
+                    supabaseAuthClient.verifyMfa(request.factorId(), request.code());
+
+            auditLogger.logMfaVerification(request.factorId(), true, httpRequest);
+            return response;
+
+        } catch (Exception ex) {
+            auditLogger.logMfaVerification(request.factorId(), false, httpRequest);
+            throw ex;
+        }
+    }
+    private String extractFactorId(String accessToken) {
+        try {
+            String[] parts = accessToken.split("\\.");
+            byte[] decoded = java.util.Base64.getUrlDecoder().decode(parts[1]);
+            JsonNode claims = objectMapper.readTree(decoded);
+            JsonNode factors = claims.path("amr");
+            if (factors.isArray() && factors.size() > 0) {
+                return factors.get(0).path("value").asText(null);
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
         }
     }
 }
