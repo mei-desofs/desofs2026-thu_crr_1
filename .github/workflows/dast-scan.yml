@@ -89,7 +89,7 @@ jobs:
             -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
             -v /tmp/dast-reports:/tmp/dast-reports \
             --add-host="host.docker.internal:host-gateway" \
-            owasp/zap2docker-stable:latest \
+            zaproxy/zap-stable \
             zap-api-scan.py \
               -t http://host.docker.internal:8081/api/v3/api-docs \
               -f openapi \
