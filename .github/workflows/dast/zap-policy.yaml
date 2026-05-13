@@ -1,0 +1,49 @@
+config:
+  api:
+    endpoints:
+      - /auth/invite
+      - /auth/callback
+      - /auth/login
+      - /auth/refresh
+      - /products
+      - /products/search
+      - /webhooks/auth
+      - /actuator/health
+      - /actuator/info
+
+  scanner:
+    activeScans:
+      enabled: false
+
+    passiveScans:
+      enabled: true
+
+    timeout:
+      spider: 60
+      scan: 300
+      request: 30
+
+  alertFilters:
+    informational: false
+
+    lowSeverity: true
+
+    exclude:
+      - "Rate Limiting"
+      - "Strict-Transport-Security Header Missing"
+      - "HTTP Parameter Pollution"
+
+    allowCors: true
+
+    knownFalsePositives:
+      - "CSRF Token"
+      - "Session Management"
+
+  auth:
+    enabled: false
+    credentials: []
+
+  report:
+    format: sarif
+    includePassedTests: false
+    severityThreshold: low

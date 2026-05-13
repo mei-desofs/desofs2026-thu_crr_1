@@ -1,0 +1,198 @@
+name: DAST Scan (OWASP ZAP)
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-level:
+        description: "Fail on vulnerability level (critical-and-high, any, or never)"
+        required: false
+        default: "critical-and-high"
+        type: string
+
+permissions:
+  security-events: write
+  contents: read
+  checks: write
+
+jobs:
+  dast-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: techstore
+          POSTGRES_PASSWORD: techstore
+          POSTGRES_DB: techstore
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build application
+        working-directory: backend
+        run: mvn clean package -DskipTests -q
+
+      - name: Start application container
+        working-directory: backend
+        run: |
+          docker build -t techstore:dast .
+          docker run -d \
+            --name techstore-app \
+            -p 8081:8081 \
+            -e DB_URL="jdbc:postgresql://127.0.0.1:5432/techstore" \
+            -e POSTGRES_USER="techstore" \
+            -e POSTGRES_PASSWORD="techstore" \
+            -e POSTGRES_DB="techstore" \
+            -e SUPABASE_URL="${{ secrets.SUPABASE_URL || '' }}" \
+            -e SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}" \
+            -e SUPABASE_WEBHOOK_SECRET="${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}" \
+            -e SUPABASE_REDIRECT_URL="${{ secrets.SUPABASE_REDIRECT_URL || '' }}" \
+            techstore:dast
+        timeout-minutes: 5
+
+      - name: Wait for application to be ready
+        run: |
+          echo "Waiting for application to start..."
+          for i in {1..60}; do
+            if curl -s -f http://localhost:8081/api/actuator/health > /dev/null 2>&1; then
+              echo "Application is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/60..."
+            sleep 1
+          done
+          echo "Application failed to start within 60 seconds"
+          docker logs techstore-app
+          exit 1
+
+      - name: Run OWASP ZAP scan
+        run: |
+          mkdir -p /tmp/dast-reports
+          docker run --rm \
+            -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
+            -v /tmp/dast-reports:/tmp/dast-reports \
+            --add-host="host.docker.internal:host-gateway" \
+            owasp/zap2docker-stable:latest \
+            zap-api-scan.py \
+              -t http://host.docker.internal:8081/api/v3/api-docs \
+              -f openapi \
+              -r /tmp/dast-reports/zap-report.html \
+              -J /tmp/dast-reports/zap-report.sarif \
+              -c /zap/custom/zap-policy.yaml \
+              --autooff
+
+      - name: Upload ZAP HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-html-report
+          path: /tmp/dast-reports/zap-report.html
+          retention-days: 30
+
+      - name: Upload ZAP SARIF Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-sarif-report
+          path: /tmp/dast-reports/zap-report.sarif
+          retention-days: 30
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: /tmp/dast-reports/zap-report.sarif
+          category: DAST-OWASP-ZAP
+
+      - name: Parse DAST Results
+        if: always()
+        id: dast-results
+        run: |
+          if [ ! -f /tmp/dast-reports/zap-report.sarif ]; then
+            echo "dast_result=success" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Count vulnerabilities by severity
+          CRITICAL=$(grep -o '"level":"error"' /tmp/dast-reports/zap-report.sarif | wc -l)
+          HIGH=$(grep -o '"level":"warning"' /tmp/dast-reports/zap-report.sarif | wc -l)
+          MEDIUM=$(grep -o '"level":"note"' /tmp/dast-reports/zap-report.sarif | wc -l)
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "dast_result=failure" >> $GITHUB_OUTPUT
+          else
+            echo "dast_result=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with DAST Results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const critical = '${{ steps.dast-results.outputs.critical }}' || 0;
+            const high = '${{ steps.dast-results.outputs.high }}' || 0;
+            const medium = '${{ steps.dast-results.outputs.medium }}' || 0;
+
+            let emoji = '✅';
+            let status = 'PASSED';
+
+            if (critical > 0 || high > 0) {
+              emoji = '🚨';
+              status = 'FAILED';
+            } else if (medium > 0) {
+              emoji = '⚠️';
+              status = 'WARNINGS';
+            }
+
+            const comment = `## ${emoji} DAST Scan Results: ${status}
+
+            | Severity | Count |
+            |----------|-------|
+            | 🔴 Critical | ${critical} |
+            | 🟠 High | ${high} |
+            | 🟡 Medium/Low | ${medium} |
+
+            **Report**: See artifacts for detailed ZAP HTML report.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail on Critical/High vulnerabilities
+        if: steps.dast-results.outputs.dast_result == 'failure'
+        run: |
+          echo "DAST scan found Critical/High severity vulnerabilities"
+          echo "Critical: ${{ steps.dast-results.outputs.critical }}"
+          echo "High: ${{ steps.dast-results.outputs.high }}"
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop techstore-app 2>/dev/null || true
+          docker rm techstore-app 2>/dev/null || true

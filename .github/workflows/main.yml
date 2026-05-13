@@ -35,12 +35,22 @@ jobs:
       contents: read
     secrets: inherit
 
+  dast-scan:
+    uses: ./.github/workflows/dast-scan.yml
+    permissions:
+      security-events: write
+      contents: read
+      checks: write
+      pull-requests: write
+    secrets: inherit
+
   docker:
     if: github.event_name == 'push'
     uses: ./.github/workflows/docker.yml
     needs:
       - security-secrets
       - dependency-scanning
+      - dast-scan
     permissions:
       contents: read
       packages: write
