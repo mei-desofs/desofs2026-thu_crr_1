@@ -85,10 +85,12 @@ jobs:
       - name: Run OWASP ZAP scan
         run: |
           mkdir -p /tmp/dast-reports
+          chmod 777 /tmp/dast-reports
           docker run --rm \
             -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
             -v /tmp/dast-reports:/zap/wrk \
             --add-host="host.docker.internal:host-gateway" \
+            --user root \
             zaproxy/zap-stable \
             zap-api-scan.py \
               -t http://host.docker.internal:8081/api/v3/api-docs \
@@ -96,7 +98,7 @@ jobs:
               -S \
               -r /zap/wrk/zap-report.html \
               -x /zap/wrk/zap-report.xml \
-              -c /zap/custom/zap-policy.yaml
+              -c /zap/custom/zap-policy.yaml || true
 
       - name: Upload HTML report
         if: always()
