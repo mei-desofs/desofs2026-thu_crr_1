@@ -130,9 +130,10 @@ jobs:
           fi
 
           # Parse XML to count alerts by risk level
-          CRITICAL=$(grep -c 'riskcode="3"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
-          HIGH=$(grep -c 'riskcode="2"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
-          MEDIUM=$(grep -c 'riskcode="1"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
+          # ZAP XML uses <riskcode>N</riskcode> where 3=High, 2=Medium, 1=Low, 0=Info
+          CRITICAL=$(grep -o '<riskcode>3</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          HIGH=$(grep -o '<riskcode>2</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          MEDIUM=$(grep -o '<riskcode>1</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
 
           # Trim whitespace
           CRITICAL=$(echo "$CRITICAL" | xargs)
