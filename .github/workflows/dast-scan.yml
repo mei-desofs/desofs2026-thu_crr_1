@@ -123,14 +123,26 @@ jobs:
           if [ ! -f /tmp/dast-reports/zap-report.xml ]; then
             echo "No XML report found"
             echo "result=success" >> $GITHUB_OUTPUT
+            echo "critical=0" >> $GITHUB_OUTPUT
+            echo "high=0" >> $GITHUB_OUTPUT
+            echo "medium=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           # Parse XML to count alerts by risk level
-          # High = risk="3", Medium = risk="2", Low = risk="1"
-          CRITICAL=$(grep -c 'riskcode="3"' /tmp/dast-reports/zap-report.xml || echo 0)
-          HIGH=$(grep -c 'riskcode="2"' /tmp/dast-reports/zap-report.xml || echo 0)
-          MEDIUM=$(grep -c 'riskcode="1"' /tmp/dast-reports/zap-report.xml || echo 0)
+          CRITICAL=$(grep -c 'riskcode="3"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
+          HIGH=$(grep -c 'riskcode="2"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
+          MEDIUM=$(grep -c 'riskcode="1"' /tmp/dast-reports/zap-report.xml 2>/dev/null || true)
+
+          # Trim whitespace
+          CRITICAL=$(echo "$CRITICAL" | xargs)
+          HIGH=$(echo "$HIGH" | xargs)
+          MEDIUM=$(echo "$MEDIUM" | xargs)
+
+          # Default to 0 if empty
+          CRITICAL=${CRITICAL:-0}
+          HIGH=${HIGH:-0}
+          MEDIUM=${MEDIUM:-0}
 
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
           echo "high=$HIGH" >> $GITHUB_OUTPUT
