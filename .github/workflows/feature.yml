@@ -18,3 +18,10 @@ jobs:
       contents: read
     secrets:
       GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
+
+
+  sast:
+    needs: build-test
+    uses: ./.github/workflows/security-sast.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
