@@ -34,7 +34,11 @@ jobs:
       actions: read
       contents: read
     secrets: inherit
-
+  sast:
+    needs: build-test
+    uses: ./.github/workflows/security-sast.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   docker:
     if: github.event_name == 'push'
     uses: ./.github/workflows/docker.yml
