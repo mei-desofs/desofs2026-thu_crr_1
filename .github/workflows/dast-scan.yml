@@ -49,22 +49,20 @@ jobs:
         working-directory: backend
         run: mvn clean package -DskipTests -q
 
-      - name: Start application container
+      - name: Start application (JAR)
         working-directory: backend
         run: |
-          docker build -t techstore:dast .
-          docker run -d \
-            --name techstore-app \
-            -p 8081:8081 \
-            -e DB_URL="jdbc:postgresql://127.0.0.1:5432/techstore" \
-            -e POSTGRES_USER="techstore" \
-            -e POSTGRES_PASSWORD="techstore" \
-            -e POSTGRES_DB="techstore" \
-            -e SUPABASE_URL="${{ secrets.SUPABASE_URL || '' }}" \
-            -e SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}" \
-            -e SUPABASE_WEBHOOK_SECRET="${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}" \
-            -e SUPABASE_REDIRECT_URL="${{ secrets.SUPABASE_REDIRECT_URL || '' }}" \
-            techstore:dast
+          export DB_URL="jdbc:postgresql://localhost:5432/techstore"
+          export POSTGRES_USER="techstore"
+          export POSTGRES_PASSWORD="techstore"
+          export POSTGRES_DB="techstore"
+          export SUPABASE_URL="${{ secrets.SUPABASE_URL || '' }}"
+          export SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}"
+          export SUPABASE_WEBHOOK_SECRET="${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}"
+          export SUPABASE_REDIRECT_URL="${{ secrets.SUPABASE_REDIRECT_URL || '' }}"
+
+          java -jar target/app.jar > /tmp/app.log 2>&1 &
+          echo $! > /tmp/app.pid
         timeout-minutes: 5
 
       - name: Wait for application to be ready
@@ -79,7 +77,8 @@ jobs:
             sleep 1
           done
           echo "Application failed to start within 60 seconds"
-          docker logs techstore-app
+          echo "=== Application logs ==="
+          cat /tmp/app.log
           exit 1
 
       - name: Run OWASP ZAP scan
@@ -194,5 +193,7 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          docker stop techstore-app 2>/dev/null || true
-          docker rm techstore-app 2>/dev/null || true
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) 2>/dev/null || true
+          fi
+          cat /tmp/app.log 2>/dev/null || true
