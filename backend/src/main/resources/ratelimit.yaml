@@ -10,3 +10,8 @@ ratelimit:
       type: IP
       capacity: 10
       duration: PT1H
+
+    login:
+        type: IP
+        capacity: 5
+        duration: PT1M

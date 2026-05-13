@@ -45,12 +45,14 @@ public class AuthController {
 
         return ResponseEntity.ok("Account created successfully. You can now close this page.");
     }
+    @RateLimit("login")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
 
         LoginResponse response = authService.login(request, httpRequest);
         return ResponseEntity.ok(response);
     }
+    @RateLimit("login")
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(
             @RequestBody @Valid RefreshRequest request,
