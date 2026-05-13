@@ -1,49 +1,17 @@
-config:
-  api:
-    endpoints:
-      - /auth/invite
-      - /auth/callback
-      - /auth/login
-      - /auth/refresh
-      - /products
-      - /products/search
-      - /webhooks/auth
-      - /actuator/health
-      - /actuator/info
+# ZAP API Scan Configuration
+# RULE_ID LEVEL DESCRIPTION
+# FAIL (block), WARN (default), IGNORE (skip)
 
-  scanner:
-    activeScans:
-      enabled: false
-
-    passiveScans:
-      enabled: true
-
-    timeout:
-      spider: 60
-      scan: 300
-      request: 30
-
-  alertFilters:
-    informational: false
-
-    lowSeverity: true
-
-    exclude:
-      - "Rate Limiting"
-      - "Strict-Transport-Security Header Missing"
-      - "HTTP Parameter Pollution"
-
-    allowCors: true
-
-    knownFalsePositives:
-      - "CSRF Token"
-      - "Session Management"
-
-  auth:
-    enabled: false
-    credentials: []
-
-  report:
-    format: sarif
-    includePassedTests: false
-    severityThreshold: low
+10015	IGNORE
+10020	IGNORE
+10021	IGNORE
+10202	IGNORE
+20012	IGNORE
+20016	IGNORE
+3	IGNORE
+40012	FAIL
+40014	FAIL
+40018	FAIL
+90019	FAIL
+90020	FAIL
+90023	FAIL

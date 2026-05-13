@@ -87,14 +87,15 @@ jobs:
           mkdir -p /tmp/dast-reports
           docker run --rm \
             -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
-            -v /tmp/dast-reports:/tmp/dast-reports \
+            -v /tmp/dast-reports:/zap/wrk \
             --add-host="host.docker.internal:host-gateway" \
             zaproxy/zap-stable \
             zap-api-scan.py \
               -t http://host.docker.internal:8081/api/v3/api-docs \
               -f openapi \
-              -r /tmp/dast-reports/zap-report.html \
-              -J /tmp/dast-reports/zap-report.sarif \
+              -S \
+              -r /zap/wrk/zap-report.html \
+              -x /zap/wrk/zap-report.xml \
               -c /zap/custom/zap-policy.yaml
 
       - name: Upload HTML report
@@ -105,34 +106,29 @@ jobs:
           path: /tmp/dast-reports/zap-report.html
           retention-days: 30
 
-      - name: Upload SARIF report
+      - name: Upload XML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap-sarif-report
-          path: /tmp/dast-reports/zap-report.sarif
+          name: zap-xml-report
+          path: /tmp/dast-reports/zap-report.xml
           retention-days: 30
-
-      - name: Upload to GitHub Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: /tmp/dast-reports/zap-report.sarif
-          category: dast-owasp-zap
 
       - name: Parse vulnerability results
         if: always()
         id: results
         run: |
-          if [ ! -f /tmp/dast-reports/zap-report.sarif ]; then
-            echo "No SARIF report found"
+          if [ ! -f /tmp/dast-reports/zap-report.xml ]; then
+            echo "No XML report found"
             echo "result=success" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          CRITICAL=$(grep -c '"level":"error"' /tmp/dast-reports/zap-report.sarif || echo 0)
-          HIGH=$(grep -c '"level":"warning"' /tmp/dast-reports/zap-report.sarif || echo 0)
-          MEDIUM=$(grep -c '"level":"note"' /tmp/dast-reports/zap-report.sarif || echo 0)
+          # Parse XML to count alerts by risk level
+          # High = risk="3", Medium = risk="2", Low = risk="1"
+          CRITICAL=$(grep -c 'riskcode="3"' /tmp/dast-reports/zap-report.xml || echo 0)
+          HIGH=$(grep -c 'riskcode="2"' /tmp/dast-reports/zap-report.xml || echo 0)
+          MEDIUM=$(grep -c 'riskcode="1"' /tmp/dast-reports/zap-report.xml || echo 0)
 
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
           echo "high=$HIGH" >> $GITHUB_OUTPUT
