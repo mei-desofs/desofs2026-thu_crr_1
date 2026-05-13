@@ -8,12 +8,12 @@ COPY src ./src
 RUN mvn -B -DskipTests package
 
 
-FROM gcr.io/distroless/java17-debian12:nonroot
+FROM dhi.io/amazoncorretto:17-alpine3.22
 
 WORKDIR /app
 
 COPY --from=build /workspace/target/*.jar /app/app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
