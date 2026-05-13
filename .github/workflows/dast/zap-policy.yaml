@@ -1,17 +1,16 @@
 # ZAP API Scan Configuration
-# RULE_ID LEVEL DESCRIPTION
-# FAIL (block), WARN (default), IGNORE (skip)
+# Format: RULE_ID	LEVEL	DESCRIPTION
 
-10015	IGNORE
-10020	IGNORE
-10021	IGNORE
-10202	IGNORE
-20012	IGNORE
-20016	IGNORE
-3	IGNORE
-40012	FAIL
-40014	FAIL
-40018	FAIL
-90019	FAIL
-90020	FAIL
-90023	FAIL
+10015	IGNORE	Cache-control Headers Missing
+10020	IGNORE	X-Frame-Options Header Missing
+10021	IGNORE	X-Content-Type-Options Header Missing
+10202	IGNORE	Absence of Anti-CSRF Tokens
+20012	IGNORE	Anti CSRF Tokens Scanner
+20016	IGNORE	Cross-Domain Misconfiguration
+3	IGNORE	Session ID in URL Rewrite
+40012	FAIL	Cross Site Scripting (Reflected)
+40014	FAIL	Cross Site Scripting (Persistent)
+40018	FAIL	SQL Injection
+90019	FAIL	Server Side Code Injection
+90020	FAIL	Remote OS Command Injection
+90023	FAIL	XML External Entity Attack
