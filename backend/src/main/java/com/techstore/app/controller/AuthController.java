@@ -61,13 +61,4 @@ public class AuthController {
         RefreshResponse response = authService.refreshToken(request.refreshToken(), httpRequest);
         return ResponseEntity.ok(response);
     }
-    @RateLimit("login")
-    @PostMapping("/mfa/verify")
-    public ResponseEntity<MfaVerifyResponse> verifyMfa(
-            @RequestBody @Valid MfaVerifyRequest request,
-            HttpServletRequest httpRequest) {
-
-        MfaVerifyResponse response = authService.verifyMfa(request, httpRequest);
-        return ResponseEntity.ok(response);
-    }
 }

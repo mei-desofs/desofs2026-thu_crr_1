@@ -34,14 +34,6 @@ public class AuthAuditLogger {
                 Instant.now()
         );
     }
-    public void logMfaVerification(String factorId, boolean success, HttpServletRequest request) {
-        auditLog.info("event=MFA_VERIFICATION | success={} | factorId={} | ip={} | timestamp={}",
-                success,
-                factorId,
-                request.getRemoteAddr(),
-                Instant.now()
-        );
-    }
 
 
     // To not expose sensitive data

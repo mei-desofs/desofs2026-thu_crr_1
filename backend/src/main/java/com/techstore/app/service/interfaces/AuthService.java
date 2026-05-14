@@ -19,6 +19,4 @@ public interface AuthService {
 
     RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest);
 
-    MfaVerifyResponse verifyMfa(MfaVerifyRequest request, HttpServletRequest httpRequest);
-
 }
