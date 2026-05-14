@@ -63,9 +63,7 @@ public class SupabaseAuthClient {
                 Map.of(
                         "email", email,
                         "data", Map.of("role", role),
-                        "options", Map.of(
-                                "redirectTo", redirectUrl
-                        )
+                        "redirect_to", redirectUrl
                 )
         );
 
