@@ -10,3 +10,8 @@ ratelimit:
       type: IP
       capacity: 10
       duration: PT1H
+
+    password-update:
+      type: IP
+      capacity: 5
+      duration: PT1H

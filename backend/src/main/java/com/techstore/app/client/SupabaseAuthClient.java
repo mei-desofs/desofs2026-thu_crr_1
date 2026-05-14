@@ -19,23 +19,27 @@ import java.util.Map;
 @Component
 public class SupabaseAuthClient {
 
-    private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users";
+    private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users/";
     private static final String AUTH_INVITE = "/auth/v1/invite";
     private static final String AUTH_VERIFY = "/auth/v1/verify";
     private static final String AUTH_TOKEN = "/auth/v1/token?grant_type=password";
     private static final String AUTH_REFRESH = "/auth/v1/token?grant_type=refresh_token";
+    private static final String AUTH_RECOVER = "/auth/v1/recover";
+    private static final String AUTH_USER = "/auth/v1/user";
 
     private final String supabaseUrl;
 
     private final String redirectUrl;
-
+    private final String supabaseAnonKey;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     public SupabaseAuthClient(@Value("${supabase.url}") String supabaseUrl,
+                              @Value("anon-key") String supabaseAnonKey,
                               @Value("${supabase.redirect-url}") String redirectUrl,
                               @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.supabaseUrl = supabaseUrl;
+        this.supabaseAnonKey = supabaseAnonKey;
         this.redirectUrl = redirectUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -186,6 +190,40 @@ public class SupabaseAuthClient {
 
             return response.getBody();
 
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public void sendPasswordResetEmail(String email) {
+        String url = supabaseUrl + AUTH_RECOVER;
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("email", email, "redirect_to", redirectUrl)
+        );
+
+        try {
+            restTemplate.exchange(url, HttpMethod.POST, entity, Void.class);
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public void updatePassword(String accessToken, String password) {
+        String url = supabaseUrl + AUTH_USER;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("apikey", supabaseAnonKey);
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("password", password),
+                headers
+        );
+
+        try {
+            new RestTemplate().exchange(url, HttpMethod.PUT, entity, Void.class);
         } catch (HttpStatusCodeException ex) {
             throw mapException(ex);
         }

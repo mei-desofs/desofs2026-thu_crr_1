@@ -1,8 +1,10 @@
 package com.techstore.app.controller;
 
+import com.techstore.app.config.ratelimit.annotation.RateLimit;
+import com.techstore.app.dto.auth.PasswordResetRequest;
+import com.techstore.app.dto.auth.PasswordUpdateRequest;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.service.interfaces.AuthService;
-import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
@@ -25,7 +27,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    //@RateLimit("invite")
+//    @RateLimit("invite")
     @PostMapping("/invite")
     public ResponseEntity<Void> invite(@RequestBody @Valid InviteSignupRequest request,
             HttpServletRequest httpRequest) {
@@ -67,5 +69,20 @@ public class AuthController {
 
         RefreshResponse response = authService.refreshToken(request.refreshToken(), httpRequest);
         return ResponseEntity.ok(response);
+    }
+
+    @RateLimit("password-update")
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<Void> requestReset(@Valid @RequestBody PasswordResetRequest request, HttpServletRequest httpRequest) {
+        authService.requestPasswordReset(request.email(), httpRequest);
+        return ResponseEntity.noContent().build();
+    }
+
+    @RateLimit("password-update")
+    @PostMapping("/set-password")
+    public ResponseEntity<Void> setPassword(@RequestHeader("Authorization") String authHeader, @RequestBody @Valid PasswordUpdateRequest request, HttpServletRequest httpRequest) {
+        String accessToken = authHeader.replace("Bearer ", "");
+        authService.updatePassword(accessToken, request.newPassword(), httpRequest);
+        return ResponseEntity.ok().build();
     }
 }

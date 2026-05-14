@@ -26,4 +26,8 @@ public interface AuthService {
 
     RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest); // novo
 
+    void requestPasswordReset(String email, HttpServletRequest httpRequest);
+
+    void updatePassword(String userId, String newPassword, HttpServletRequest httpRequest);
+
 }

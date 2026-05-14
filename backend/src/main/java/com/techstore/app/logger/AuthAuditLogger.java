@@ -43,6 +43,23 @@ public class AuthAuditLogger {
                 success, maskEmail(email), clientIp, userAgent, Instant.now());
     }
 
+    public void logPasswordResetRequest(String email, boolean success, HttpServletRequest request) {
+        auditLog.info("event=PASSWORD_RESET_REQUEST | success={} | email={} | ip={} | timestamp={}",
+                success,
+                maskEmail(email),
+                request.getRemoteAddr(),
+                Instant.now()
+        );
+    }
+
+    public void logPasswordUpdate(boolean success, HttpServletRequest request) {
+        auditLog.info("event=PASSWORD_UPDATE | success={} | ip={} | timestamp={}",
+                success,
+                request.getRemoteAddr(),
+                Instant.now()
+        );
+    }
+
     // To not expose sensitive data
     private String maskEmail(String email) {
         if (email == null || !email.contains("@")) return "***";

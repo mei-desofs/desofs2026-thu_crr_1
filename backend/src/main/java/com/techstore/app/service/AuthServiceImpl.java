@@ -1,11 +1,15 @@
 package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
+import com.techstore.app.domain.shared.EmailAddress;
 import com.techstore.app.dto.auth.*;
+import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
+import com.techstore.app.util.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +105,36 @@ public class AuthServiceImpl implements AuthService {
 
         } catch (Exception ex) {
             auditLogger.logTokenRefresh("unknown", false, httpRequest);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void requestPasswordReset(String email, HttpServletRequest httpRequest) {
+        try {
+            if (!EmailAddress.isValid(email)) {
+                throw new BusinessException("Invalid email format");
+            }
+
+            supabaseAuthClient.sendPasswordResetEmail(email);
+            auditLogger.logPasswordResetRequest(email, true, httpRequest);
+        } catch (Exception ex) {
+            auditLogger.logPasswordResetRequest(email, false, httpRequest);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void updatePassword(String userId, String newPassword, HttpServletRequest httpRequest) {
+        try {
+            if (!PasswordUtils.isValid(newPassword)) {
+                throw new BusinessException("Invalid password format");
+            }
+
+            supabaseAuthClient.updatePassword(userId, newPassword);
+            auditLogger.logPasswordUpdate(true, httpRequest);
+        } catch (Exception ex) {
+            auditLogger.logPasswordUpdate(false, httpRequest);
             throw ex;
         }
     }
