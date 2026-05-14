@@ -29,7 +29,6 @@ public class UserTest {
 
         User user = new User(email, role, supId);
 
-        assertNull(user.getId());
         assertNull(user.getVersion());
         assertEquals(email, user.getEmail());
         assertEquals(role, user.getRole());

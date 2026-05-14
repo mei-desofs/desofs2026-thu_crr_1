@@ -1,5 +1,6 @@
 package com.techstore.app.exception;
 
+import com.techstore.app.util.ErrorCodeConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,22 +28,44 @@ public class GlobalExceptionHandler {
 
     private final Logger logger = LogManager.getLogger();
 
-    /**
-     * Handle BusinessException - Custom business logic exceptions
-     */
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleBusinessException(
-            BusinessException ex,
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
+        logger.warn("Business exception with code '{}': {}", ex.getCode(), ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), "Business Logic Error", request.getRequestURI());
+        if (ex.getCode() != null) {
+            errorResponse.setCode(ex.getCode());
+        }
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleSecurityException(SecurityException ex, HttpServletRequest request) {
+        logger.warn("Security exception with code '{}': {}", ex.getCode(), ex.getMessage());
+        System.out.println(ex.getStackTrace());
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapSecurityException(ex, request);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handle BackupException - Backup operation exceptions
+     */
+    @ExceptionHandler(BackupException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleBackupException(
+            BackupException ex,
             HttpServletRequest request) {
-        logger.warn("Business exception occurred: {}", ex.getMessage());
+        logger.error("Backup exception occurred: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ex.getMessage(),
-                "Business Logic Error",
+                "Backup Operation Error",
                 request.getRequestURI()
         );
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -51,24 +73,15 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleValidationException(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         logger.warn("Validation exception occurred");
-        
+
         Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                fieldErrors.put(error.getField(), error.getDefaultMessage())
-        );
-        
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation failed",
-                "Validation Error",
-                request.getRequestURI()
-        );
+        ex.getBindingResult().getFieldErrors().forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Validation failed", "Validation Error", request.getRequestURI());
         errorResponse.setFieldErrors(fieldErrors);
-        
+
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -77,16 +90,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleJakartaValidationException(
-            ValidationException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleJakartaValidationException(ValidationException ex, HttpServletRequest request) {
         logger.warn("Jakarta validation exception occurred: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                "Validation Error",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), "Validation Error", request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -95,20 +101,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
-            MethodArgumentTypeMismatchException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
         logger.warn("Method argument type mismatch: {}", ex.getMessage());
         Class<?> requiredType = ex.getRequiredType();
         String expectedTypeName = (requiredType != null) ? requiredType.getSimpleName() : "unknown";
-        String message = String.format("Invalid parameter '%s'. Expected type: %s",
-                ex.getName(), expectedTypeName);
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                message,
-                "Bad Request",
-                request.getRequestURI()
-        );
+        String message = String.format("Invalid parameter '%s'. Expected type: %s", ex.getName(), expectedTypeName);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, "Bad Request", request.getRequestURI());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -117,16 +115,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
-            DataIntegrityViolationException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
         logger.error("Data integrity violation: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Data integrity constraint violation. Please check your input data.",
-                "Constraint Violation",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Data integrity constraint violation. Please check your input data.", "Constraint Violation", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.CONSTRAINT_VIOLATION);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -135,16 +127,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleConstraintViolation(
-            ConstraintViolationException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
         logger.error("Constraint violation: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "A constraint violation occurred. Please verify your data.",
-                "Constraint Violation",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "A constraint violation occurred. Please verify your data.", "Constraint Violation", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.CONSTRAINT_VIOLATION);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -153,16 +139,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(StaleObjectStateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ErrorResponse> handleStaleObjectState(
-            StaleObjectStateException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleStaleObjectState(StaleObjectStateException ex, HttpServletRequest request) {
         logger.warn("Stale object state exception: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                "The record has been modified by another user. Please refresh and try again.",
-                "Concurrent Modification",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), "The record has been modified by another user. Please refresh and try again.", "Concurrent Modification", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.CONCURRENT_MODIFICATION);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -171,16 +151,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(
-            AccessDeniedException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
         logger.warn("Access denied: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.FORBIDDEN.value(),
-                "You do not have permission to access this resource.",
-                "Access Denied",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapAccessDeniedException(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
@@ -189,16 +162,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(
-            AuthenticationException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
         logger.warn("Authentication failed: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Authentication failed. Please provide valid credentials.",
-                "Unauthorized",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapAuthenticationException(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
@@ -207,16 +173,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(
-            BadCredentialsException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
         logger.warn("Bad credentials provided");
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Invalid username or password.",
-                "Unauthorized",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapBadCredentialsException(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
@@ -225,16 +184,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(InternalAuthenticationServiceException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<ErrorResponse> handleInternalAuthenticationService(
-            InternalAuthenticationServiceException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleInternalAuthenticationService(InternalAuthenticationServiceException ex, HttpServletRequest request) {
         logger.error("Internal authentication service error: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Authentication service error. Please try again later.",
-                "Unauthorized",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapInternalAuthenticationServiceException(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
@@ -243,18 +195,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
         logger.warn("Illegal argument: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage() != null && !ex.getMessage().isBlank()
-                        ? ex.getMessage()
-                        : "Invalid request data.",
-                "Bad Request",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = ExceptionToSafeResponseMapper.mapIllegalArgumentException(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -263,16 +206,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NumberFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleNumberFormatException(
-            NumberFormatException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleNumberFormatException(NumberFormatException ex, HttpServletRequest request) {
         logger.warn("Number format error: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Invalid numeric value provided. Please verify your input.",
-                "Bad Request",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid numeric value provided. Please verify your input.", "Bad Request", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.INVALID_REQUEST);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -281,16 +218,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleGlobalException(
-            Exception ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
         logger.error("An unexpected error occurred", ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "An unexpected error occurred. Please try again later.",
-                "Internal Server Error",
-                request.getRequestURI()
-        );
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred. Please try again later.", "Internal Server Error", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.SYSTEM_ERROR);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

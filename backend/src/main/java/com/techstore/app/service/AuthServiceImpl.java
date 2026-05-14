@@ -2,11 +2,16 @@ package com.techstore.app.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
+import com.techstore.app.domain.shared.EmailAddress;
 import com.techstore.app.dto.auth.*;
+import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
+import com.techstore.app.util.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,26 +32,52 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthAuditLogger auditLogger;
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient, AuthAuditLogger auditLogger) {
+    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient,
+            AuthAuditLogger auditLogger) {
         this.userService = userService;
         this.supabaseAuthClient = supabaseAuthClient;
         this.auditLogger = auditLogger;
     }
 
-    public void inviteUser(InviteSignupRequest inviteSignupRequest) {
-        supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
+    @Override
+    public void inviteUser(InviteSignupRequest inviteSignupRequest, String clientIp, String userAgent) {
+
+        String role = inviteSignupRequest.role().toUpperCase();
+        if (!role.equals("MANAGER") && !role.equals("CARRIER")) {
+            throw new BusinessException("Invalid role: only MANAGER and CARRIER can be invited");
+        }
+
+        try {
+            supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
+            auditLogger.logInviteAttempt(inviteSignupRequest.email(), true, clientIp, userAgent);
+        } catch (Exception ex) {
+            auditLogger.logInviteAttempt(inviteSignupRequest.email(), false, clientIp, userAgent);
+            throw ex;
+        }
     }
 
     @Override
     public boolean confirmInvite(String secret, Map<String, Object> payload) {
 
         if (!webhookSecret.equals(secret)) {
+            auditLogger.logConfirmInvite("unknown", false, "Invalid webhook secret");
+            return false;
+        }
+
+        if (payload == null) {
+            auditLogger.logConfirmInvite("unknown", false, "Null payload");
             return false;
         }
 
         Map<String, Object> record = (Map<String, Object>) payload.get("record");
         Map<String, Object> oldRecord = (Map<String, Object>) payload.get("old_record");
+
+        if (record == null || oldRecord == null) {
+            auditLogger.logConfirmInvite("unknown", false, "Missing record or old_record");
+            return false;
+        }
 
         String emailConfirmedAt = (String) record.get("email_confirmed_at");
         String oldEmailConfirmedAt = (String) oldRecord.get("email_confirmed_at");
@@ -58,19 +89,55 @@ public class AuthServiceImpl implements AuthService {
         String supabaseUserId = (String) record.get("id");
         String email = (String) record.get("email");
         Map<String, Object> metadata = (Map<String, Object>) record.get("raw_user_meta_data");
+
+        if (supabaseUserId == null || email == null || metadata == null) {
+            auditLogger.logConfirmInvite("unknown", false, "Missing required fields in payload");
+            return false;
+        }
+
         String role = (String) metadata.get("role");
 
-        if (role != null) {
+        if (role == null) {
+            auditLogger.logConfirmInvite(email, false, "Missing role in metadata");
+            return false;
+        }
+
+        if (!supabaseAuthClient.userExists(supabaseUserId)) {
+            auditLogger.logConfirmInvite(email, false, "Supabase user not found - possible payload manipulation");
+            return false;
+        }
+
+        try {
             userService.registerUser(supabaseUserId, email, role);
+            auditLogger.logConfirmInvite(email, true, null);
+
+        } catch (BusinessException ex) {
+            auditLogger.logConfirmInvite(email, false, ex.getMessage());
+            return false;
+
+        } catch (Exception ex) {
+            logger.error("Unexpected error registering user {}, rolling back: {}", email, ex.getMessage());
+            try {
+                supabaseAuthClient.deleteUser(supabaseUserId);
+            } catch (Exception rollbackEx) {
+                logger.error("Failed to rollback Supabase user {} — manual cleanup required", supabaseUserId);
+            }
+            auditLogger.logConfirmInvite(email, false, "Internal registration failed — Supabase user deleted");
+            return false;
         }
 
         return true;
     }
+
+    @Override
+    public void confirmAndSetupAccount(String tokenHash, String type) {
+        supabaseAuthClient.verifyToken(tokenHash, type);
+    }
+
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            SupabaseLoginResponse supabaseResponse =
-                    supabaseAuthClient.login(request.email(), request.password());
+            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.login(request.email(), request.password());
 
             auditLogger.logLoginAttempt(request.email(), true, httpRequest);
 
@@ -78,14 +145,14 @@ public class AuthServiceImpl implements AuthService {
                     supabaseResponse.accessToken(),
                     supabaseResponse.refreshToken(),
                     supabaseResponse.tokenType(),
-                    supabaseResponse.expiresIn()
-            );
+                    supabaseResponse.expiresIn());
 
         } catch (Exception ex) {
             auditLogger.logLoginAttempt(request.email(), false, httpRequest);
             throw ex;
         }
     }
+
     @Override
     public RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest) {
 
@@ -128,6 +195,36 @@ public class AuthServiceImpl implements AuthService {
 
         } catch (Exception e) {
             return "unknown";
+        }
+    }
+
+    @Override
+    public void requestPasswordReset(String email, HttpServletRequest httpRequest) {
+        try {
+            if (!EmailAddress.isValid(email)) {
+                throw new BusinessException("Invalid email format");
+            }
+
+            supabaseAuthClient.sendPasswordResetEmail(email);
+            auditLogger.logPasswordResetRequest(email, true, httpRequest);
+        } catch (Exception ex) {
+            auditLogger.logPasswordResetRequest(email, false, httpRequest);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void updatePassword(String accessToken, String newPassword, HttpServletRequest httpRequest) {
+        try {
+            if (!PasswordUtils.isValid(newPassword)) {
+                throw new BusinessException("Invalid password format");
+            }
+
+            supabaseAuthClient.updatePassword(accessToken, newPassword);
+            auditLogger.logPasswordUpdate(true, httpRequest);
+        } catch (Exception ex) {
+            auditLogger.logPasswordUpdate(false, httpRequest);
+            throw ex;
         }
     }
 }
