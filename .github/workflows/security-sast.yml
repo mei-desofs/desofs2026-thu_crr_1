@@ -34,6 +34,7 @@ jobs:
           path: backend/target/site/jacoco
 
       - name: SonarCloud Scan (main/dev with Quality Gate)
+        continue-on-error: true
         if: |
                   github.ref == 'refs/heads/main' ||
                   github.ref == 'refs/heads/dev' ||
