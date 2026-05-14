@@ -22,6 +22,8 @@ public interface AuthService {
 
     boolean confirmInvite(String secret, Map<String, Object> payload);
 
+    void confirmAndSetupAccount(String tokenHash, String type);
+
     LoginResponse login(LoginRequest request, HttpServletRequest httpRequest);
 
     RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest); // novo

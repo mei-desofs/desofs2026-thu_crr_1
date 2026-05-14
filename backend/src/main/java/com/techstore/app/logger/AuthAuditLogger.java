@@ -43,6 +43,14 @@ public class AuthAuditLogger {
                 success, maskEmail(email), clientIp, userAgent, Instant.now());
     }
 
+    public void logConfirmInvite(String email, boolean success, String reason) {
+        auditLog.info("event=CONFIRM_INVITE | success={} | email={} | reason={} | timestamp={}",
+                success,
+                maskEmail(email),
+                reason != null ? reason : "User confirmed email",
+                Instant.now());
+    }
+
     public void logPasswordResetRequest(String email, boolean success, HttpServletRequest request) {
         auditLog.info("event=PASSWORD_RESET_REQUEST | success={} | email={} | ip={} | timestamp={}",
                 success,

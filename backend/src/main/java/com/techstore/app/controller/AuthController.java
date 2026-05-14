@@ -5,12 +5,14 @@ import com.techstore.app.dto.auth.PasswordResetRequest;
 import com.techstore.app.dto.auth.PasswordUpdateRequest;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.service.interfaces.AuthService;
+import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * Controller for handling authentication-related endpoints.
@@ -27,7 +29,8 @@ public class AuthController {
         this.authService = authService;
     }
 
-//    @RateLimit("invite")
+    //@PreAuthorize("hasRole('MANAGER')")
+    //@RateLimit("invite")
     @PostMapping("/invite")
     public ResponseEntity<Void> invite(@RequestBody @Valid InviteSignupRequest request,
             HttpServletRequest httpRequest) {
@@ -35,6 +38,15 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
         authService.inviteUser(request, clientIp, userAgent);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<String> confirm(
+            @RequestParam("token_hash") String tokenHash,
+            @RequestParam("type") String type) {
+
+        authService.confirmAndSetupAccount(tokenHash, type);
+        return ResponseEntity.ok("Email confirmed. Please set your password using POST /auth/set-password with your access token.");
     }
 
     @GetMapping("/callback")

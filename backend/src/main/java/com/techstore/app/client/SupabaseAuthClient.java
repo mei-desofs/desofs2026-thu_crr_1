@@ -45,12 +45,29 @@ public class SupabaseAuthClient {
         this.objectMapper = objectMapper;
     }
 
+    public boolean userExists(String supabaseUserId) {
+        String url = supabaseUrl + AUTH_ADMIN_USERS + "/" + supabaseUserId;
+        try {
+            restTemplate.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, Void.class);
+            return true;
+        } catch (HttpStatusCodeException ex) {
+            if (ex.getStatusCode().value() == 404) return false;
+            throw mapException(ex);
+        }
+    }
+
     public void inviteUser(String email, String role) {
         String url = supabaseUrl + AUTH_INVITE;
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
-                Map.of("email", email, "data", Map.of("role", role),
-                        "redirect_to", redirectUrl));
+                Map.of(
+                        "email", email,
+                        "data", Map.of("role", role),
+                        "options", Map.of(
+                                "redirectTo", redirectUrl
+                        )
+                )
+        );
 
         try {
             restTemplate.exchange(url, HttpMethod.POST, entity, Void.class);
@@ -60,7 +77,7 @@ public class SupabaseAuthClient {
     }
 
     public void deleteUser(String userId) {
-        String url = supabaseUrl + AUTH_ADMIN_USERS + userId;
+        String url = supabaseUrl + AUTH_ADMIN_USERS + "/" + userId;
 
         try {
             restTemplate.exchange(url, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
@@ -190,6 +207,20 @@ public class SupabaseAuthClient {
 
             return response.getBody();
 
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public void verifyToken(String tokenHash, String type) {
+        String url = supabaseUrl + AUTH_VERIFY;
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("token_hash", tokenHash, "type", type)
+        );
+
+        try {
+            restTemplate.exchange(url, HttpMethod.POST, entity, Void.class);
         } catch (HttpStatusCodeException ex) {
             throw mapException(ex);
         }
