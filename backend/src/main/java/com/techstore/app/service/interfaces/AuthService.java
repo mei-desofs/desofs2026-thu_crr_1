@@ -30,6 +30,6 @@ public interface AuthService {
 
     void requestPasswordReset(String email, HttpServletRequest httpRequest);
 
-    void updatePassword(String userId, String newPassword, HttpServletRequest httpRequest);
+    void updatePassword(String accessToken, String newPassword, HttpServletRequest httpRequest);
 
 }

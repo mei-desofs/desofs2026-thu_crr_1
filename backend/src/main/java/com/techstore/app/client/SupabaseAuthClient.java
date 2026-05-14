@@ -35,7 +35,7 @@ public class SupabaseAuthClient {
     private final ObjectMapper objectMapper;
 
     public SupabaseAuthClient(@Value("${supabase.url}") String supabaseUrl,
-                              @Value("anon-key") String supabaseAnonKey,
+                              @Value("${supabase.anon-key}") String supabaseAnonKey,
                               @Value("${supabase.redirect-url}") String redirectUrl,
                               @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.supabaseUrl = supabaseUrl;

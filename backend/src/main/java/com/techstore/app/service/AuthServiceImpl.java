@@ -181,13 +181,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void updatePassword(String userId, String newPassword, HttpServletRequest httpRequest) {
+    public void updatePassword(String accessToken, String newPassword, HttpServletRequest httpRequest) {
         try {
             if (!PasswordUtils.isValid(newPassword)) {
                 throw new BusinessException("Invalid password format");
             }
 
-            supabaseAuthClient.updatePassword(userId, newPassword);
+            supabaseAuthClient.updatePassword(accessToken, newPassword);
             auditLogger.logPasswordUpdate(true, httpRequest);
         } catch (Exception ex) {
             auditLogger.logPasswordUpdate(false, httpRequest);
