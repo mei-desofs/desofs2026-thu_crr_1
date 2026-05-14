@@ -7,11 +7,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class CookiesHelper {
 
     public static void setAuthCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        // Access token — expira em 1 hora
+        // Access token - expira em 1 hora
         Cookie accessCookie = createCookie("access_token", accessToken, 3600);
         response.addCookie(accessCookie);
 
-        // Refresh token — expira em 7 dias
+        // Refresh token - expira em 7 dias
         Cookie refreshCookie = createCookie("refresh_token", refreshToken, 7 * 24 * 3600);
         response.addCookie(refreshCookie);
     }
@@ -26,11 +26,11 @@ public class CookiesHelper {
 
     public static Cookie createCookie(String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);        // não acessível via JavaScript
-        cookie.setSecure(true);          // só enviado via HTTPS (desliga em dev se precisares)
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
-        cookie.setAttribute("SameSite", "Strict");  // proteção CSRF
+        cookie.setAttribute("SameSite", "Strict");
         return cookie;
     }
 

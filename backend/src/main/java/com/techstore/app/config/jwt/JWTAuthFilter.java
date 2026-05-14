@@ -1,4 +1,4 @@
-package com.techstore.app.config.cookies;
+package com.techstore.app.config.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -33,10 +33,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        // Tenta ler do cookie primeiro
         String token = getCookieValue(request, "access_token");
 
-        // Se não estiver no cookie, tenta o header
         if (token == null) {
             String header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
