@@ -35,4 +35,14 @@ public class ErrorResponse {
         this(status, message, error);
         this.path = path;
     }
+
+    public ErrorResponse(int status, String message, String error, LocalDateTime timestamp, String path, List<String> errors, Map<String, String> fieldErrors) {
+        this.status = status;
+        this.message = message;
+        this.error = error;
+        this.timestamp = timestamp;
+        this.path = path;
+        this.errors = errors;
+        this.fieldErrors = fieldErrors;
+    }
 }
