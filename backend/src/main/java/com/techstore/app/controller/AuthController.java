@@ -23,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final Logger logger = LogManager.getLogger();
+
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
