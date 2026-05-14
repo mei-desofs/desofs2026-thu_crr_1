@@ -1,9 +1,11 @@
 package com.techstore.app.controller;
 
 import com.techstore.app.dto.auth.*;
+import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,18 +49,32 @@ public class AuthController {
     }
     @RateLimit("login")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest,  HttpServletResponse httpResponse) {
 
         LoginResponse response = authService.login(request, httpRequest);
-        return ResponseEntity.ok(response);
+
+        // Guarda os tokens em cookies HttpOnly
+        CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
+
+        return ResponseEntity.ok().build();
     }
     @RateLimit("login")
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(
-            @RequestBody @Valid RefreshRequest request,
-            HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
 
-        RefreshResponse response = authService.refreshToken(request.refreshToken(), httpRequest);
-        return ResponseEntity.ok(response);
+        // Lê o refresh_token do cookie
+        String refreshToken = CookiesHelper.getCookieValue(httpRequest, "refresh_token");
+        if (refreshToken == null) {
+            throw new IllegalArgumentException("Refresh token not found");
+        }
+
+        RefreshResponse response = authService.refreshToken(refreshToken, httpRequest);
+
+        // Atualiza os cookies com os novos tokens
+        CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
+
+        return ResponseEntity.ok().build();
     }
 }
