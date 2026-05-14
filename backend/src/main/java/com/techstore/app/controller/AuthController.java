@@ -29,7 +29,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    //@PreAuthorize("hasRole('MANAGER')")
     @RateLimit("invite")
     @PostMapping("/invite")
     public ResponseEntity<Void> invite(@RequestBody @Valid InviteSignupRequest request,
