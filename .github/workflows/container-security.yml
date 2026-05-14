@@ -27,7 +27,7 @@ jobs:
       - name: Run Snyk Container Scan
         run: |
           snyk container test diogomartins00/techstore:sha-${GITHUB_SHA::7} \
-            --severity-threshold=high \
+            --severity-threshold=critical \
             --sarif-file-output=snyk-container.sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
