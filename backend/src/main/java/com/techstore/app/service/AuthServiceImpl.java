@@ -45,6 +45,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+        // Check if email already exists in Supabase
+        if (supabaseAuthClient.emailExists(request.email())) {
+            throw new BusinessException("Email already registered in Supabase");
+        }
+
         try {
             SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
                     request.email(), request.password(), DEFAULT_ROLE
