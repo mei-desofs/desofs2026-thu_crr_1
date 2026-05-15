@@ -51,6 +51,7 @@ public class User {
         if (supabaseUserId == null) {
             throw new BusinessException("Supabase User ID cannot be null.");
         }
+        this.id = UserId.newId();
         this.email = email;
         this.role = role;
         this.supabaseUserId = supabaseUserId;
