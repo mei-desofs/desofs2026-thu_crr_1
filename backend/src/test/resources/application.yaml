@@ -18,3 +18,4 @@ supabase:
   anon-key: anon-key
   redirect-url: http://localhost/callback
   webhook-secret: dummy-webhook-secret
+  jwt-secret: jwt-secret

@@ -1,9 +1,6 @@
 package com.techstore.app.service.interfaces;
 
-import com.techstore.app.dto.auth.InviteSignupRequest;
-import com.techstore.app.dto.auth.LoginRequest;
-import com.techstore.app.dto.auth.LoginResponse;
-import com.techstore.app.dto.auth.RefreshResponse;
+import com.techstore.app.dto.auth.*;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
@@ -26,7 +23,7 @@ public interface AuthService {
 
     LoginResponse login(LoginRequest request, HttpServletRequest httpRequest);
 
-    RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest); // novo
+    RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest);
 
     void requestPasswordReset(String email, HttpServletRequest httpRequest);
 
