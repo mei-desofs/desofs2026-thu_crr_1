@@ -79,7 +79,7 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
-    @RateLimit("login")
+    @RateLimit("refresh-token")
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(
             HttpServletRequest httpRequest,
