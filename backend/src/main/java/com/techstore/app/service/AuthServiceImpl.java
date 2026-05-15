@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.shared.EmailAddress;
 import com.techstore.app.dto.auth.*;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Service
@@ -23,6 +25,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${supabase.webhook-secret}")
     private String webhookSecret;
+    @Value("${supabase.jwt-secret}")
+    private String jwtSecret;
 
     private final UserService userService;
 
@@ -192,17 +196,46 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest) {
+
+        String userId = "unknown";
+
         try {
+
             RefreshResponse response = supabaseAuthClient.refreshToken(refreshToken);
 
-            // To Do: extrair o userId do token para o log
-            auditLogger.logTokenRefresh("unknown", true, httpRequest);
+            userId = extractUserId(response.accessToken());
+
+            auditLogger.logTokenRefresh(userId, true, httpRequest);
 
             return response;
 
         } catch (Exception ex) {
-            auditLogger.logTokenRefresh("unknown", false, httpRequest);
+
+            auditLogger.logTokenRefresh(userId, false, httpRequest);
             throw ex;
+        }
+    }
+    private String extractUserId(String token) {
+        try {
+            String[] chunks = token.split("\\.");
+
+            if (chunks.length != 3) {
+                return "unknown";
+            }
+
+            String payload = new String(
+                    java.util.Base64.getUrlDecoder().decode(chunks[1]),
+                    StandardCharsets.UTF_8
+            );
+
+            ObjectMapper mapper = new ObjectMapper();
+
+            Map<String, Object> claims = mapper.readValue(payload, Map.class);
+
+            return (String) claims.get("sub");
+
+        } catch (Exception e) {
+            return "unknown";
         }
     }
 

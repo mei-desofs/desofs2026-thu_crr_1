@@ -39,9 +39,6 @@ public interface AuthService {
      */
     LoginResponse login(LoginRequest request, HttpServletRequest httpRequest);
 
-    /**
-     * Refreshes an access token.
-     */
     RefreshResponse refreshToken(String refreshToken, HttpServletRequest httpRequest);
 
     void requestPasswordReset(String email, HttpServletRequest httpRequest);
