@@ -25,3 +25,13 @@ ratelimit:
       type: IP
       capacity: 5
       duration: PT1M
+
+    register:
+        type: IP
+        capacity: 5
+        duration: PT1M
+
+    logout:
+      type: IP
+      capacity: 5
+      duration: PT1M  

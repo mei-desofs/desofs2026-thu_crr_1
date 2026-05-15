@@ -20,7 +20,6 @@ import java.util.Map;
 public class SupabaseAuthClient {
 
     private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users/";
-    private static final String AUTH_ADMIN_USERS_LIST = "/auth/v1/admin/users";
     private static final String AUTH_INVITE = "/auth/v1/invite";
     private static final String AUTH_VERIFY = "/auth/v1/verify";
     private static final String AUTH_SIGNUP = "/auth/v1/signup";
@@ -30,7 +29,6 @@ public class SupabaseAuthClient {
     private static final String AUTH_USER = "/auth/v1/user";
     private static final String AUTH_RECOVER = "/auth/v1/recover";
     private final String supabaseUrl;
-    private final String supabaseServiceRoleKey;
     private final String redirectUrl;
     private final String supabaseAnonKey;
     private final RestTemplate restTemplate;
@@ -38,12 +36,10 @@ public class SupabaseAuthClient {
 
     public SupabaseAuthClient(@Value("${supabase.url}") String supabaseUrl,
                               @Value("${supabase.anon-key}") String supabaseAnonKey,
-                              @Value("${supabase.service-role-key}") String supabaseServiceRoleKey,
                               @Value("${supabase.redirect-url}") String redirectUrl,
                               @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.supabaseUrl = supabaseUrl;
         this.supabaseAnonKey = supabaseAnonKey;
-        this.supabaseServiceRoleKey = supabaseServiceRoleKey;
         this.redirectUrl = redirectUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
@@ -57,26 +53,6 @@ public class SupabaseAuthClient {
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 404) return false;
             throw mapException(ex);
-        }
-    }
-
-    public boolean emailExists(String email) {
-        String url = supabaseUrl + AUTH_ADMIN_USERS_LIST + "?email=" + email;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("apikey", supabaseServiceRoleKey);
-        headers.setBearerAuth(supabaseServiceRoleKey);
-        HttpEntity<?> entity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<?> response = restTemplate.exchange(url, HttpMethod.GET, entity, Object.class);
-            if (response.getBody() instanceof java.util.List<?> list) {
-                return !list.isEmpty();
-            }
-            return false;
-        } catch (HttpStatusCodeException ex) {
-            if (ex.getStatusCode().value() == 404) return false;
-            // If service role key is invalid or other errors, assume email doesn't exist
-            return false;
         }
     }
 

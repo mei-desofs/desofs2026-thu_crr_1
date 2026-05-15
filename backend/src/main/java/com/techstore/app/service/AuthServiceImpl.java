@@ -45,29 +45,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
-        // Check if email already exists in Supabase
-        if (supabaseAuthClient.emailExists(request.email())) {
-            throw new BusinessException("Email already registered in Supabase");
-        }
-
         try {
+            // Let Supabase handle duplicate email validation and throw BusinessException
             SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
                     request.email(), request.password(), DEFAULT_ROLE
             );
-
-            String userId = null;
-            if (supabaseResponse.user() != null) {
-                userId = supabaseResponse.user().id();
-            }
 
             auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
 
             return new RegisterResponse(
                     request.email(),
-                    userId,
+                    null,
                     "Check your email for confirmation link"
             );
 
+        } catch (BusinessException ex) {
+            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+            throw ex; // let GlobalExceptionHandler map it
         } catch (Exception ex) {
             auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
             throw ex;
@@ -77,7 +71,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String accessToken, HttpServletRequest httpRequest) {
         try {
-            supabaseAuthClient.revokeToken(accessToken);
+            if (accessToken != null && !accessToken.isBlank()) {
+                supabaseAuthClient.revokeToken(accessToken);
+            } else {
+                logger.info("No access token provided to revoke during logout");
+            }
             auditLogger.logLogoutAttempt("unknown", true, httpRequest);
         } catch (Exception ex) {
             auditLogger.logLogoutAttempt("unknown", false, httpRequest);

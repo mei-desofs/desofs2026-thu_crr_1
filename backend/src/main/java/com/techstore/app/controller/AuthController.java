@@ -12,6 +12,7 @@ import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,7 +95,7 @@ public class AuthController {
         return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {});
     }
 
-    @RateLimit("auth")
+    @RateLimit("register")
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request, HttpServletRequest httpRequest) {
         try {
@@ -115,10 +116,23 @@ public class AuthController {
         }
     }
 
-    @RateLimit("auth")
+    @RateLimit("logout")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutRequest request, HttpServletRequest httpRequest) {
-        authService.logout(request.accessToken(), httpRequest);
+    public ResponseEntity<Void> logout(@RequestBody(required = false) LogoutRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        String accessToken = null;
+        if (request != null && request.accessToken() != null && !request.accessToken().isBlank()) {
+            accessToken = request.accessToken();
+        } else {
+            accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        }
+
+        if (accessToken != null && !accessToken.isBlank()) {
+            authService.logout(accessToken, httpRequest);
+        }
+
+        // Clear auth cookies regardless
+        CookiesHelper.clearAuthCookies(httpResponse);
+
         return ResponseEntity.ok().build();
     }
 
