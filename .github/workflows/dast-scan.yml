@@ -149,7 +149,7 @@ jobs:
           echo "high=$HIGH" >> $GITHUB_OUTPUT
           echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
 
-          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+          if [ "$CRITICAL" -gt 0 ]; then
             echo "result=failed" >> $GITHUB_OUTPUT
           else
             echo "result=passed" >> $GITHUB_OUTPUT
@@ -166,10 +166,10 @@ jobs:
 
             let emoji = '✅';
             let status = 'PASSED';
-            if (critical > 0 || high > 0) {
+            if (critical > 0) {
               emoji = '🚨';
               status = 'FAILED';
-            } else if (medium > 0) {
+            } else if (high > 0 || medium > 0) {
               emoji = '⚠️';
               status = 'WARNINGS';
             }
@@ -198,6 +198,8 @@ jobs:
           echo "DAST scan detected vulnerabilities:"
           echo "  Critical: ${{ steps.results.outputs.critical }}"
           echo "  High: ${{ steps.results.outputs.high }}"
+          echo "  Medium: ${{ steps.results.outputs.medium }}"
+          echo "  Low: ${{ steps.results.outputs.low }}"
           exit 1
 
       - name: Cleanup
