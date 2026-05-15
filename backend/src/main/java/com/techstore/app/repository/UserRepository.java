@@ -14,7 +14,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findBySupabaseUserId(SupabaseUserId supabaseUserId);
 
-    Optional<User> findBySupabaseUserId(String supabaseUserId);
-
     User save(User user);
 }

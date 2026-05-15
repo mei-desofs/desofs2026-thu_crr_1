@@ -2,6 +2,7 @@ package com.techstore.app.service;
 
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
+import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.repository.UserRepository;
@@ -30,11 +31,11 @@ public class UserServiceImpl implements UserService {
     }
 
     public java.util.Optional<User> getUserBySupabaseId(String supabaseUserId) {
-        return userRepository.findBySupabaseUserId(supabaseUserId);
+        return userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
     }
 
     public User confirmUserEmail(String supabaseUserId) {
-        var user = userRepository.findBySupabaseUserId(supabaseUserId)
+        var user = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
                 .orElseThrow(() -> new BusinessException("User not found"));
         user.markEmailAsValidated();
         return userRepository.save(user);
