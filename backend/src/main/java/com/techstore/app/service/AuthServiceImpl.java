@@ -2,7 +2,6 @@ package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.dto.auth.*;
-import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
@@ -14,6 +13,8 @@ import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final String DEFAULT_ROLE = "customer";
 
     @Value("${supabase.webhook-secret}")
     private String webhookSecret;
@@ -30,6 +31,46 @@ public class AuthServiceImpl implements AuthService {
         this.auditLogger = auditLogger;
     }
 
+    @Override
+public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+    try {
+        SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+            request.email(), request.password(), DEFAULT_ROLE
+        );
+
+        // Supabase com confirmação de email ativa devolve user mas sem access_token
+        // O campo user pode existir mesmo sem access_token
+        String userId = null;
+        if (supabaseResponse.user() != null) {
+            userId = supabaseResponse.user().id();
+        }
+
+        auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
+
+        return new RegisterResponse(
+            request.email(),
+            userId,
+            "Check your email for confirmation link"
+        );
+
+    } catch (Exception ex) {
+        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+        throw ex;
+    }
+}
+
+    @Override
+    public void logout(String accessToken, HttpServletRequest httpRequest) {
+        try {
+            supabaseAuthClient.revokeToken(accessToken);
+            auditLogger.logLogoutAttempt("unknown", true, httpRequest);
+        } catch (Exception ex) {
+            auditLogger.logLogoutAttempt("unknown", false, httpRequest);
+            throw ex;
+        }
+    }
+
+    @Override
     public void inviteUser(InviteSignupRequest inviteSignupRequest) {
         supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
     }
@@ -45,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> oldRecord = (Map<String, Object>) payload.get("old_record");
 
         String emailConfirmedAt = (String) record.get("email_confirmed_at");
-        String oldEmailConfirmedAt = (String) oldRecord.get("email_confirmed_at");
+        String oldEmailConfirmedAt = oldRecord != null ? (String) oldRecord.get("email_confirmed_at") : null;
 
         if (emailConfirmedAt == null || oldEmailConfirmedAt != null) {
             return true;
@@ -54,14 +95,22 @@ public class AuthServiceImpl implements AuthService {
         String supabaseUserId = (String) record.get("id");
         String email = (String) record.get("email");
         Map<String, Object> metadata = (Map<String, Object>) record.get("raw_user_meta_data");
-        String role = (String) metadata.get("role");
+        String role = metadata != null ? (String) metadata.get("role") : null;
+        if (role == null || role.isBlank()) {
+            role = DEFAULT_ROLE;
+        }
 
-        if (role != null) {
+        // Try to find existing user; if not found, create new one
+        var existingUser = userService.getUserBySupabaseId(supabaseUserId);
+        if (existingUser.isEmpty()) {
             userService.registerUser(supabaseUserId, email, role);
         }
+        // Mark email as validated in the database
+        userService.confirmUserEmail(supabaseUserId);
 
         return true;
     }
+
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {

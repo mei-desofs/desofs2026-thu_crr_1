@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "email_validated", nullable = false)
+    private boolean emailValidated = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -63,5 +66,9 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void markEmailAsValidated() {
+        this.emailValidated = true;
     }
 }

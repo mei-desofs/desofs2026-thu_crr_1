@@ -28,4 +28,15 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(user);
     }
+
+    public java.util.Optional<User> getUserBySupabaseId(String supabaseUserId) {
+        return userRepository.findBySupabaseUserId(supabaseUserId);
+    }
+
+    public User confirmUserEmail(String supabaseUserId) {
+        var user = userRepository.findBySupabaseUserId(supabaseUserId)
+                .orElseThrow(() -> new BusinessException("User not found"));
+        user.markEmailAsValidated();
+        return userRepository.save(user);
+    }
 }
