@@ -39,6 +39,16 @@ jobs:
     uses: ./.github/workflows/security-sast.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  container-security:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/container-security.yml
+    needs:
+      - docker
+    permissions:
+      security-events: write
+      contents: read
+    secrets: inherit
   docker:
     if: github.event_name == 'push'
     uses: ./.github/workflows/docker.yml
@@ -54,9 +64,8 @@ jobs:
     if: github.event_name == 'push'
     uses: ./.github/workflows/deploy.yml
     needs:
-      - docker
+      - container-security
     secrets: inherit
-
   release-please:
     if: github.event_name == 'push'
     uses: ./.github/workflows/release.yml

@@ -21,12 +21,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User registerUser(String supabaseUserId, String email, String role) {
         Email emailVO = new Email(email);
-        if (userRepository.findByEmail(emailVO).isPresent()) {
-            throw new BusinessException("Email already in use");
-        }
-        User user = new User(emailVO, Role.fromString(role),
-                com.techstore.app.domain.user.SupabaseUserId.fromString(supabaseUserId));
 
+        if (userRepository.findByEmail(emailVO).isPresent()) {
+            throw new SecurityException("Email is already in use");
+        }
+
+        SupabaseUserId sid = SupabaseUserId.fromString(supabaseUserId);
+
+        if (userRepository.existsBySupabaseUserId(sid)) {
+            return userRepository.findBySupabaseUserId(sid).orElseThrow();
+        }
+
+        User user = new User(emailVO, Role.fromString(role), sid);
         return userRepository.save(user);
     }
 

@@ -7,7 +7,7 @@ COPY src ./src
 
 RUN mvn -B -DskipTests package
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
