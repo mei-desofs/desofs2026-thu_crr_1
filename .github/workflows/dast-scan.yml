@@ -52,6 +52,7 @@ jobs:
           POSTGRES_PASSWORD: techstore
           POSTGRES_DB: techstore
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || '' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || '' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
           SUPABASE_WEBHOOK_SECRET: ${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}
           SUPABASE_REDIRECT_URL: ${{ secrets.SUPABASE_REDIRECT_URL || '' }}
