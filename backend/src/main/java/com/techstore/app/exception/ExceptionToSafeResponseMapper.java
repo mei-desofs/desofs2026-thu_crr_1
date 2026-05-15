@@ -38,7 +38,7 @@ public class ExceptionToSafeResponseMapper {
     public static ErrorResponse mapAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
-                GENERIC_MESSAGE,
+                "Authentication failed: " + ex.getMessage(),
                 "Unauthorized",
                 request.getRequestURI());
         response.setCode(ErrorCodeConstants.AUTH_FAILED);
@@ -49,7 +49,7 @@ public class ExceptionToSafeResponseMapper {
     public static ErrorResponse mapBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
-                GENERIC_MESSAGE,
+                "Invalid username or password",
                 "Unauthorized",
                 request.getRequestURI());
         response.setCode(ErrorCodeConstants.AUTH_INVALID_CREDENTIALS);
@@ -61,7 +61,7 @@ public class ExceptionToSafeResponseMapper {
             InternalAuthenticationServiceException ex, HttpServletRequest request) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
-                GENERIC_MESSAGE,
+                "Authentication service error: " + ex.getMessage(),
                 "Unauthorized",
                 request.getRequestURI());
         response.setCode(ErrorCodeConstants.AUTH_SERVICE_ERROR);
@@ -82,9 +82,11 @@ public class ExceptionToSafeResponseMapper {
 
     public static ErrorResponse mapIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
 
+        String message = (ex.getMessage() != null) ? ex.getMessage() : "Invalid request data";
+
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                GENERIC_MESSAGE,
+                message,
                 "Bad Request",
                 request.getRequestURI());
         response.setCode(ErrorCodeConstants.INVALID_REQUEST);
