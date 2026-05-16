@@ -17,9 +17,9 @@ ratelimit:
       duration: PT1H
 
     login:
-        type: IP
-        capacity: 5
-        duration: PT1M
+      type: IP
+      capacity: 5
+      duration: PT1M
 
     refresh-token:
       type: IP
@@ -27,11 +27,21 @@ ratelimit:
       duration: PT1M
 
     register:
-        type: IP
-        capacity: 5
-        duration: PT1M
+      type: IP
+      capacity: 5
+      duration: PT1M
 
     logout:
       type: IP
       capacity: 5
-      duration: PT1M  
+      duration: PT1M
+
+    list-products:
+      type: IP
+      capacity: 60
+      duration: PT1M
+
+    search-products:
+      type: IP
+      capacity: 60
+      duration: PT1M
