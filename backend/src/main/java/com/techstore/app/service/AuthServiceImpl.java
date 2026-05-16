@@ -47,15 +47,20 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         try {
             // Let Supabase handle duplicate email validation and throw BusinessException
-            supabaseAuthClient.signUp(
+            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
                     request.email(), request.password(), DEFAULT_ROLE
             );
+
+            String userId = null;
+            if (supabaseResponse.user() != null) {
+            userId = supabaseResponse.user().id();
+            }
 
             auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
 
             return new RegisterResponse(
                     request.email(),
-                    null,
+                userId,
                     "Check your email for confirmation link"
             );
 
