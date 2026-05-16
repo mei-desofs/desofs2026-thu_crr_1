@@ -56,6 +56,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
           SUPABASE_WEBHOOK_SECRET: ${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}
           SUPABASE_REDIRECT_URL: ${{ secrets.SUPABASE_REDIRECT_URL || '' }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET || '' }}
+          
         run: |
           JAR_FILE=$(find target -name "*.jar" -type f | head -1)
           if [ -z "$JAR_FILE" ]; then
