@@ -1,0 +1,23 @@
+# ZAP Passive Scan Configuration
+# Format: RULE_ID	LEVEL	DESCRIPTION
+
+10015	IGNORE	Cache-control Headers Missing
+10020	IGNORE	X-Frame-Options Header Missing
+10021	IGNORE	X-Content-Type-Options Header Missing
+90004	IGNORE	Cross-Origin-Resource-Policy Missing
+
+10202	IGNORE	Absence of Anti-CSRF Tokens
+3	IGNORE	Session ID in URL Rewrite
+
+20016	IGNORE	Cross-Domain Misconfiguration
+
+10023	WARN	Information Disclosure - Debug Error Messages
+90022	WARN	Application Error Disclosure
+100000	WARN	Server Error Response Codes
+
+40012	FAIL	Cross Site Scripting (Reflected)
+40014	FAIL	Cross Site Scripting (Persistent)
+40018	FAIL	SQL Injection
+90019	FAIL	Server Side Code Injection
+90020	FAIL	Remote OS Command Injection
+90023	FAIL	XML External Entity Attack

@@ -19,6 +19,16 @@ jobs:
     secrets:
       GITLEAKS_SHA256: ${{ secrets.GITLEAKS_SHA256 }}
 
+  dast-scan:
+    uses: ./.github/workflows/dast-scan.yml
+    needs:
+      - build-test
+    permissions:
+      security-events: write
+      contents: read
+      checks: write
+      pull-requests: write
+    secrets: inherit
 
   sast:
     needs: build-test
