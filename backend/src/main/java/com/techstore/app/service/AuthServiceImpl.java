@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         try {
             // Let Supabase handle duplicate email validation and throw BusinessException
-            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+            supabaseAuthClient.signUp(
                     request.email(), request.password(), DEFAULT_ROLE
             );
 
@@ -70,17 +70,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String accessToken, HttpServletRequest httpRequest) {
-        try {
-            if (accessToken != null && !accessToken.isBlank()) {
+        if (accessToken != null && !accessToken.isBlank()) {
+            try {
                 supabaseAuthClient.revokeToken(accessToken);
-            } else {
-                logger.info("No access token provided to revoke during logout");
+            } catch (Exception ex) {
+                // Logout must still succeed locally even if token is already invalid on Supabase.
+                logger.warn("Failed to revoke access token during logout; proceeding with local cookie cleanup", ex);
             }
-            auditLogger.logLogoutAttempt("unknown", true, httpRequest);
-        } catch (Exception ex) {
-            auditLogger.logLogoutAttempt("unknown", false, httpRequest);
-            throw ex;
+        } else {
+            logger.info("No access token provided to revoke during logout");
         }
+
+        auditLogger.logLogoutAttempt("unknown", true, httpRequest);
     }
 
     @Override
