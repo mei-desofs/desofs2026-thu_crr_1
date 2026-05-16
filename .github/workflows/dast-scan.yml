@@ -1,0 +1,214 @@
+name: DAST Scan (OWASP ZAP)
+
+on:
+  workflow_call:
+
+permissions:
+  security-events: write
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  dast-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: techstore
+          POSTGRES_PASSWORD: techstore
+          POSTGRES_DB: techstore
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build application
+        working-directory: backend
+        run: mvn clean package -DskipTests -q
+
+      - name: Start application
+        working-directory: backend
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/techstore
+          POSTGRES_USER: techstore
+          POSTGRES_PASSWORD: techstore
+          POSTGRES_DB: techstore
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || '' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || '' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+          SUPABASE_WEBHOOK_SECRET: ${{ secrets.SUPABASE_WEBHOOK_SECRET || '' }}
+          SUPABASE_REDIRECT_URL: ${{ secrets.SUPABASE_REDIRECT_URL || '' }}
+          SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET || '' }}
+          
+        run: |
+          JAR_FILE=$(find target -name "*.jar" -type f | head -1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "ERROR: JAR file not found in target/"
+            ls -la target/
+            exit 1
+          fi
+          echo "Starting application: $JAR_FILE"
+          java -jar "$JAR_FILE" > /tmp/app.log 2>&1 &
+          echo $! > /tmp/app.pid
+          sleep 2
+
+      - name: Wait for application ready
+        run: |
+          echo "Waiting for application health check..."
+          for i in {1..60}; do
+            if curl -s -f http://localhost:8081/api/actuator/health >/dev/null 2>&1; then
+              echo "✓ Application is ready"
+              exit 0
+            fi
+            echo "  Attempt $i/60 - retrying..."
+            sleep 1
+          done
+          echo "✗ Application failed to start"
+          cat /tmp/app.log
+          exit 1
+
+      - name: Run OWASP ZAP scan
+        run: |
+          mkdir -p /tmp/dast-reports
+          chmod 777 /tmp/dast-reports
+          docker run --rm \
+            -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
+            -v /tmp/dast-reports:/zap/wrk \
+            --add-host="host.docker.internal:host-gateway" \
+            --user root \
+            zaproxy/zap-stable \
+            zap-api-scan.py \
+              -t http://host.docker.internal:8081/api/v3/api-docs \
+              -f openapi \
+              -S \
+              -r /zap/wrk/zap-report.html \
+              -x /zap/wrk/zap-report.xml \
+              -c /zap/custom/zap-policy.yaml || true
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-html-report
+          path: /tmp/dast-reports/zap-report.html
+          retention-days: 30
+
+      - name: Upload XML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-xml-report
+          path: /tmp/dast-reports/zap-report.xml
+          retention-days: 30
+
+      - name: Parse vulnerability results
+        if: always()
+        id: results
+        run: |
+          if [ ! -f /tmp/dast-reports/zap-report.xml ]; then
+            echo "No XML report found"
+            echo "result=success" >> $GITHUB_OUTPUT
+            echo "critical=0" >> $GITHUB_OUTPUT
+            echo "high=0" >> $GITHUB_OUTPUT
+            echo "medium=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Parse XML to count alerts by risk level
+          # ZAP XML uses <riskcode>N</riskcode> where 3=High, 2=Medium, 1=Low, 0=Info
+          CRITICAL=$(grep -o '<riskcode>3</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          HIGH=$(grep -o '<riskcode>2</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          MEDIUM=$(grep -o '<riskcode>1</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+
+          # Trim whitespace
+          CRITICAL=$(echo "$CRITICAL" | xargs)
+          HIGH=$(echo "$HIGH" | xargs)
+          MEDIUM=$(echo "$MEDIUM" | xargs)
+
+          # Default to 0 if empty
+          CRITICAL=${CRITICAL:-0}
+          HIGH=${HIGH:-0}
+          MEDIUM=${MEDIUM:-0}
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "result=failed" >> $GITHUB_OUTPUT
+          else
+            echo "result=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const critical = parseInt('${{ steps.results.outputs.critical }}') || 0;
+            const high = parseInt('${{ steps.results.outputs.high }}') || 0;
+            const medium = parseInt('${{ steps.results.outputs.medium }}') || 0;
+
+            let emoji = '✅';
+            let status = 'PASSED';
+            if (critical > 0) {
+              emoji = '🚨';
+              status = 'FAILED';
+            } else if (high > 0 || medium > 0) {
+              emoji = '⚠️';
+              status = 'WARNINGS';
+            }
+
+            const body = `## ${emoji} DAST Security Scan: ${status}
+
+            | Severity | Count |
+            |----------|-------|
+            | Critical | ${critical} |
+            | High | ${high} |
+            | Medium/Low | ${medium} |
+
+            View the full report in [Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail if vulnerabilities found
+        if: steps.results.outputs.result == 'failed'
+        run: |
+          echo "DAST scan detected vulnerabilities:"
+          echo "  Critical: ${{ steps.results.outputs.critical }}"
+          echo "  High: ${{ steps.results.outputs.high }}"
+          echo "  Medium: ${{ steps.results.outputs.medium }}"
+          echo "  Low: ${{ steps.results.outputs.low }}"
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) 2>/dev/null || true
+            sleep 1
+          fi

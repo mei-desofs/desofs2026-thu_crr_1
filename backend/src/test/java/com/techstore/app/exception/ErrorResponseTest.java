@@ -55,15 +55,7 @@ class ErrorResponseTest {
         Map<String, String> fieldErrors = new HashMap<>();
         fieldErrors.put("username", "Required");
 
-        ErrorResponse errorResponse = new ErrorResponse(
-            status,
-            message,
-            error,
-            timestamp,
-            path,
-            errors,
-            fieldErrors
-        );
+        ErrorResponse errorResponse = new ErrorResponse(status, message, error, timestamp, path, errors, fieldErrors);
 
         assertEquals(status, errorResponse.getStatus());
         assertEquals(message, errorResponse.getMessage());

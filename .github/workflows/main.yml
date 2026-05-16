@@ -34,11 +34,23 @@ jobs:
       actions: read
       contents: read
     secrets: inherit
+
   sast:
     needs: build-test
     uses: ./.github/workflows/security-sast.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  dast-scan:
+    uses: ./.github/workflows/dast-scan.yml
+    needs:
+      - build-test
+    permissions:
+      security-events: write
+      contents: read
+      checks: write
+      pull-requests: write
+    secrets: inherit
 
   container-security:
     if: github.event_name == 'push'
@@ -49,12 +61,15 @@ jobs:
       security-events: write
       contents: read
     secrets: inherit
+
   docker:
     if: github.event_name == 'push'
     uses: ./.github/workflows/docker.yml
     needs:
       - security-secrets
       - dependency-scanning
+      - dast-scan
+      - sast
     permissions:
       contents: read
       packages: write
@@ -66,6 +81,7 @@ jobs:
     needs:
       - container-security
     secrets: inherit
+
   release-please:
     if: github.event_name == 'push'
     uses: ./.github/workflows/release.yml

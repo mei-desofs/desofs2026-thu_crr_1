@@ -3,7 +3,6 @@ package com.techstore.app.controller;
 import com.techstore.app.service.interfaces.BackupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +17,7 @@ public class BackupController {
     }
 
     @PostMapping("/products")
-    public ResponseEntity<String> backupProducts(@RequestParam String command) {
-        return ResponseEntity.ok(backupService.execute(command));
+    public ResponseEntity<String> backupProducts() {
+        return ResponseEntity.ok(backupService.execute("backup_products.sh"));
     }
 }

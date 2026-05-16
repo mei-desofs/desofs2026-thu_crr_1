@@ -7,13 +7,12 @@ COPY src ./src
 
 RUN mvn -B -DskipTests package
 
-
 FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
 COPY --from=build /workspace/target/*.jar /app/app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

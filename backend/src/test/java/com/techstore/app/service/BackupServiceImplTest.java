@@ -162,7 +162,7 @@ class BackupServiceImplTest {
 	@Test
 	public void testAbsolutePathAttempt() {
 		String path = System.getProperty("os.name").toLowerCase().contains("win")
-				? "C:\\Windows\\System32\\drivers\\etc\\hosts"
+				? "C:/Windows/System32/drivers/etc/hosts"
 				: "/etc/passwd";
 
 		BackupException ex = assertThrows(BackupException.class,

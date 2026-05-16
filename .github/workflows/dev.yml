@@ -39,3 +39,14 @@ jobs:
       actions: read
       contents: read
     secrets: inherit
+
+  dast-scan:
+    uses: ./.github/workflows/dast-scan.yml
+    needs:
+      - build-test
+    permissions:
+      security-events: write
+      contents: read
+      checks: write
+      pull-requests: write
+    secrets: inherit
