@@ -150,15 +150,184 @@ This naming convention makes it easy to identify the purpose of a branch and cor
 
 Our CI/CD pipeline follows a structured approach with different workflows triggered at different stages of the development process:
 
-### Main Pipeline
+- **Feature pipeline**: Runs for feature branches and pull requests. Provides fast feedback with linting, unit tests, and lightweight checks. Triggered on PR creation and pushes to feature branches to catch regressions early and speed up development.
+- **Dev pipeline**: Targets the `dev` branch and the integration environment. Runs faster but thorough checks (build, tests, and selected security scans). Triggered on pushes to `dev`.
+- **Main pipeline**: Protects the `main` branch. Runs a full build, unit and integration tests, SAST/DAST, container security scans, and release tasks. Triggered on pushes and merged pull requests to `main` to ensure production-grade artifacts and safe deployments.
 
-### Dev Pipeline
+Benefits:
 
-### Feature Pipeline
+- **Faster feedback**: Feature pipelines give quick results so developers can iterate faster.
+- **Safer releases**: The main pipeline enforces comprehensive testing and security scans before production.
+- **Clear separation of concerns**: Dev pipeline supports integration testing without blocking the main branch.
+- **Efficient CI usage**: Heavy scans and deployments run only where needed, reducing CI time and cost.
+
+### Example of workflow run to feature branch
+
+<img src="./images/phase-2/feature-workflow.png" alt="Feature Branch Workflow" width="800">
+
+### Example of workflow run to dev branch
+
+<img src="./images/phase-2/dev-workflow.png" alt="Dev Branch Workflow" width="800">
+
+### Example of workflow run to main branch
+
+<img src="./images/phase-2/main-workflow.png" alt="Main Branch Workflow" width="800">
 
 ## Build & Test
 
+The build and test pipeline is implemented as a reusable GitHub Actions workflow ([build-test workflow](../.github/workflows/build-test.yml)) and runs the project build, unit tests, integration tests and collects coverage reports. The workflow is invoked by main, dev and feature pipelines.
+
+### Workflow Implementation
+
+```yaml
+- name: Build
+   working-directory: backend
+   run: mvn clean compile
+
+- name: Unit Tests
+   working-directory: backend
+   run: mvn test
+
+- name: Integration Tests + Coverage
+   working-directory: backend
+   run: mvn verify
+
+- name: Upload coverage
+   uses: actions/upload-artifact@v4
+   with:
+      name: jacoco-report
+      path: backend/target/site/jacoco
+```
+
+### Maven Configuration
+
+Maven configuration in [`pom.xml`](../backend/pom.xml) defines the test execution and coverage collection:
+
+- `maven-surefire-plugin` (unit tests):
+
+```xml
+<plugin>
+   <groupId>org.apache.maven.plugins</groupId>
+   <artifactId>maven-surefire-plugin</artifactId>
+   <version>3.2.5</version>
+   <configuration>
+      <excludes>
+         <exclude>**/*IntegrationTest.java</exclude>
+      </excludes>
+   </configuration>
+</plugin>
+```
+
+- `maven-failsafe-plugin` (integration tests):
+
+```xml
+<plugin>
+   <groupId>org.apache.maven.plugins</groupId>
+   <artifactId>maven-failsafe-plugin</artifactId>
+   <version>3.2.5</version>
+   <executions>
+      <execution>
+         <goals>
+            <goal>integration-test</goal>
+            <goal>verify</goal>
+         </goals>
+         <configuration>
+            <includes>
+               <include>**/*IntegrationTest.java</include>
+            </includes>
+         </configuration>
+      </execution>
+   </executions>
+</plugin>
+```
+
+- `jacoco-maven-plugin` (coverage):
+
+```xml
+<plugin>
+   <groupId>org.jacoco</groupId>
+   <artifactId>jacoco-maven-plugin</artifactId>
+   <version>0.8.11</version>
+   <configuration>
+      <excludes>
+         <exclude>com/techstore/app/bootstrapping/**</exclude>
+         <exclude>com/techstore/app/client/**</exclude>
+         <exclude>com/techstore/app/config/**</exclude>
+         <exclude>com/techstore/app/dto/**</exclude>
+      </excludes>
+      <rules>
+         <rule>
+            <element>BUNDLE</element>
+            <limits>
+               <limit>
+                  <counter>LINE</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.60</minimum>
+               </limit>
+            </limits>
+         </rule>
+      </rules>
+   </configuration>
+</plugin>
+```
+
+Notes:
+- The project separates unit tests (Surefire) from integration tests (Failsafe) using the `*IntegrationTest.java` naming convention. This allows the workflow to run fast unit test passes and then run integration tests and coverage in a later `mvn verify` step.
+- JaCoCo is configured to produce a coverage report and enforce a minimum line coverage ratio of 60%.
+
 ## Security Secrets Management
+
+Secret scanning is a critical security practice that automatically detects exposed credentials, tokens, and other sensitive data in the repository. Our team uses **Gitleaks** to perform secret scanning. The scanning process is triggered on every workflow call and targets the repository sources (`backend` directory). Results are uploaded to GitHub's security dashboard in SARIF format and archived as artifacts so the team can triage findings.
+
+The Gitleaks integration is implemented as a reusable workflow ([security secrets workflow](../.github/workflows/security-secrets.yml)) that downloads a pinned binary, verifies its checksum (provided via the `GITLEAKS_SHA256` secret), runs the scan with `--no-git` against the `backend` folder, and uploads the SARIF report even when the scan fails the job.
+
+### Workflow Implementation
+
+```yaml
+name: Security Secrets Scan
+
+- name: Install Gitleaks
+   run: |
+      curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o gitleaks.tar.gz
+      tar -xzf gitleaks.tar.gz
+      chmod +x gitleaks
+      sudo mv gitleaks /usr/local/bin/
+
+- name: Verify checksum
+   run: |
+      echo "${GITLEAKS_HASH}  gitleaks.tar.gz" > checksum.txt
+      sha256sum --check checksum.txt
+   env:
+      GITLEAKS_HASH: ${{ secrets.GITLEAKS_SHA256 }}
+
+- name: Verify
+   run: gitleaks version
+
+- name: Run Gitleaks
+   run: |
+      gitleaks detect \
+         --no-git \
+         --source backend \
+         --report-format sarif \
+         --report-path gitleaks.sarif \
+         --exit-code 1 \
+         --redact
+
+- name: Upload to GitHub Security
+   if: always()
+   uses: github/codeql-action/upload-sarif@v4
+   with:
+      sarif_file: gitleaks.sarif
+
+- name: Upload artifact
+   if: always()
+   uses: actions/upload-artifact@v4
+   with:
+      name: gitleaks-sarif
+      path: gitleaks.sarif
+```
+
+<img src="./images/phase-2/gitleaks.png" alt="Gitleaks run example" width="800">
 
 ## Dependency Scanning
 
