@@ -69,6 +69,7 @@ jobs:
       - security-secrets
       - dependency-scanning
       - dast-scan
+      - sast
     permissions:
       contents: read
       packages: write
