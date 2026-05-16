@@ -50,6 +50,16 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/confirm-invite")
+    public ResponseEntity<Void> confirmInvite(
+            @RequestHeader("x-webhook-secret") String secret,
+            @RequestBody Map<String, Object> payload) {
+        if (!authService.confirmInvite(secret, payload)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmEmail(@RequestBody ConfirmEmailRequest request) {
         try {
