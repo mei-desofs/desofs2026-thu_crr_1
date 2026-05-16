@@ -22,13 +22,13 @@ public class SupabaseAuthClient {
     private static final String AUTH_ADMIN_USERS = "/auth/v1/admin/users/";
     private static final String AUTH_INVITE = "/auth/v1/invite";
     private static final String AUTH_VERIFY = "/auth/v1/verify";
+    private static final String AUTH_SIGNUP = "/auth/v1/signup";
     private static final String AUTH_TOKEN = "/auth/v1/token?grant_type=password";
     private static final String AUTH_REFRESH = "/auth/v1/token?grant_type=refresh_token";
-    private static final String AUTH_RECOVER = "/auth/v1/recover";
+    private static final String AUTH_REVOKE = "/auth/v1/token";
     private static final String AUTH_USER = "/auth/v1/user";
-
+    private static final String AUTH_RECOVER = "/auth/v1/recover";
     private final String supabaseUrl;
-
     private final String redirectUrl;
     private final String supabaseAnonKey;
     private final RestTemplate restTemplate;
@@ -185,6 +185,68 @@ public class SupabaseAuthClient {
 
             return response.getBody();
 
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public SupabaseLoginResponse signUp(String email, String password, String role) {
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of(
+                        "email", email,
+                        "password", password,
+                        "data", Map.of("role", role)
+                )
+        );
+
+        try {
+            ResponseEntity<SupabaseLoginResponse> response = restTemplate.exchange(
+                    (supabaseUrl + AUTH_SIGNUP), HttpMethod.POST, entity, SupabaseLoginResponse.class
+            );
+
+            if (response.getBody() == null) {
+                throw new IllegalStateException("Empty response from Supabase.");
+            }
+
+            return response.getBody();
+
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public void revokeToken(String accessToken) {
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("token", accessToken),
+                createHeaders()
+        );
+
+        try {
+            restTemplate.exchange(supabaseUrl + AUTH_REVOKE, HttpMethod.POST, entity, Void.class);
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    public SupabaseUserResponse getUser(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<SupabaseUserResponse> response = restTemplate.exchange(
+                    supabaseUrl + AUTH_USER,
+                    HttpMethod.GET,
+                    entity,
+                    SupabaseUserResponse.class
+            );
+            return response.getBody();
         } catch (HttpStatusCodeException ex) {
             throw mapException(ex);
         }

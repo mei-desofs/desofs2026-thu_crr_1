@@ -14,7 +14,6 @@ public interface UserRepository extends JpaRepository<User, UserId> {
     Optional<User> findByEmail(Email email);
 
     boolean existsBySupabaseUserId(SupabaseUserId supabaseUserId);
-
     Optional<User> findBySupabaseUserId(SupabaseUserId supabaseUserId);
 
     User save(User user);

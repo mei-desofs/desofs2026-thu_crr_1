@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SupabaseLoginResponse(
-        @JsonProperty("access_token")  String accessToken,
-        @JsonProperty("refresh_token") String refreshToken,
-        @JsonProperty("token_type")    String tokenType,
-        @JsonProperty("expires_in")    Long expiresIn
-) {
-}
+    @JsonProperty("access_token")  String accessToken,
+    @JsonProperty("refresh_token") String refreshToken,
+    @JsonProperty("token_type")    String tokenType,
+    @JsonProperty("expires_in")    Long expiresIn,
+    @JsonProperty("user")          SupabaseUserResponse user,
+    @JsonProperty("id")            String id,       
+    @JsonProperty("email")         String email     
+) {}

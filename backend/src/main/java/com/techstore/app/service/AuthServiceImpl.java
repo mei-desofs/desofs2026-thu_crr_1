@@ -21,6 +21,8 @@ import java.util.Map;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final String DEFAULT_ROLE = "customer";
+
     @Value("${supabase.webhook-secret}")
     private String webhookSecret;
     @Value("${supabase.jwt-secret}")
@@ -39,6 +41,52 @@ public class AuthServiceImpl implements AuthService {
         this.userService = userService;
         this.supabaseAuthClient = supabaseAuthClient;
         this.auditLogger = auditLogger;
+    }
+
+    @Override
+    public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+        try {
+            // Let Supabase handle duplicate email validation and throw BusinessException
+            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+                    request.email(), request.password(), DEFAULT_ROLE
+            );
+
+            String userId = null;
+            if (supabaseResponse.user() != null) {
+            userId = supabaseResponse.user().id();
+            }
+
+            auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
+
+            return new RegisterResponse(
+                    request.email(),
+                userId,
+                    "Check your email for confirmation link"
+            );
+
+        } catch (BusinessException ex) {
+            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+            throw ex; // let GlobalExceptionHandler map it
+        } catch (Exception ex) {
+            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void logout(String accessToken, HttpServletRequest httpRequest) {
+        if (accessToken != null && !accessToken.isBlank()) {
+            try {
+                supabaseAuthClient.revokeToken(accessToken);
+            } catch (Exception ex) {
+                // Logout must still succeed locally even if token is already invalid on Supabase.
+                logger.warn("Failed to revoke access token during logout; proceeding with local cookie cleanup", ex);
+            }
+        } else {
+            logger.info("No access token provided to revoke during logout");
+        }
+
+        auditLogger.logLogoutAttempt("unknown", true, httpRequest);
     }
 
     @Override
@@ -80,7 +128,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String emailConfirmedAt = (String) record.get("email_confirmed_at");
-        String oldEmailConfirmedAt = (String) oldRecord.get("email_confirmed_at");
+        String oldEmailConfirmedAt = oldRecord != null ? (String) oldRecord.get("email_confirmed_at") : null;
 
         if (emailConfirmedAt == null || oldEmailConfirmedAt != null) {
             return true;
@@ -89,16 +137,13 @@ public class AuthServiceImpl implements AuthService {
         String supabaseUserId = (String) record.get("id");
         String email = (String) record.get("email");
         Map<String, Object> metadata = (Map<String, Object>) record.get("raw_user_meta_data");
-
-        if (supabaseUserId == null || email == null || metadata == null) {
-            auditLogger.logConfirmInvite("unknown", false, "Missing required fields in payload");
-            return false;
+        String role = metadata != null ? (String) metadata.get("role") : null;
+        if (role == null || role.isBlank()) {
+            role = DEFAULT_ROLE;
         }
 
-        String role = (String) metadata.get("role");
-
-        if (role == null) {
-            auditLogger.logConfirmInvite(email, false, "Missing role in metadata");
+        if (supabaseUserId == null || email == null) {
+            auditLogger.logConfirmInvite("unknown", false, "Missing required fields in payload");
             return false;
         }
 
@@ -107,9 +152,15 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
 
+        boolean userAlreadyExists = userService.getUserBySupabaseId(supabaseUserId).isPresent();
+
         try {
-            userService.registerUser(supabaseUserId, email, role);
+            if (!userAlreadyExists) {
+                userService.registerUser(supabaseUserId, email, role);
+            }
+            userService.confirmUserEmail(supabaseUserId);
             auditLogger.logConfirmInvite(email, true, null);
+            return true;
 
         } catch (BusinessException ex) {
             auditLogger.logConfirmInvite(email, false, ex.getMessage());
@@ -117,23 +168,22 @@ public class AuthServiceImpl implements AuthService {
 
         } catch (Exception ex) {
             logger.error("Unexpected error registering user {}, rolling back: {}", email, ex.getMessage());
-            try {
-                supabaseAuthClient.deleteUser(supabaseUserId);
-            } catch (Exception rollbackEx) {
-                logger.error("Failed to rollback Supabase user {} — manual cleanup required", supabaseUserId);
+            if (!userAlreadyExists) {
+                try {
+                    supabaseAuthClient.deleteUser(supabaseUserId);
+                } catch (Exception rollbackEx) {
+                    logger.error("Failed to rollback Supabase user {} — manual cleanup required", supabaseUserId);
+                }
             }
-            auditLogger.logConfirmInvite(email, false, "Internal registration failed — Supabase user deleted");
+            auditLogger.logConfirmInvite(email, false, "Internal registration failed");
             return false;
         }
-
-        return true;
     }
 
     @Override
     public void confirmAndSetupAccount(String tokenHash, String type) {
         supabaseAuthClient.verifyToken(tokenHash, type);
     }
-
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {

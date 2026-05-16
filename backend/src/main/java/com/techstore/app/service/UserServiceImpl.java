@@ -4,6 +4,7 @@ import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
+import com.techstore.app.exception.BusinessException;
 import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.UserService;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,17 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = new User(emailVO, Role.fromString(role), sid);
+        return userRepository.save(user);
+    }
+
+    public java.util.Optional<User> getUserBySupabaseId(String supabaseUserId) {
+        return userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+    }
+
+    public User confirmUserEmail(String supabaseUserId) {
+        var user = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                .orElseThrow(() -> new BusinessException("User not found"));
+        user.markEmailAsValidated();
         return userRepository.save(user);
     }
 }

@@ -27,6 +27,27 @@ public class AuthAuditLogger {
         );
     }
 
+    public void logRegisterAttempt(String email, boolean success, HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        userAgent = truncate(sanitize(userAgent), 200);
+
+        auditLog.info("event=REGISTER_ATTEMPT | success={} | email={} | ip={} | userAgent={} | timestamp={}",
+                success,
+                maskEmail(email),
+                request.getRemoteAddr(),
+                userAgent,
+                Instant.now()
+        );
+    }
+
+    public void logLogoutAttempt(String userId, boolean success, HttpServletRequest request) {
+        auditLog.info("event=LOGOUT_ATTEMPT | success={} | userId={} | ip={} | timestamp={}",
+                success,
+                userId,
+                request.getRemoteAddr(),
+                Instant.now()
+        );
+    }
     public void logTokenRefresh(String userId, boolean success, HttpServletRequest request) {
         auditLog.info("event=TOKEN_REFRESH | success={} | userId={} | ip={} | timestamp={}",
                 success,

@@ -2,6 +2,8 @@ package com.techstore.app.service.interfaces;
 
 import com.techstore.app.domain.user.User;
 
+import java.util.Optional;
+
 public interface UserService {
 
     /**
@@ -12,4 +14,18 @@ public interface UserService {
      * @return The registered User object.
      */
     User registerUser(String supabaseUserId, String email, String role);
+
+    /**
+     * Retrieves a user by their Supabase ID.
+     * @param supabaseUserId The unique identifier from Supabase.
+     * @return An Optional containing the User if found.
+     */
+    Optional<User> getUserBySupabaseId(String supabaseUserId);
+
+    /**
+     * Marks a user's email as validated/confirmed.
+     * @param supabaseUserId The unique identifier from Supabase.
+     * @return The updated User object.
+     */
+    User confirmUserEmail(String supabaseUserId);
 }
