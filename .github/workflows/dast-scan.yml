@@ -33,17 +33,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
-
-      - name: Build application
-        working-directory: backend
-        run: mvn clean package -DskipTests -q
-
       - name: Start application
         working-directory: backend
         env:
