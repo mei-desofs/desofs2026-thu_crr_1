@@ -365,6 +365,55 @@ The Snyk integration is seamlessly integrated into our CI/CD pipeline through a 
 
 ## Container Security
 
+Container security scanning is a critical practice that ensures Docker images are free from known vulnerabilities before being deployed to production. Our team uses **Snyk** to scan container images and identify potential security risks at the OS and dependency layer level. The scanning process is triggered on every workflow call and analyzes the specific image built for that commit, identified by the short commit SHA tag (`sha-{commit-hash}`). Results are automatically uploaded to GitHub's security dashboard in SARIF format, maintaining a centralized view of our security posture across both dependency and container layers. Similarly to dependency scanning, we have configured the scan to only block the pipeline on critical severity vulnerabilities.
+
+The container security integration pulls the image from DockerHub after it has been built and pushed by the Docker publishing workflow, ensuring we scan the exact artifact that will be deployed. This guarantees that the image analysis reflects the final state of the container, including the base OS layers and all installed packages.
+
+### Workflow Implementation
+```yaml
+name: Container Security Scan
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Pull image from registry
+        run: |
+          docker pull diogomartins00/techstore:sha-${GITHUB_SHA::7}
+
+      - name: Run Snyk Container Scan
+        run: |
+          snyk container test diogomartins00/techstore:sha-${GITHUB_SHA::7} \
+            --severity-threshold=critical \
+            --sarif-file-output=snyk-container.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Container Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-container.sarif
+```
+<img src="./images/phase-2/container-sec.png" alt="Container Security in GitHub" width="800">
+
+
 ## Docker Image Publishing
 
 Docker image publishing is a critical part of our deployment pipeline that automates the building and pushing of Docker images to DockerHub. This ensures that every release and main branch deployment has a corresponding container image available for deployment. Our workflow is triggered automatically on git version tags (e.g., `v1.0.0`) and can also be manually invoked. The Docker build process uses the `backend/` directory and `backend/Dockerfile` as the build context, and we build for multiple architectures including both `linux/amd64` and `linux/arm64` to support various deployment environments.
@@ -450,3 +499,35 @@ The deployment process carefully removes old containers before starting new ones
 <img src="./images/phase-2/health-endpoint.png" alt="Health Endpoint Response" width="800">
 
 ## Release Please
+
+Release Please automates the release management process by tracking changes through conventional commit messages and generating versioned releases automatically. Our team uses the **Release Please** GitHub Action to streamline the creation of changelogs and version bumps, eliminating manual overhead in the release process. The workflow is triggered both on pipeline calls from the main branch workflow and manually via `workflow_dispatch`, ensuring releases can be issued automatically on every merge to `main` or on demand when needed.
+
+When changes are pushed to `main`, Release Please analyzes the accumulated commits since the last release, generates or updates a release pull request with a structured changelog, and automatically bumps the version following semantic versioning. Once the release PR is approved and merged, Release Please creates the corresponding GitHub release. This integrates directly with our tagging strategy used by the Docker image publishing workflow, ensuring that every GitHub release triggers a properly versioned container image build.
+
+### Workflow Implementation
+
+```yaml
+name: Release Please
+
+on:
+  workflow_call:
+    
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: simple
+```
+
+<img src="./images/phase-2/realise-please.png" alt="Realise Please in GitHub" width="200">
+
