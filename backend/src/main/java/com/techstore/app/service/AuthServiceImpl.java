@@ -3,9 +3,11 @@ package com.techstore.app.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.shared.EmailAddress;
+import com.techstore.app.domain.user.Email;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
+import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
@@ -29,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private String jwtSecret;
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     private final SupabaseAuthClient supabaseAuthClient;
 
@@ -36,9 +39,11 @@ public class AuthServiceImpl implements AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient,
+    public AuthServiceImpl(UserService userService, UserRepository userRepository,
+            SupabaseAuthClient supabaseAuthClient,
             AuthAuditLogger auditLogger) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.supabaseAuthClient = supabaseAuthClient;
         this.auditLogger = auditLogger;
     }
@@ -46,23 +51,25 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         try {
-            // Let Supabase handle duplicate email validation and throw BusinessException
+
+            if (userRepository.existsByEmail(request.email().toString())) {
+                throw new BusinessException("Email already registered");
+            }
+
             SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
-                    request.email(), request.password(), DEFAULT_ROLE
-            );
+                    request.email(), request.password(), DEFAULT_ROLE);
 
             String userId = null;
             if (supabaseResponse.user() != null) {
-            userId = supabaseResponse.user().id();
+                userId = supabaseResponse.user().id();
             }
 
             auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
 
             return new RegisterResponse(
                     request.email(),
-                userId,
-                    "Check your email for confirmation link"
-            );
+                    userId,
+                    "Check your email for confirmation link");
 
         } catch (BusinessException ex) {
             auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
@@ -79,7 +86,8 @@ public class AuthServiceImpl implements AuthService {
             try {
                 supabaseAuthClient.revokeToken(accessToken);
             } catch (Exception ex) {
-                // Logout must still succeed locally even if token is already invalid on Supabase.
+                // Logout must still succeed locally even if token is already invalid on
+                // Supabase.
                 logger.warn("Failed to revoke access token during logout; proceeding with local cookie cleanup", ex);
             }
         } else {
@@ -184,6 +192,7 @@ public class AuthServiceImpl implements AuthService {
     public void confirmAndSetupAccount(String tokenHash, String type) {
         supabaseAuthClient.verifyToken(tokenHash, type);
     }
+
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
@@ -224,6 +233,7 @@ public class AuthServiceImpl implements AuthService {
             throw ex;
         }
     }
+
     private String extractUserId(String token) {
         try {
             String[] chunks = token.split("\\.");
@@ -234,8 +244,7 @@ public class AuthServiceImpl implements AuthService {
 
             String payload = new String(
                     java.util.Base64.getUrlDecoder().decode(chunks[1]),
-                    StandardCharsets.UTF_8
-            );
+                    StandardCharsets.UTF_8);
 
             ObjectMapper mapper = new ObjectMapper();
 

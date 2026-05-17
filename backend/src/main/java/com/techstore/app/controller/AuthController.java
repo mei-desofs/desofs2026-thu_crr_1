@@ -3,8 +3,6 @@ package com.techstore.app.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
-import com.techstore.app.dto.auth.PasswordResetRequest;
-import com.techstore.app.dto.auth.PasswordUpdateRequest;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.helpers.CookiesHelper;
@@ -34,7 +32,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    
+
     public AuthController(AuthService authService, UserService userService) {
         this.authService = authService;
         this.userService = userService;
@@ -91,28 +89,16 @@ public class AuthController {
 
         byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
         String payload = new String(decoded, StandardCharsets.UTF_8);
-        return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {});
+        return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @RateLimit("register")
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request, HttpServletRequest httpRequest) {
-        try {
-            RegisterResponse response = authService.register(request, httpRequest);
-            return ResponseEntity.status(201).body(response);
-        } catch (BusinessException ex) {
-            String errorMessage = ex.getMessage();
-            if (errorMessage != null && (errorMessage.toLowerCase().contains("already registered")
-                    || errorMessage.toLowerCase().contains("already exists"))) {
-                RegisterResponse errorResponse = new RegisterResponse(
-                        request.email(),
-                        null,
-                        "Email already registered in Supabase"
-                );
-                return ResponseEntity.status(409).body(errorResponse);
-            }
-            throw ex;
-        }
+    public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request,
+            HttpServletRequest httpRequest) {
+        RegisterResponse response = authService.register(request, httpRequest);
+        return ResponseEntity.status(201).body(response);
     }
 
     @RateLimit("logout")
@@ -136,7 +122,8 @@ public class AuthController {
             @RequestParam("type") String type) {
 
         authService.confirmAndSetupAccount(tokenHash, type);
-        return ResponseEntity.ok("Email confirmed. Please set your password using POST /auth/set-password with your access token.");
+        return ResponseEntity
+                .ok("Email confirmed. Please set your password using POST /auth/set-password with your access token.");
     }
 
     @GetMapping("/callback")
@@ -158,7 +145,8 @@ public class AuthController {
 
     @RateLimit("login")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest,  HttpServletResponse httpResponse) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
 
         LoginResponse response = authService.login(request, httpRequest);
 
@@ -167,6 +155,7 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
     @RateLimit("refresh-token")
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refresh(
@@ -189,14 +178,16 @@ public class AuthController {
 
     @RateLimit("password-update")
     @PostMapping("/password-reset/request")
-    public ResponseEntity<Void> requestReset(@Valid @RequestBody PasswordResetRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> requestReset(@Valid @RequestBody PasswordResetRequest request,
+            HttpServletRequest httpRequest) {
         authService.requestPasswordReset(request.email(), httpRequest);
         return ResponseEntity.noContent().build();
     }
 
     @RateLimit("password-update")
     @PostMapping("/set-password")
-    public ResponseEntity<Void> setPassword(@RequestHeader("Authorization") String authHeader, @RequestBody @Valid PasswordUpdateRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> setPassword(@RequestHeader("Authorization") String authHeader,
+            @RequestBody @Valid PasswordUpdateRequest request, HttpServletRequest httpRequest) {
         String accessToken = authHeader.replace("Bearer ", "");
         authService.updatePassword(accessToken, request.newPassword(), httpRequest);
         return ResponseEntity.ok().build();
