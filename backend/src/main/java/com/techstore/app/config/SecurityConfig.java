@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
                                 "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/swagger-ui.html")
+                                "/swagger-ui.html","/actuator/health")
                         .permitAll()
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")
