@@ -361,6 +361,80 @@ The Snyk integration is seamlessly integrated into our CI/CD pipeline through a 
 
 ## SAST
 
+## SAST
+
+Static Application Security Testing (SAST) is a critical security practice that analyzes source code to identify potential security vulnerabilities and code quality issues before deployment. Our team uses **SonarCloud** to perform comprehensive SAST scans on the codebase. The scanning process analyzes the source code for common vulnerabilities, code smells, and security hotspots, providing detailed reports and recommendations for remediation. 
+
+The SonarCloud integration is seamlessly integrated into our CI/CD pipeline through a dedicated reusable workflow that executes code analysis and reports findings. The workflow implements a branch-specific strategy: main and dev branches run with quality gates enabled (`continue-on-error: true` to allow progression during current project phase where 80% coverage is not yet guaranteed), while feature branches run analysis without quality gate enforcement to enable rapid development feedback. The free tier of SonarCloud limits quality gate verification on feature branches, preventing hard blocks on development iterations.
+
+### Workflow Implementation
+
+```yaml
+name: security-sast.yml
+on:
+   workflow_call:
+      secrets:
+         SONAR_TOKEN:
+            required: true
+
+jobs:
+   sonar:
+      name: SonarQube SAST Scan
+      runs-on: ubuntu-latest
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+           with:
+              fetch-depth: 0
+
+         - name: Set up JDK 17
+           uses: actions/setup-java@v4
+           with:
+              java-version: '17'
+              distribution: 'temurin'
+              cache: maven
+
+         - name: Build project (skip tests)
+           working-directory: backend
+           run: mvn clean package -DskipTests
+
+         - name: Download coverage artifact
+           uses: actions/download-artifact@v4
+           with:
+              name: jacoco-report
+              path: backend/target/site/jacoco
+
+         - name: SonarCloud Scan (main/dev with Quality Gate)
+           continue-on-error: true
+           if: |
+              github.ref == 'refs/heads/main' ||
+              github.ref == 'refs/heads/dev' ||
+              github.base_ref == 'main' ||
+              github.base_ref == 'dev'
+           uses: SonarSource/sonarqube-scan-action@v5
+           with:
+              projectBaseDir: backend
+              args: >
+                 -Dsonar.qualitygate.wait=true
+           env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+              SONAR_HOST_URL: https://sonarcloud.io
+
+         - name: SonarCloud Scan (feature branches)
+           if: |
+              github.ref != 'refs/heads/main' && 
+              github.ref != 'refs/heads/dev' &&
+              github.base_ref != 'main' &&
+              github.base_ref != 'dev'
+           uses: SonarSource/sonarqube-scan-action@v5
+           with:
+              projectBaseDir: backend
+           env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+              SONAR_HOST_URL: https://sonarcloud.io
+```
+
 ## DAST
 
 ## Container Security
