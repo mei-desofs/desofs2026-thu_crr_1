@@ -150,15 +150,184 @@ This naming convention makes it easy to identify the purpose of a branch and cor
 
 Our CI/CD pipeline follows a structured approach with different workflows triggered at different stages of the development process:
 
-### Main Pipeline
+- **Feature pipeline**: Runs for feature branches and pull requests. Provides fast feedback with linting, unit tests, and lightweight checks. Triggered on PR creation and pushes to feature branches to catch regressions early and speed up development.
+- **Dev pipeline**: Targets the `dev` branch and the integration environment. Runs faster but thorough checks (build, tests, and selected security scans). Triggered on pushes to `dev`.
+- **Main pipeline**: Protects the `main` branch. Runs a full build, unit and integration tests, SAST/DAST, container security scans, and release tasks. Triggered on pushes and merged pull requests to `main` to ensure production-grade artifacts and safe deployments.
 
-### Dev Pipeline
+Benefits:
 
-### Feature Pipeline
+- **Faster feedback**: Feature pipelines give quick results so developers can iterate faster.
+- **Safer releases**: The main pipeline enforces comprehensive testing and security scans before production.
+- **Clear separation of concerns**: Dev pipeline supports integration testing without blocking the main branch.
+- **Efficient CI usage**: Heavy scans and deployments run only where needed, reducing CI time and cost.
+
+### Example of workflow run to feature branch
+
+<img src="./images/phase-2/feature-workflow.png" alt="Feature Branch Workflow" width="800">
+
+### Example of workflow run to dev branch
+
+<img src="./images/phase-2/dev-workflow.png" alt="Dev Branch Workflow" width="800">
+
+### Example of workflow run to main branch
+
+<img src="./images/phase-2/main-workflow.png" alt="Main Branch Workflow" width="800">
 
 ## Build & Test
 
+The build and test pipeline is implemented as a reusable GitHub Actions workflow ([build-test workflow](../.github/workflows/build-test.yml)) and runs the project build, unit tests, integration tests and collects coverage reports. The workflow is invoked by main, dev and feature pipelines.
+
+### Workflow Implementation
+
+```yaml
+- name: Build
+   working-directory: backend
+   run: mvn clean compile
+
+- name: Unit Tests
+   working-directory: backend
+   run: mvn test
+
+- name: Integration Tests + Coverage
+   working-directory: backend
+   run: mvn verify
+
+- name: Upload coverage
+   uses: actions/upload-artifact@v4
+   with:
+      name: jacoco-report
+      path: backend/target/site/jacoco
+```
+
+### Maven Configuration
+
+Maven configuration in [`pom.xml`](../backend/pom.xml) defines the test execution and coverage collection:
+
+- `maven-surefire-plugin` (unit tests):
+
+```xml
+<plugin>
+   <groupId>org.apache.maven.plugins</groupId>
+   <artifactId>maven-surefire-plugin</artifactId>
+   <version>3.2.5</version>
+   <configuration>
+      <excludes>
+         <exclude>**/*IntegrationTest.java</exclude>
+      </excludes>
+   </configuration>
+</plugin>
+```
+
+- `maven-failsafe-plugin` (integration tests):
+
+```xml
+<plugin>
+   <groupId>org.apache.maven.plugins</groupId>
+   <artifactId>maven-failsafe-plugin</artifactId>
+   <version>3.2.5</version>
+   <executions>
+      <execution>
+         <goals>
+            <goal>integration-test</goal>
+            <goal>verify</goal>
+         </goals>
+         <configuration>
+            <includes>
+               <include>**/*IntegrationTest.java</include>
+            </includes>
+         </configuration>
+      </execution>
+   </executions>
+</plugin>
+```
+
+- `jacoco-maven-plugin` (coverage):
+
+```xml
+<plugin>
+   <groupId>org.jacoco</groupId>
+   <artifactId>jacoco-maven-plugin</artifactId>
+   <version>0.8.11</version>
+   <configuration>
+      <excludes>
+         <exclude>com/techstore/app/bootstrapping/**</exclude>
+         <exclude>com/techstore/app/client/**</exclude>
+         <exclude>com/techstore/app/config/**</exclude>
+         <exclude>com/techstore/app/dto/**</exclude>
+      </excludes>
+      <rules>
+         <rule>
+            <element>BUNDLE</element>
+            <limits>
+               <limit>
+                  <counter>LINE</counter>
+                  <value>COVEREDRATIO</value>
+                  <minimum>0.60</minimum>
+               </limit>
+            </limits>
+         </rule>
+      </rules>
+   </configuration>
+</plugin>
+```
+
+Notes:
+- The project separates unit tests (Surefire) from integration tests (Failsafe) using the `*IntegrationTest.java` naming convention. This allows the workflow to run fast unit test passes and then run integration tests and coverage in a later `mvn verify` step.
+- JaCoCo is configured to produce a coverage report and enforce a minimum line coverage ratio of 60%.
+
 ## Security Secrets Management
+
+Secret scanning is a critical security practice that automatically detects exposed credentials, tokens, and other sensitive data in the repository. Our team uses **Gitleaks** to perform secret scanning. The scanning process is triggered on every workflow call and targets the repository sources (`backend` directory). Results are uploaded to GitHub's security dashboard in SARIF format and archived as artifacts so the team can triage findings.
+
+The Gitleaks integration is implemented as a reusable workflow ([security secrets workflow](../.github/workflows/security-secrets.yml)) that downloads a pinned binary, verifies its checksum (provided via the `GITLEAKS_SHA256` secret), runs the scan with `--no-git` against the `backend` folder, and uploads the SARIF report even when the scan fails the job.
+
+### Workflow Implementation
+
+```yaml
+name: Security Secrets Scan
+
+- name: Install Gitleaks
+   run: |
+      curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o gitleaks.tar.gz
+      tar -xzf gitleaks.tar.gz
+      chmod +x gitleaks
+      sudo mv gitleaks /usr/local/bin/
+
+- name: Verify checksum
+   run: |
+      echo "${GITLEAKS_HASH}  gitleaks.tar.gz" > checksum.txt
+      sha256sum --check checksum.txt
+   env:
+      GITLEAKS_HASH: ${{ secrets.GITLEAKS_SHA256 }}
+
+- name: Verify
+   run: gitleaks version
+
+- name: Run Gitleaks
+   run: |
+      gitleaks detect \
+         --no-git \
+         --source backend \
+         --report-format sarif \
+         --report-path gitleaks.sarif \
+         --exit-code 1 \
+         --redact
+
+- name: Upload to GitHub Security
+   if: always()
+   uses: github/codeql-action/upload-sarif@v4
+   with:
+      sarif_file: gitleaks.sarif
+
+- name: Upload artifact
+   if: always()
+   uses: actions/upload-artifact@v4
+   with:
+      name: gitleaks-sarif
+      path: gitleaks.sarif
+```
+
+<img src="./images/phase-2/gitleaks.png" alt="Gitleaks run example" width="800">
 
 ## Dependency Scanning
 
@@ -192,9 +361,144 @@ The Snyk integration is seamlessly integrated into our CI/CD pipeline through a 
 
 ## SAST
 
+
+Static Application Security Testing (SAST) is a critical security practice that analyzes source code to identify potential security vulnerabilities and code quality issues before deployment. Our team uses SonarCloud to perform comprehensive SAST scans on the codebase. The scanning process analyzes the source code for common vulnerabilities, code smells, and security hotspots, providing detailed reports and recommendations for remediation.
+
+The SonarCloud integration is seamlessly integrated into our CI/CD pipeline through a dedicated reusable workflow that executes code analysis and reports findings using the Maven Sonar plugin. The workflow implements a branch-specific strategy: main and dev branches run with quality gates enabled (`continue-on-error: true` to allow progression during current project phase where 80% coverage is not yet guaranteed), while feature branches run analysis without quality gate enforcement to enable rapid development feedback. The Maven plugin automatically detects project dependencies and binaries, ensuring accurate code analysis without manual library path configuration
+### Workflow Implementation
+
+```yaml
+name: security-sast.yml
+on:
+   workflow_call:
+      secrets:
+         SONAR_TOKEN:
+            required: true
+
+jobs:
+   sonar:
+      name: SonarQube SAST Scan
+      runs-on: ubuntu-latest
+
+      steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+           with:
+              fetch-depth: 0
+
+         - name: Set up JDK 17
+           uses: actions/setup-java@v4
+           with:
+              java-version: '17'
+              distribution: 'temurin'
+              cache: maven
+
+         - name: Cache SonarCloud packages
+           uses: actions/cache@v4
+           with:
+              path: ~/.sonar/cache
+              key: ${{ runner.os }}-sonar
+              restore-keys: ${{ runner.os }}-sonar
+
+         - name: Build project (skip tests)
+           working-directory: backend
+           run: mvn clean verify -DskipTests
+
+         - name: Download coverage artifact
+           uses: actions/download-artifact@v4
+           with:
+              name: jacoco-report
+              path: backend/target/site/jacoco
+
+         - name: SonarCloud Scan (main/dev with Quality Gate)
+           continue-on-error: true
+           if: |
+              github.ref == 'refs/heads/main' ||
+              github.ref == 'refs/heads/dev' ||
+              github.base_ref == 'main' ||
+              github.base_ref == 'dev'
+           working-directory: backend
+           run: |
+              mvn sonar:sonar \
+                -Dsonar.projectKey=techstore-backend-key_techstore \
+                -Dsonar.organization=techstore-backend-key \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+                -Dsonar.qualitygate.wait=true
+           env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+         - name: SonarCloud Scan (feature branches)
+           if: |
+              github.ref != 'refs/heads/main' && 
+              github.ref != 'refs/heads/dev' &&
+              github.base_ref != 'main' &&
+              github.base_ref != 'dev'
+           working-directory: backend
+           run: |
+              mvn sonar:sonar \
+                -Dsonar.projectKey=techstore-backend-key_techstore \
+                -Dsonar.organization=techstore-backend-key \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+           env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
+<img src="./images/phase-2/sonar-main-branch-security-issues.png" alt="Sonar Security Issues in main Branch" width="800">
+<img src="./images/phase-2/sonar-pr-analysis.png" alt="Sonar PR analysis" width="800">
+
 ## DAST
 
 ## Container Security
+
+Container security scanning is a critical practice that ensures Docker images are free from known vulnerabilities before being deployed to production. Our team uses **Snyk** to scan container images and identify potential security risks at the OS and dependency layer level. The scanning process is triggered on every workflow call and analyzes the specific image built for that commit, identified by the short commit SHA tag (`sha-{commit-hash}`). Results are automatically uploaded to GitHub's security dashboard in SARIF format, maintaining a centralized view of our security posture across both dependency and container layers. Similarly to dependency scanning, we have configured the scan to only block the pipeline on critical severity vulnerabilities.
+
+The container security integration pulls the image from DockerHub after it has been built and pushed by the Docker publishing workflow, ensuring we scan the exact artifact that will be deployed. This guarantees that the image analysis reflects the final state of the container, including the base OS layers and all installed packages.
+
+### Workflow Implementation
+```yaml
+name: Container Security Scan
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Pull image from registry
+        run: |
+          docker pull diogomartins00/techstore:sha-${GITHUB_SHA::7}
+
+      - name: Run Snyk Container Scan
+        run: |
+          snyk container test diogomartins00/techstore:sha-${GITHUB_SHA::7} \
+            --severity-threshold=critical \
+            --sarif-file-output=snyk-container.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Upload Container Results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-container.sarif
+```
+<img src="./images/phase-2/container-sec.png" alt="Container Security in GitHub" width="800">
+
 
 ## Docker Image Publishing
 
@@ -281,3 +585,35 @@ The deployment process carefully removes old containers before starting new ones
 <img src="./images/phase-2/health-endpoint.png" alt="Health Endpoint Response" width="800">
 
 ## Release Please
+
+Release Please automates the release management process by tracking changes through conventional commit messages and generating versioned releases automatically. Our team uses the **Release Please** GitHub Action to streamline the creation of changelogs and version bumps, eliminating manual overhead in the release process. The workflow is triggered both on pipeline calls from the main branch workflow and manually via `workflow_dispatch`, ensuring releases can be issued automatically on every merge to `main` or on demand when needed.
+
+When changes are pushed to `main`, Release Please analyzes the accumulated commits since the last release, generates or updates a release pull request with a structured changelog, and automatically bumps the version following semantic versioning. Once the release PR is approved and merged, Release Please creates the corresponding GitHub release. This integrates directly with our tagging strategy used by the Docker image publishing workflow, ensuring that every GitHub release triggers a properly versioned container image build.
+
+### Workflow Implementation
+
+```yaml
+name: Release Please
+
+on:
+  workflow_call:
+    
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: simple
+```
+
+<img src="./images/phase-2/realise-please.png" alt="Realise Please in GitHub" width="200">
+

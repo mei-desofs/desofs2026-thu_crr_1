@@ -2,6 +2,8 @@ package com.techstore.app.config.ratelimit;
 
 import java.util.Map;
 
+import com.techstore.app.config.jwt.JWTAuthFilter;
+import com.techstore.app.helpers.CookiesHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -67,12 +69,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private String getUserId(HttpServletRequest request) {
-        String auth = request.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Bearer ")) {
-            return null;
-        }
 
-        String token = auth.substring(7);
+        String token = CookiesHelper.getCookieValue(request, "access_token");
         try {
             String[] parts = token.split("\\.");
             if (parts.length < 2) return null;

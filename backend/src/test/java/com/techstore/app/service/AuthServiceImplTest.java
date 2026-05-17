@@ -1,6 +1,7 @@
 package com.techstore.app.service;
 
 import com.techstore.app.client.SupabaseAuthClient;
+import com.techstore.app.domain.user.Email;
 import com.techstore.app.dto.auth.InviteSignupRequest;
 import com.techstore.app.dto.auth.RegisterRequest;
 import com.techstore.app.dto.auth.RegisterResponse;
@@ -8,6 +9,7 @@ import com.techstore.app.dto.auth.SupabaseLoginResponse;
 import com.techstore.app.dto.auth.SupabaseUserResponse;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
+import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -48,14 +52,18 @@ class AuthServiceImplTest {
     @InjectMocks
     private AuthServiceImpl authService;
 
+    @Mock
+    private UserRepository userRepository;
+
     @Test
     void shouldRegisterUserAndReturnConfirmationMessage() {
         RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
         SupabaseUserResponse user = new SupabaseUserResponse("supabase-id", request.email(), null);
 
+        Email email = new Email(request.email());
+        when(userRepository.existsByEmail(email)).thenReturn(false);
         when(supabaseAuthClient.signUp(request.email(), request.password(), "customer"))
                 .thenReturn(new SupabaseLoginResponse(null, null, null, null, user, null, null));
-
         RegisterResponse response = authService.register(request, httpRequest);
 
         assertEquals(request.email(), response.email());
@@ -68,12 +76,13 @@ class AuthServiceImplTest {
     void shouldLogFailedRegisterAttemptWhenSignupFails() {
         RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
 
+        Email email = new Email(request.email());
+        when(userRepository.existsByEmail(email)).thenReturn(false);
         doThrow(new IllegalStateException("boom"))
                 .when(supabaseAuthClient)
                 .signUp(request.email(), request.password(), "customer");
 
         assertThrows(IllegalStateException.class, () -> authService.register(request, httpRequest));
-
         verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
     }
 
@@ -100,11 +109,15 @@ class AuthServiceImplTest {
     void shouldConfirmInviteAndDefaultMissingRoleToCustomer() throws Exception {
         setWebhookSecret("webhook-secret");
 
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("role", "customer");
+
         Map<String, Object> record = new HashMap<>();
         record.put("id", "supabase-id");
         record.put("email", "user@example.com");
         record.put("email_confirmed_at", "2026-05-15T00:00:00Z");
-        record.put("raw_user_meta_data", new HashMap<>());
+        record.put("invited_at", "2026-05-14T00:00:00Z");
+        record.put("raw_user_meta_data", metadata);
 
         Map<String, Object> oldRecord = new HashMap<>();
         oldRecord.put("email_confirmed_at", null);
@@ -114,8 +127,7 @@ class AuthServiceImplTest {
 
         boolean confirmed = authService.confirmInvite("webhook-secret", Map.of(
                 "record", record,
-                "old_record", oldRecord
-        ));
+                "old_record", oldRecord));
 
         assertTrue(confirmed);
         verify(userService).registerUser("supabase-id", "user@example.com", "customer");

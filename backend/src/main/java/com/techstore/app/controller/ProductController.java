@@ -30,12 +30,14 @@ public class ProductController {
         return productService.save(productRequestDTO);
     }
 
+    @RateLimit("search-products")
     @GetMapping("/search")
     public Page<ProductResponseDTO> search(@RequestParam String productName,
                                            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findByNameLike(new ProductName(productName), pageable);
     }
 
+    @RateLimit("list-products")
     @GetMapping
     public Page<ProductResponseDTO> findAll(@ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findAll(pageable);

@@ -43,10 +43,10 @@ jobs:
       - name: SonarCloud Scan (main/dev with Quality Gate)
         continue-on-error: true
         if: |
-                  github.ref == 'refs/heads/main' ||
-                  github.ref == 'refs/heads/dev' ||
-                  github.base_ref == 'main' ||
-                  github.base_ref == 'dev'
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/dev' ||
+          github.base_ref == 'main' ||
+          github.base_ref == 'dev'
         working-directory: backend
         run: |
           mvn sonar:sonar \
