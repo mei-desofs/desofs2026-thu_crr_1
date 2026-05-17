@@ -43,3 +43,6 @@ supabase:
   service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
   redirect-url: ${SUPABASE_REDIRECT_URL}
   jwt-secret: ${SUPABASE_JWT_SECRET}
+  issuer: ${SUPABASE_ISSUER}
+  jwks-url: ${SUPABASE_JWKS_URL}
+  jwt-audience: ${SUPABASE_JWT_AUDIENCE}

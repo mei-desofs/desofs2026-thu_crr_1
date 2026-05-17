@@ -178,8 +178,9 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
 
         String emailConfirmedAt = (String) record.get("email_confirmed_at");
         String oldEmailConfirmedAt = oldRecord != null ? (String) oldRecord.get("email_confirmed_at") : null;
+        String invitedAt = (String) record.get("invited_at");
 
-        if (emailConfirmedAt == null || oldEmailConfirmedAt != null) {
+        if (emailConfirmedAt == null || oldEmailConfirmedAt != null || invitedAt == null) {
             return true;
         }
 

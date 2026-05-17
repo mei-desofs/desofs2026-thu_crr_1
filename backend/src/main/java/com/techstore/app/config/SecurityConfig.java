@@ -1,11 +1,14 @@
 package com.techstore.app.config;
 
+import com.techstore.app.config.jwt.JWTAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -15,13 +18,21 @@ import java.util.List;
 
 /**
  * Security configuration for the application.
- * This class sets up the security filter chain, disabling CSRF protection and configuring session management to be stateless.
- * It also defines which endpoints are publicly accessible and which require authentication.
+ * This class sets up the security filter chain, disabling CSRF protection and
+ * configuring session management to be stateless.
+ * It also defines which endpoints are publicly accessible and which require
+ * authentication.
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JWTAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JWTAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,10 +40,24 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        //.requestMatchers("/auth/invite").hasRole("MANAGER")
-                        //.requestMatchers("/auth/login", "/auth/refresh", "/auth/callback").permitAll()
-                        .anyRequest().permitAll());
+                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
+                                "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
+                                "/swagger-ui.html","/actuator/health")
+                        .permitAll()
+
+                        .requestMatchers("/auth/invite").hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+                        .requestMatchers("/backup/**").hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("MANAGER")
+
+                        .anyRequest().authenticated()
+                );
 
         return http.build();
     }
