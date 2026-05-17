@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.2.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.1.0...v1.2.0) (2026-05-16)
+
+
+### Features
+
+* add additional constructor to ErrorResponse for enhanced error handling ([ecc3bda](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ecc3bdaa1cae7124267bbc50949c56d731dba32d))
+* add backups folder to gitignore ([c90d6e3](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c90d6e333c2e0c5e0294a20034efa1cdb46e39e0))
+* add cookies to logout ([2795440](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2795440aef404169d812ea8d5ff8e31d1fbe9380))
+* add dependency scanning workflow to enhance security analysis on feature.yml ([332cd4c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/332cd4c08874e236a3f7fcf7b1c7d9553a51aefb))
+* add junits to the products backup feature ([fcd6eee](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fcd6eeef9430f5098d08543c012f580dfdc1a27b))
+* add log of userId in Refresh ([#11](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/11)) ([bd597dc](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/bd597dcff6a63e0d3e42170da039adc7fc1d2ae3))
+* add logs to gitignore ([4658b6b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4658b6b2c6b6f8a75004485a7ea1b936953a61f6))
+* add MFA to login ([#9](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/9)) ([f1e5d66](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f1e5d665922cbf482af0fb56d2b27432f1383237))
+* add rate limit to endpoints ([#9](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/9) & [#11](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/11)) ([c3b39f4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c3b39f438a20a62a6653e32ead905383448b41a0))
+* add ratelimiter to register and logout ([2795440](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2795440aef404169d812ea8d5ff8e31d1fbe9380))
+* add sast to docker needs ([772923c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/772923ce0ba9925d1e152e906c3177b1146973ba))
+* add sast to docker needs ([3e877a0](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/3e877a0d758f24a4330c8dd8dc90760b41817d40))
+* add unit tests for AuthAuditLogger, BusinessException, Cart, and Order classes ([de7b817](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/de7b81719d2ffc297daa6c490e164ea5c978b895))
+* enable rate limiting and authorization for user invitation endpoint ([6ee392b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6ee392b2f0bd431c01d2097cf1f5230670b411da))
+* enhance user invitation flow with confirmation endpoint and improved error handling ([1bb2d33](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1bb2d33883d2c26031b40068c6490731d5523088))
+* enhance user invitation process with audit logging and error handling ([#4](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/4)) ([49f9041](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/49f9041cb75c20383f85d90a5de1adc89844ffea))
+* implement password reset and update functionality with validation and logging ([12c0fb5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/12c0fb513be33ff3a9917f56ce40164fc8ab4099))
+* implemented register and logout ([711794c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/711794cc3d7a89856c056db7c2b5aa432340c894))
+* improve error messages in ExceptionToSafeResponseMapper and adjust minimum coverage threshold in pom.xml ([c713567](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c713567aa2dfe0f55ce4eb539ddfe8511994fedf))
+* remove role restriction for user invitation endpoint ([5efbf97](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5efbf97846c0df0ac632e09d64d4d779c1e7c453))
+* security-container ([#119](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/119)) ([7601272](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/76012725c797aa0798345d785f151b81bd702336))
+* security-container ([#119](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/119)) ([fc82edf](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fc82edf4f734e9109fb6735beb7313fc538f5f69))
+* update password update flow to use access token and enforce minimum password length ([0fc51be](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/0fc51be4fb9c1653cd552ad03973125f4f4d84a8))
+* update Supabase configuration and fix redirect options in authentication client ([9ab9f95](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9ab9f950b92f916155e812f79f3930722da66909))
+* update Tomcat version to 11.0.22 and add dependency for CVE-2024-50379 ([0ae59c4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/0ae59c45720941b1e2aab2131613784e22ea4873))
+* use cookies in login and refresh token ([#9](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/9) & [#11](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/11)) ([da4329c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/da4329c05b9c723c864bbe814f302e3c3df6657c))
+
+
+### Bug Fixes
+
+* fix:  ([d6dfe82](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d6dfe825645ab30b4d49226dd8e5570fe607f6c9))
+* add 1)workflow_dispatch  to container-security.yml ([bb61679](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/bb61679fd0096ccb751de38c7d22aec159a32a3c))
+* add email check ([ff93765](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ff9376510114c793f6353daec0f962130c9781d5))
+* add ratelimit to refresh endpoint ([1b8fe9c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1b8fe9c8aba09af4d444bde9c6dabcc926219691))
+* add secret jwk to test properties ([7a2e742](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7a2e7426bdae941f0372033b76c9c0a62e5cb0d6))
+* add wrongfully removed authController logger ([3931318](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/3931318f028505b88f480a2f232f528f8df7918c))
+* container-security theshold from high to critical ([3267276](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/326727677af024c10dec7c74959211fdc5b8a6e4))
+* critical vunab from Dockerfile ([478c6aa](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/478c6aa6345ccf0640c85de1ae72fdde507f16a2))
+* increase minimum coverage ratio to 70% in pom.xml ([6585c84](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6585c84c4ae792944e4f0efcb80a63622ea9b4c2))
+* increase minimum coverage ratio to 80% in pom.xml ([2db5569](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2db55694930c13c7b14eb4459867b3f049c74d71))
+* increase minimum coverage ratio to 90% in pom.xml ([56b8ff5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/56b8ff5b6d8eb146742234be523a57ab7a6b469f))
+* logout using cookies now ([4ebcc48](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4ebcc48ee11b4df331d3549e15de6271016e709c))
+* new job for container-security ([b3cd753](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b3cd753d27aeb7658c3b1e11bd6b7782f547d57f))
+* Potential fix for pull request finding ([9a1825f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9a1825f3f2576e88a17decaf9b2f9f0a525c6b30))
+* remove comments ([c027f5f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c027f5fbd88c09c2a96a10d106c5524ba5229eae))
+* remove email local email check ([2795440](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2795440aef404169d812ea8d5ff8e31d1fbe9380))
+* remove unecessary comments ([afdf821](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/afdf8218714c9a3cdb3a4f653a7cbfa5826551f7))
+* restrict backup endpoint command ([61e7a0b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/61e7a0b80ecc7e969416007b5a1d29983b2503fc))
+* string parsing ([e2b41d3](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e2b41d3975935305a918f31f14b636b591b1729a))
+* switch tool from trivy to Snyk  ([#119](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/119)) ([af1fe6d](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/af1fe6d23072f7b0ba13d36eece360e9bb5175cc))
+* Use only sonar token secret instead of inherit all ([af34d41](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/af34d41464ef7c398f350c1a195d424dfa064a3b))
+* user id ([fcb1f9b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fcb1f9bc025462a5f7cbd99202a360b78c0dec3e))
+* User text small fix ([decd67a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/decd67ac6422aaccd4a07cee034141bd74af5561))
+
 ## [1.1.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.0.0...v1.1.0) (2026-05-11)
 
 
