@@ -34,6 +34,8 @@ public interface AuthService {
 
     void confirmAndSetupAccount(String tokenHash, String type);
 
+    void confirmEmailFromRegister(String accessToken);
+
     /**
      * Logs in a user with email and password.
      */

@@ -3,6 +3,7 @@ package com.techstore.app.domain.user;
 import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Embeddable
+@EqualsAndHashCode
 public class Email {
 
     private static final String REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";

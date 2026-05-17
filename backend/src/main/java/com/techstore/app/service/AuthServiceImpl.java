@@ -3,19 +3,26 @@ package com.techstore.app.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.shared.EmailAddress;
+import com.techstore.app.domain.user.Email;
+import com.techstore.app.domain.user.Role;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
+import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 @Service
@@ -29,48 +36,89 @@ public class AuthServiceImpl implements AuthService {
     private String jwtSecret;
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     private final SupabaseAuthClient supabaseAuthClient;
 
     private final AuthAuditLogger auditLogger;
 
+    private ObjectMapper objectMapper;
+
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    public AuthServiceImpl(UserService userService, SupabaseAuthClient supabaseAuthClient,
-            AuthAuditLogger auditLogger) {
-        this.userService = userService;
-        this.supabaseAuthClient = supabaseAuthClient;
-        this.auditLogger = auditLogger;
+    public AuthServiceImpl(UserService userService, UserRepository userRepository,
+        SupabaseAuthClient supabaseAuthClient,
+        AuthAuditLogger auditLogger,
+        ObjectMapper objectMapper) {
+    this.userService = userService;
+    this.userRepository = userRepository;
+    this.supabaseAuthClient = supabaseAuthClient;
+    this.auditLogger = auditLogger;
+    this.objectMapper = objectMapper;
+}
+    @Override
+public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+    try {
+        Email email = new Email(request.email());
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException("Email already registered");
+        }
+        SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+                request.email(), request.password(), DEFAULT_ROLE);
+        String userId = null;
+        if (supabaseResponse.user() != null) {
+            userId = supabaseResponse.user().id();
+        }
+        auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
+        return new RegisterResponse(
+                request.email(),
+                userId,
+                "Check your email for confirmation link");
+    } catch (BusinessException ex) {
+        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+        throw ex;
+    } catch (Exception ex) {
+        logger.error("Register failed for {}: {}", request.email(), ex.getMessage(), ex);
+        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+        throw ex;
+    }
+}
+    public void confirmEmailFromRegister(String accessToken) {
+         try {
+        Map<String, Object> claims = decodeJwtClaims(accessToken);
+
+        String supabaseUserId = (String) claims.get("sub");
+        String email = (String) claims.get("email");
+
+        if (supabaseUserId == null || supabaseUserId.isBlank() || email == null || email.isBlank()) {
+            throw new BusinessException("Invalid token");
+        }
+
+        String role = Role.CUSTOMER.toString();
+
+        if (userService.getUserBySupabaseId(supabaseUserId).isEmpty()) {
+            userService.registerUser(supabaseUserId, email, role);
+        }
+
+        userService.confirmUserEmail(supabaseUserId);
+    } catch (BusinessException ex) {
+        throw ex;
+    } catch (Exception ex) {
+        throw new BusinessException("Failed to confirm email: " + ex.getMessage());
     }
 
-    @Override
-    public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
-        try {
-            // Let Supabase handle duplicate email validation and throw BusinessException
-            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
-                    request.email(), request.password(), DEFAULT_ROLE
-            );
+    }
 
-            String userId = null;
-            if (supabaseResponse.user() != null) {
-            userId = supabaseResponse.user().id();
-            }
-
-            auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
-
-            return new RegisterResponse(
-                    request.email(),
-                userId,
-                    "Check your email for confirmation link"
-            );
-
-        } catch (BusinessException ex) {
-            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-            throw ex; // let GlobalExceptionHandler map it
-        } catch (Exception ex) {
-            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-            throw ex;
+    private Map<String, Object> decodeJwtClaims(String accessToken) throws Exception {
+        String[] parts = accessToken.split("\\.");
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid token format");
         }
+
+        byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
+        String payload = new String(decoded, StandardCharsets.UTF_8);
+        return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -79,7 +127,8 @@ public class AuthServiceImpl implements AuthService {
             try {
                 supabaseAuthClient.revokeToken(accessToken);
             } catch (Exception ex) {
-                // Logout must still succeed locally even if token is already invalid on Supabase.
+                // Logout must still succeed locally even if token is already invalid on
+                // Supabase.
                 logger.warn("Failed to revoke access token during logout; proceeding with local cookie cleanup", ex);
             }
         } else {
@@ -184,6 +233,7 @@ public class AuthServiceImpl implements AuthService {
     public void confirmAndSetupAccount(String tokenHash, String type) {
         supabaseAuthClient.verifyToken(tokenHash, type);
     }
+
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
@@ -224,6 +274,7 @@ public class AuthServiceImpl implements AuthService {
             throw ex;
         }
     }
+
     private String extractUserId(String token) {
         try {
             String[] chunks = token.split("\\.");
@@ -234,8 +285,7 @@ public class AuthServiceImpl implements AuthService {
 
             String payload = new String(
                     java.util.Base64.getUrlDecoder().decode(chunks[1]),
-                    StandardCharsets.UTF_8
-            );
+                    StandardCharsets.UTF_8);
 
             ObjectMapper mapper = new ObjectMapper();
 
