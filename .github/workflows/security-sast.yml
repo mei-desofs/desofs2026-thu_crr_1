@@ -23,9 +23,17 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build project (skip tests)
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build project and download dependencies
         working-directory: backend
-        run: mvn clean package -DskipTests
+        run: mvn clean verify -DskipTests -Dmaven.test.skip=true
 
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
@@ -45,6 +53,8 @@ jobs:
           projectBaseDir: backend
           args: >
             -Dsonar.qualitygate.wait=true
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.java.libraries=target/**/*.jar,~/.m2/repository/**/*.jar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
@@ -58,6 +68,9 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         with:
           projectBaseDir: backend
+          args: >
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.java.libraries=target/**/*.jar,~/.m2/repository/**/*.jar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
