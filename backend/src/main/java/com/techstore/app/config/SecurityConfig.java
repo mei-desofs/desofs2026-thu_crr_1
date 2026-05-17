@@ -52,9 +52,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers("/backup/**").hasRole("MANAGER")
 
-                        .requestMatchers(HttpMethod.POST, "/products/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/products/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/products/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("MANAGER")
 
                         .anyRequest().authenticated()
                 );
