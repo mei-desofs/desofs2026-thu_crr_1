@@ -100,11 +100,15 @@ class AuthServiceImplTest {
     void shouldConfirmInviteAndDefaultMissingRoleToCustomer() throws Exception {
         setWebhookSecret("webhook-secret");
 
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("role", "customer");
+
         Map<String, Object> record = new HashMap<>();
         record.put("id", "supabase-id");
         record.put("email", "user@example.com");
         record.put("email_confirmed_at", "2026-05-15T00:00:00Z");
-        record.put("raw_user_meta_data", new HashMap<>());
+        record.put("invited_at", "2026-05-14T00:00:00Z");
+        record.put("raw_user_meta_data", metadata);
 
         Map<String, Object> oldRecord = new HashMap<>();
         oldRecord.put("email_confirmed_at", null);

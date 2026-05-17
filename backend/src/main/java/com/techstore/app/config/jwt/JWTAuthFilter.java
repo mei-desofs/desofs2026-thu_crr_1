@@ -1,10 +1,5 @@
 package com.techstore.app.config.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -14,18 +9,47 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.*;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JWTAuthFilter extends OncePerRequestFilter {
 
-    @Value("${supabase.jwt-secret}")
-    private String jwtSecret;
+    private final JwtDecoder jwtDecoder;
+
+    public JWTAuthFilter(@Value("${supabase.jwks-url}") String jwksUrl, @Value("${supabase.issuer}") String issuer,
+                         @Value("${supabase.jwt-audience}") String audience) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
+                .withJwkSetUri(jwksUrl)
+                .jwsAlgorithm(SignatureAlgorithm.ES256)
+                .build();
+
+        OAuth2TokenValidator<Jwt> issuerValidator =
+                JwtValidators.createDefaultWithIssuer(issuer);
+
+        OAuth2TokenValidator<Jwt> audienceValidator = jwt -> {
+            if (jwt.getAudience().contains(audience)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+
+            return OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error("invalid_token", "Invalid audience", null)
+            );
+        };
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator)
+        );
+
+        this.jwtDecoder = decoder;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -44,25 +68,35 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody();
+                Jwt jwt = jwtDecoder.decode(token);
 
-                String role = (String) claims.get("user_role");
-                String userId = claims.getSubject();
+                String userId = jwt.getSubject();
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userId,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
-                        );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                String role = null;
+
+                Map<String, Object> userMetadata = jwt.getClaim("user_metadata");
+
+                if (userMetadata != null) {
+                    Object metadataRole = userMetadata.get("role");
+
+                    if (metadataRole instanceof String metadataRoleString) {
+                        role = metadataRoleString;
+                    }
+                }
+
+                if (userId != null && role != null) {
+
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userId,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())));
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
 
             } catch (JwtException e) {
-
+                SecurityContextHolder.clearContext();
             }
         }
 

@@ -1,33 +1,44 @@
 package com.techstore.app.controller;
 
 import com.techstore.app.client.SupabaseAuthClient;
-import com.techstore.app.dto.auth.InviteSignupRequest;
+import com.techstore.app.config.jwt.JWTAuthFilter;
 import com.techstore.app.logger.AuthAuditLogger;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.mockito.ArgumentCaptor;
-import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class InviteIntegrationTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @MockitoBean
+    private JWTAuthFilter jwtAuthFilter;
 
     @MockitoBean
     private SupabaseAuthClient supabaseAuthClient;
@@ -35,42 +46,82 @@ public class InviteIntegrationTest {
     @MockitoBean
     private AuthAuditLogger authAuditLogger;
 
-    /**
-     * Generate a valid JWT token with sub and user_id claims for testing
-     */
-    private String generateTestToken() {
-        String header = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
-        String payload = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString("{\"sub\":\"user-manager-1\",\"user_id\":\"user-manager-1\"}".getBytes(StandardCharsets.UTF_8));
-        return header + "." + payload + ".";
+    private String currentUserId;
+
+    @BeforeEach
+    void setUpJwtFilter() throws Exception {
+        currentUserId = "test-user-" + java.util.UUID.randomUUID();
+
+        doAnswer(invocation -> {
+            HttpServletRequest request = invocation.getArgument(0);
+            HttpServletResponse response = invocation.getArgument(1);
+            FilterChain chain = invocation.getArgument(2);
+
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            currentUserId,
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_MANAGER"))
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            chain.doFilter(request, response);
+            return null;
+        }).when(jwtAuthFilter).doFilter(any(), any(), any());
+    }
+
+    private Cookie accessTokenCookie(String userId) {
+        String payload = Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(("{\"sub\":\"" + userId + "\"}")
+                        .getBytes(StandardCharsets.UTF_8));
+
+        return new Cookie("access_token", "header." + payload + ".signature");
     }
 
     @Test
-    void inviteSuccess() throws Exception {
-        String email = "test@example.com";
+    void inviteManagerSuccess() throws Exception {
+        String email = "newmanager@example.com";
         doNothing().when(supabaseAuthClient).inviteUser(anyString(), anyString());
 
         mvc.perform(post("/auth/invite")
-                        .header("Authorization", "Bearer " + generateTestToken())
+                        .cookie(accessTokenCookie(currentUserId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("{\"email\":\"%s\",\"role\":\"MANAGER\"}", email)))
+                        .content("{\"email\":\"" + email + "\",\"role\":\"MANAGER\"}"))
                 .andExpect(status().isOk());
 
-        verify(supabaseAuthClient, times(1)).inviteUser(email, "MANAGER");
-        verify(authAuditLogger, times(1)).logInviteAttempt(email, true, anyString(), anyString());
+        verify(supabaseAuthClient, times(1)).inviteUser(eq(email), eq("MANAGER"));
+        verify(authAuditLogger, times(1))
+                .logInviteAttempt(eq(email), eq(true), anyString(), isNull());
     }
 
     @Test
-    void inviteSuccessWithUserAgent() throws Exception {
+    void inviteCarrierSuccess() throws Exception {
+        String email = "newcarrier@example.com";
+        doNothing().when(supabaseAuthClient).inviteUser(anyString(), anyString());
+
+        mvc.perform(post("/auth/invite")
+                        .cookie(accessTokenCookie(currentUserId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"role\":\"CARRIER\"}"))
+                .andExpect(status().isOk());
+
+        verify(supabaseAuthClient, times(1)).inviteUser(eq(email), eq("CARRIER"));
+        verify(authAuditLogger, times(1))
+                .logInviteAttempt(eq(email), eq(true), anyString(), isNull());
+    }
+
+    @Test
+    void inviteWithUserAgent() throws Exception {
         String email = "ua@example.com";
         doNothing().when(supabaseAuthClient).inviteUser(anyString(), anyString());
 
         mvc.perform(post("/auth/invite")
-                        .header("Authorization", "Bearer " + generateTestToken())
-                        .header("User-Agent", "CustomAgent/1.0")
+                        .cookie(accessTokenCookie(currentUserId))
+                        .header("User-Agent", "Mozilla/5.0")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("{\"email\":\"%s\",\"role\":\"MANAGER\"}", email)))
+                        .content("{\"email\":\"" + email + "\",\"role\":\"MANAGER\"}"))
                 .andExpect(status().isOk());
 
         ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
@@ -78,48 +129,81 @@ public class InviteIntegrationTest {
         ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> uaCaptor = ArgumentCaptor.forClass(String.class);
 
-        verify(authAuditLogger).logInviteAttempt(emailCaptor.capture(), successCaptor.capture(), ipCaptor.capture(), uaCaptor.capture());
-        verify(supabaseAuthClient, times(1)).inviteUser(email, "MANAGER");
+        verify(authAuditLogger).logInviteAttempt(
+                emailCaptor.capture(),
+                successCaptor.capture(),
+                ipCaptor.capture(),
+                uaCaptor.capture()
+        );
 
         assertEquals(email, emailCaptor.getValue());
         assertTrue(successCaptor.getValue());
         assertNotNull(ipCaptor.getValue());
-        assertEquals("CustomAgent/1.0", uaCaptor.getValue());
+        assertEquals("Mozilla/5.0", uaCaptor.getValue());
     }
 
     @Test
-    void inviteForbiddenForNonManager() throws Exception {
-        // Test without valid authentication (no Bearer token)
+    void inviteInvalidRoleFails() throws Exception {
+        String email = "user@example.com";
+
         mvc.perform(post("/auth/invite")
+                        .cookie(accessTokenCookie(currentUserId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"x@example.com\",\"role\":\"MANAGER\"}"))
-                .andExpect(status().isOk()); // Will pass-through since all endpoints are permitAll
+                        .content("{\"email\":\"" + email + "\",\"role\":\"ADMIN\"}"))
+                .andExpect(status().isBadRequest());
 
-        // No inviteUser call should happen but audit might be called
+        verify(supabaseAuthClient, never()).inviteUser(anyString(), anyString());
     }
 
     @Test
-    void inviteValidationMissingEmail() throws Exception {
+    void inviteMissingEmailFails() throws Exception {
         mvc.perform(post("/auth/invite")
-                        .header("Authorization", "Bearer " + generateTestToken())
+                        .cookie(accessTokenCookie(currentUserId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"role\":\"MANAGER\"}"))
                 .andExpect(status().isBadRequest());
+
+        verify(supabaseAuthClient, never()).inviteUser(anyString(), anyString());
     }
 
     @Test
-    void inviteSupabaseFailure() throws Exception {
-        String email = "fail@example.com";
-        doThrow(new RuntimeException("Supabase down")).when(supabaseAuthClient).inviteUser(anyString(), anyString());
+    void inviteMissingRoleFails() throws Exception {
+        String email = "user@example.com";
 
         mvc.perform(post("/auth/invite")
-                        .header("Authorization", "Bearer " + generateTestToken())
+                        .cookie(accessTokenCookie(currentUserId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(String.format("{\"email\":\"%s\",\"role\":\"MANAGER\"}", email)))
+                        .content("{\"email\":\"" + email + "\"}"))
+                .andExpect(status().isBadRequest());
+
+        verify(supabaseAuthClient, never()).inviteUser(anyString(), anyString());
+    }
+
+    @Test
+    void supabaseErrorReturns500() throws Exception {
+        String email = "fail@example.com";
+
+        doThrow(new RuntimeException("Supabase connection failed"))
+                .when(supabaseAuthClient).inviteUser(anyString(), anyString());
+
+        mvc.perform(post("/auth/invite")
+                        .cookie(accessTokenCookie(currentUserId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"role\":\"MANAGER\"}"))
                 .andExpect(status().isInternalServerError());
 
-        verify(supabaseAuthClient, times(1)).inviteUser(email, "MANAGER");
-        verify(authAuditLogger, times(1)).logInviteAttempt(email, false, anyString(), anyString());
+        verify(supabaseAuthClient, times(1)).inviteUser(eq(email), eq("MANAGER"));
+        verify(authAuditLogger, times(1))
+                .logInviteAttempt(eq(email), eq(false), anyString(), isNull());
+    }
+
+    @Test
+    void noTokenReturnsError() throws Exception {
+        mvc.perform(post("/auth/invite")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"user@example.com\",\"role\":\"MANAGER\"}"))
+                .andExpect(status().is4xxClientError());
+
+        verify(supabaseAuthClient, never()).inviteUser(anyString(), anyString());
     }
 }
-
