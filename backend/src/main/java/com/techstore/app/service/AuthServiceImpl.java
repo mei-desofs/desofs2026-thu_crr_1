@@ -57,37 +57,32 @@ public class AuthServiceImpl implements AuthService {
     this.objectMapper = objectMapper;
 }
     @Override
-    public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
-        try {
-
-            if (userRepository.existsByEmail(request.email().toString())) {
-                throw new BusinessException("Email already registered");
-            }
-
-            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
-                    request.email(), request.password(), DEFAULT_ROLE);
-
-            String userId = null;
-            if (supabaseResponse.user() != null) {
-                userId = supabaseResponse.user().id();
-            }
-
-            auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
-
-            return new RegisterResponse(
-                    request.email(),
-                    userId,
-                    "Check your email for confirmation link");
-
-        } catch (BusinessException ex) {
-            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-            throw ex; // let GlobalExceptionHandler map it
-        } catch (Exception ex) {
-            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-            throw ex;
+public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+    try {
+        Email email = new Email(request.email());
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException("Email already registered");
         }
+        SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+                request.email(), request.password(), DEFAULT_ROLE);
+        String userId = null;
+        if (supabaseResponse.user() != null) {
+            userId = supabaseResponse.user().id();
+        }
+        auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
+        return new RegisterResponse(
+                request.email(),
+                userId,
+                "Check your email for confirmation link");
+    } catch (BusinessException ex) {
+        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+        throw ex;
+    } catch (Exception ex) {
+        logger.error("Register failed for {}: {}", request.email(), ex.getMessage(), ex);
+        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+        throw ex;
     }
-
+}
     public void confirmEmailFromRegister(String accessToken) {
          try {
         Map<String, Object> claims = decodeJwtClaims(accessToken);

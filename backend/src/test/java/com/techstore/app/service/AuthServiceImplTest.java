@@ -60,7 +60,8 @@ class AuthServiceImplTest {
         RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
         SupabaseUserResponse user = new SupabaseUserResponse("supabase-id", request.email(), null);
 
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        Email email = new Email(request.email());
+        when(userRepository.existsByEmail(email)).thenReturn(false);
         when(supabaseAuthClient.signUp(request.email(), request.password(), "customer"))
                 .thenReturn(new SupabaseLoginResponse(null, null, null, null, user, null, null));
         RegisterResponse response = authService.register(request, httpRequest);
@@ -75,8 +76,8 @@ class AuthServiceImplTest {
     void shouldLogFailedRegisterAttemptWhenSignupFails() {
         RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
 
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
-
+        Email email = new Email(request.email());
+        when(userRepository.existsByEmail(email)).thenReturn(false);
         doThrow(new IllegalStateException("boom"))
                 .when(supabaseAuthClient)
                 .signUp(request.email(), request.password(), "customer");
