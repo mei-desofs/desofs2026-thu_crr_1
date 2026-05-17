@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.shared.EmailAddress;
 import com.techstore.app.domain.user.Email;
+import com.techstore.app.domain.user.Role;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.AuthAuditLogger;
@@ -11,13 +12,17 @@ import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 @Service
@@ -37,17 +42,20 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthAuditLogger auditLogger;
 
+    private ObjectMapper objectMapper;
+
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(UserService userService, UserRepository userRepository,
-            SupabaseAuthClient supabaseAuthClient,
-            AuthAuditLogger auditLogger) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.supabaseAuthClient = supabaseAuthClient;
-        this.auditLogger = auditLogger;
-    }
-
+        SupabaseAuthClient supabaseAuthClient,
+        AuthAuditLogger auditLogger,
+        ObjectMapper objectMapper) {
+    this.userService = userService;
+    this.userRepository = userRepository;
+    this.supabaseAuthClient = supabaseAuthClient;
+    this.auditLogger = auditLogger;
+    this.objectMapper = objectMapper;
+}
     @Override
     public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         try {
@@ -78,6 +86,44 @@ public class AuthServiceImpl implements AuthService {
             auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
             throw ex;
         }
+    }
+
+    public void confirmEmailFromRegister(String accessToken) {
+         try {
+        Map<String, Object> claims = decodeJwtClaims(accessToken);
+
+        String supabaseUserId = (String) claims.get("sub");
+        String email = (String) claims.get("email");
+
+        if (supabaseUserId == null || supabaseUserId.isBlank() || email == null || email.isBlank()) {
+            throw new BusinessException("Invalid token");
+        }
+
+        String role = Role.CUSTOMER.toString();
+
+        if (userService.getUserBySupabaseId(supabaseUserId).isEmpty()) {
+            userService.registerUser(supabaseUserId, email, role);
+        }
+
+        userService.confirmUserEmail(supabaseUserId);
+    } catch (BusinessException ex) {
+        throw ex;
+    } catch (Exception ex) {
+        throw new BusinessException("Failed to confirm email: " + ex.getMessage());
+    }
+
+    }
+
+    private Map<String, Object> decodeJwtClaims(String accessToken) throws Exception {
+        String[] parts = accessToken.split("\\.");
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid token format");
+        }
+
+        byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
+        String payload = new String(decoded, StandardCharsets.UTF_8);
+        return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override

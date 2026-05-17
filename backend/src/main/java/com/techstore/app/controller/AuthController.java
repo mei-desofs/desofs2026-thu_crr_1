@@ -27,15 +27,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LogManager.getLogger();
 
     private final AuthService authService;
-    private final UserService userService;
 
-    public AuthController(AuthService authService, UserService userService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.userService = userService;
     }
 
     @RateLimit("invite")
@@ -50,48 +47,11 @@ public class AuthController {
 
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmEmail(@RequestBody ConfirmEmailRequest request) {
-        try {
-            Map<String, Object> claims = decodeJwtClaims(request.accessToken());
-            String supabaseUserId = (String) claims.get("sub");
-            String email = (String) claims.get("email");
-
-            if (supabaseUserId == null || supabaseUserId.isBlank() || email == null || email.isBlank()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
-            }
-
-            String role = "customer";
-            Object userMetadataObject = claims.get("user_metadata");
-            if (userMetadataObject instanceof Map<?, ?> userMetadata) {
-                Object metadataRole = userMetadata.get("role");
-                if (metadataRole instanceof String roleValue && !roleValue.isBlank()) {
-                    role = roleValue;
-                }
-            }
-
-            var existingUser = userService.getUserBySupabaseId(supabaseUserId);
-            if (existingUser.isEmpty()) {
-                userService.registerUser(supabaseUserId, email, role);
-            }
-            userService.confirmUserEmail(supabaseUserId);
-
-            return ResponseEntity.ok(Map.of("message", "Email confirmed and user created"));
-
-        } catch (Exception ex) {
-            return ResponseEntity.status(500).body(Map.of("error", ex.getMessage()));
-        }
+        authService.confirmEmailFromRegister(request.accessToken());
+        return ResponseEntity.ok(Map.of("message", "Email confirmed and user created"));
     }
 
-    private Map<String, Object> decodeJwtClaims(String accessToken) throws Exception {
-        String[] parts = accessToken.split("\\.");
-        if (parts.length < 2) {
-            throw new IllegalArgumentException("Invalid token format");
-        }
-
-        byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
-        String payload = new String(decoded, StandardCharsets.UTF_8);
-        return objectMapper.readValue(payload, new TypeReference<Map<String, Object>>() {
-        });
-    }
+    
 
     @RateLimit("register")
     @PostMapping("/register")
