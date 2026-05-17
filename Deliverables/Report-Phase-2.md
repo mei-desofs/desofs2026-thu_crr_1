@@ -361,12 +361,10 @@ The Snyk integration is seamlessly integrated into our CI/CD pipeline through a 
 
 ## SAST
 
-## SAST
 
-Static Application Security Testing (SAST) is a critical security practice that analyzes source code to identify potential security vulnerabilities and code quality issues before deployment. Our team uses **SonarCloud** to perform comprehensive SAST scans on the codebase. The scanning process analyzes the source code for common vulnerabilities, code smells, and security hotspots, providing detailed reports and recommendations for remediation. 
+Static Application Security Testing (SAST) is a critical security practice that analyzes source code to identify potential security vulnerabilities and code quality issues before deployment. Our team uses SonarCloud to perform comprehensive SAST scans on the codebase. The scanning process analyzes the source code for common vulnerabilities, code smells, and security hotspots, providing detailed reports and recommendations for remediation.
 
-The SonarCloud integration is seamlessly integrated into our CI/CD pipeline through a dedicated reusable workflow that executes code analysis and reports findings. The workflow implements a branch-specific strategy: main and dev branches run with quality gates enabled (`continue-on-error: true` to allow progression during current project phase where 80% coverage is not yet guaranteed), while feature branches run analysis without quality gate enforcement to enable rapid development feedback. The free tier of SonarCloud limits quality gate verification on feature branches, preventing hard blocks on development iterations.
-
+The SonarCloud integration is seamlessly integrated into our CI/CD pipeline through a dedicated reusable workflow that executes code analysis and reports findings using the Maven Sonar plugin. The workflow implements a branch-specific strategy: main and dev branches run with quality gates enabled (`continue-on-error: true` to allow progression during current project phase where 80% coverage is not yet guaranteed), while feature branches run analysis without quality gate enforcement to enable rapid development feedback. The Maven plugin automatically detects project dependencies and binaries, ensuring accurate code analysis without manual library path configuration
 ### Workflow Implementation
 
 ```yaml
@@ -395,9 +393,16 @@ jobs:
               distribution: 'temurin'
               cache: maven
 
+         - name: Cache SonarCloud packages
+           uses: actions/cache@v4
+           with:
+              path: ~/.sonar/cache
+              key: ${{ runner.os }}-sonar
+              restore-keys: ${{ runner.os }}-sonar
+
          - name: Build project (skip tests)
            working-directory: backend
-           run: mvn clean package -DskipTests
+           run: mvn clean verify -DskipTests
 
          - name: Download coverage artifact
            uses: actions/download-artifact@v4
@@ -412,14 +417,16 @@ jobs:
               github.ref == 'refs/heads/dev' ||
               github.base_ref == 'main' ||
               github.base_ref == 'dev'
-           uses: SonarSource/sonarqube-scan-action@v5
-           with:
-              projectBaseDir: backend
-              args: >
-                 -Dsonar.qualitygate.wait=true
+           working-directory: backend
+           run: |
+              mvn sonar:sonar \
+                -Dsonar.projectKey=techstore-backend-key_techstore \
+                -Dsonar.organization=techstore-backend-key \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+                -Dsonar.qualitygate.wait=true
            env:
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              SONAR_HOST_URL: https://sonarcloud.io
 
          - name: SonarCloud Scan (feature branches)
            if: |
@@ -427,13 +434,18 @@ jobs:
               github.ref != 'refs/heads/dev' &&
               github.base_ref != 'main' &&
               github.base_ref != 'dev'
-           uses: SonarSource/sonarqube-scan-action@v5
-           with:
-              projectBaseDir: backend
+           working-directory: backend
+           run: |
+              mvn sonar:sonar \
+                -Dsonar.projectKey=techstore-backend-key_techstore \
+                -Dsonar.organization=techstore-backend-key \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.token=${{ secrets.SONAR_TOKEN }}
            env:
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              SONAR_HOST_URL: https://sonarcloud.io
 ```
+<img src="./images/phase-2/sonar-main-branch-security-issues.png" alt="Sonar Security Issues in main Branch" width="800">
+<img src="./images/phase-2/sonar-pr-analysis.png" alt="Sonar PR analysis" width="800">
 
 ## DAST
 
