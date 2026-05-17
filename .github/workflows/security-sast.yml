@@ -23,9 +23,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Build project (skip tests)
         working-directory: backend
-        run: mvn clean package -DskipTests
+        run: mvn clean verify -DskipTests
 
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
@@ -36,18 +43,20 @@ jobs:
       - name: SonarCloud Scan (main/dev with Quality Gate)
         continue-on-error: true
         if: |
-                  github.ref == 'refs/heads/main' ||
-                  github.ref == 'refs/heads/dev' ||
-                  github.base_ref == 'main' ||
-                  github.base_ref == 'dev'
-        uses: SonarSource/sonarqube-scan-action@v5
-        with:
-          projectBaseDir: backend
-          args: >
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/dev' ||
+          github.base_ref == 'main' ||
+          github.base_ref == 'dev'
+        working-directory: backend
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=techstore-backend-key_techstore \
+            -Dsonar.organization=techstore-backend-key \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
 
       - name: SonarCloud Scan (feature branches)
         if: |
@@ -55,9 +64,12 @@ jobs:
           github.ref != 'refs/heads/dev' &&
           github.base_ref != 'main' &&
           github.base_ref != 'dev'
-        uses: SonarSource/sonarqube-scan-action@v5
-        with:
-          projectBaseDir: backend
+        working-directory: backend
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=techstore-backend-key_techstore \
+            -Dsonar.organization=techstore-backend-key \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
