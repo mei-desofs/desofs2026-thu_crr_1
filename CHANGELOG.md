@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.3.0...v2.0.0) (2026-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove empty page ASVS_5.0_Tracker
+
+### Documentation
+
+* remove empty page ASVS_5.0_Tracker ([00514ee](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/00514ee7d345c2e5f15ecc254042320fc022ceb4))
+
 ## [1.3.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.2.0...v1.3.0) (2026-05-18)
 
 
