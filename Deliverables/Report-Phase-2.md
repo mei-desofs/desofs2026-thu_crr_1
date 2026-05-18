@@ -154,9 +154,9 @@ This naming convention makes it easy to identify the purpose of a branch and cor
 
 Our CI/CD pipeline follows a structured approach with different workflows triggered at different stages of the development process:
 
-- **Feature pipeline**: Runs for feature branches and pull requests. Provides fast feedback with linting, unit tests, and lightweight checks. Triggered on PR creation and pushes to feature branches to catch regressions early and speed up development.
-- **Dev pipeline**: Targets the `dev` branch and the integration environment. Runs faster but thorough checks (build, tests, and selected security scans). Triggered on pushes to `dev`.
-- **Main pipeline**: Protects the `main` branch. Runs a full build, unit and integration tests, SAST/DAST, container security scans, and release tasks. Triggered on pushes and merged pull requests to `main` to ensure production-grade artifacts and safe deployments.
+- **Feature pipeline**: Runs for feature branches and pull requests. Provides fast feedback with build, unit tests, integration tests and some security scans. Triggered on PR creation and pushes to feature branches to catch regressions early and speed up development.
+- **Dev pipeline**: Targets the `dev` branch. Runs faster but thorough checks (build, tests, and soma security scans). Triggered on pushes to `dev`.
+- **Main pipeline**: Protects the `main` branch. Runs a build, unit and integration tests, SAST/DAST, container security scans, and release tasks. Triggered on pushes and merged pull requests to `main` to ensure production-grade artifacts and safe deployments.
 
 Benefits:
 

@@ -42,12 +42,13 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
+                        .requestMatchers("/index.html","/reset-password.html", "/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
                                 "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/swagger-ui.html","/actuator/health")
                         .permitAll()
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")
+                        .requestMatchers("/auth/logout").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
 
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers("/backup/**").hasRole("MANAGER")
