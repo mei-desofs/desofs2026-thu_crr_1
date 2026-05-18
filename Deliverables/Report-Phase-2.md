@@ -1,12 +1,12 @@
 # Project - Phase 2
 
-| Name | Student Number |
-| --- | ---: |
-| Diogo Martins | 1221223 |
-| Francisco Osorio | 1220846 |
-| Joao Pinto | 1220663 |
-| Francisco Reis | 1201373 |
-| Marco Marques | 1250685 |
+| Name             | Student Number |
+| ---------------- | -------------: |
+| Diogo Martins    |        1221223 |
+| Francisco Osorio |        1220846 |
+| Joao Pinto       |        1220663 |
+| Francisco Reis   |        1201373 |
+| Marco Marques    |        1250685 |
 
 # Introduction
 
@@ -27,6 +27,7 @@ Our team follows the conventional commits format to maintain clear and consisten
 ```
 
 Where `<type>` can be:
+
 - **feat**: A new feature or functionality
 - **fix**: A bug fix
 - **docs**: Documentation changes
@@ -35,6 +36,7 @@ Where `<type>` can be:
 - **chore**: Maintenance tasks and dependencies
 
 **Example:**
+
 ```
 feat: implement user authentication system
 fix: resolve login validation bug
@@ -58,11 +60,11 @@ Each pull request should follow these guidelines to ensure quality and clarity:
    - Motivation or reason for the changes
    - Any relevant context for reviewers
 
-3. **Assignment**: 
+3. **Assignment**:
    - Assign the PR to the developer who created it
    - This ensures clear responsibility and accountability
 
-4. **Reviewers**: 
+4. **Reviewers**:
    - Add team members who should review the code
    - Include Copilot for automated code analysis when relevant
 
@@ -128,6 +130,7 @@ Branch names follow a structured format similar to commits to maintain consisten
 ```
 
 Where `<type>` matches the commit type:
+
 - **feat/**: Feature branches (e.g., `feat/user-authentication`)
 - **fix/**: Bug fix branches (e.g., `fix/login-validation`)
 - **docs/**: Documentation branches (e.g., `docs/api-guide`)
@@ -136,6 +139,7 @@ Where `<type>` matches the commit type:
 - **chore/**: Maintenance branches (e.g., `chore/update-dependencies`)
 
 **Examples:**
+
 - `feat/payment-integration`
 - `fix/session-timeout-bug`
 - `docs/setup-instructions`
@@ -272,6 +276,7 @@ Maven configuration in [`pom.xml`](../backend/pom.xml) defines the test executio
 ```
 
 Notes:
+
 - The project separates unit tests (Surefire) from integration tests (Failsafe) using the `*IntegrationTest.java` naming convention. This allows the workflow to run fast unit test passes and then run integration tests and coverage in a later `mvn verify` step.
 - JaCoCo is configured to produce a coverage report and enforce a minimum line coverage ratio of 60%.
 
@@ -361,93 +366,258 @@ The Snyk integration is seamlessly integrated into our CI/CD pipeline through a 
 
 ## SAST
 
-
 Static Application Security Testing (SAST) is a critical security practice that analyzes source code to identify potential security vulnerabilities and code quality issues before deployment. Our team uses SonarCloud to perform comprehensive SAST scans on the codebase. The scanning process analyzes the source code for common vulnerabilities, code smells, and security hotspots, providing detailed reports and recommendations for remediation.
 
 The SonarCloud integration is seamlessly integrated into our CI/CD pipeline through a dedicated reusable workflow that executes code analysis and reports findings using the Maven Sonar plugin. The workflow implements a branch-specific strategy: main and dev branches run with quality gates enabled (`continue-on-error: true` to allow progression during current project phase where 80% coverage is not yet guaranteed), while feature branches run analysis without quality gate enforcement to enable rapid development feedback. The Maven plugin automatically detects project dependencies and binaries, ensuring accurate code analysis without manual library path configuration
+
 ### Workflow Implementation
 
 ```yaml
 name: security-sast.yml
 on:
-   workflow_call:
-      secrets:
-         SONAR_TOKEN:
-            required: true
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
 
 jobs:
-   sonar:
-      name: SonarQube SAST Scan
-      runs-on: ubuntu-latest
+  sonar:
+    name: SonarQube SAST Scan
+    runs-on: ubuntu-latest
 
-      steps:
-         - name: Checkout code
-           uses: actions/checkout@v4
-           with:
-              fetch-depth: 0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-         - name: Set up JDK 17
-           uses: actions/setup-java@v4
-           with:
-              java-version: '17'
-              distribution: 'temurin'
-              cache: maven
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
 
-         - name: Cache SonarCloud packages
-           uses: actions/cache@v4
-           with:
-              path: ~/.sonar/cache
-              key: ${{ runner.os }}-sonar
-              restore-keys: ${{ runner.os }}-sonar
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
-         - name: Build project (skip tests)
-           working-directory: backend
-           run: mvn clean verify -DskipTests
+      - name: Build project (skip tests)
+        working-directory: backend
+        run: mvn clean verify -DskipTests
 
-         - name: Download coverage artifact
-           uses: actions/download-artifact@v4
-           with:
-              name: jacoco-report
-              path: backend/target/site/jacoco
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco
 
-         - name: SonarCloud Scan (main/dev with Quality Gate)
-           continue-on-error: true
-           if: |
-              github.ref == 'refs/heads/main' ||
-              github.ref == 'refs/heads/dev' ||
-              github.base_ref == 'main' ||
-              github.base_ref == 'dev'
-           working-directory: backend
-           run: |
-              mvn sonar:sonar \
-                -Dsonar.projectKey=techstore-backend-key_techstore \
-                -Dsonar.organization=techstore-backend-key \
-                -Dsonar.host.url=https://sonarcloud.io \
-                -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-                -Dsonar.qualitygate.wait=true
-           env:
-              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan (main/dev with Quality Gate)
+        continue-on-error: true
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/dev' ||
+          github.base_ref == 'main' ||
+          github.base_ref == 'dev'
+        working-directory: backend
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=techstore-backend-key_techstore \
+            -Dsonar.organization=techstore-backend-key \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-         - name: SonarCloud Scan (feature branches)
-           if: |
-              github.ref != 'refs/heads/main' && 
-              github.ref != 'refs/heads/dev' &&
-              github.base_ref != 'main' &&
-              github.base_ref != 'dev'
-           working-directory: backend
-           run: |
-              mvn sonar:sonar \
-                -Dsonar.projectKey=techstore-backend-key_techstore \
-                -Dsonar.organization=techstore-backend-key \
-                -Dsonar.host.url=https://sonarcloud.io \
-                -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-           env:
-              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan (feature branches)
+        if: |
+          github.ref != 'refs/heads/main' && 
+          github.ref != 'refs/heads/dev' &&
+          github.base_ref != 'main' &&
+          github.base_ref != 'dev'
+        working-directory: backend
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=techstore-backend-key_techstore \
+            -Dsonar.organization=techstore-backend-key \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
+
 <img src="./images/phase-2/sonar-main-branch-security-issues.png" alt="Sonar Security Issues in main Branch" width="800">
 <img src="./images/phase-2/sonar-pr-analysis.png" alt="Sonar PR analysis" width="800">
 
 ## DAST
+
+Dynamic Application Security Testing (DAST) is a security testing methodology that analyzes a running application for vulnerabilities by simulating external attacks. Unlike SAST, which inspects static source code, DAST interacts with the application from the outside, identifying security flaws that are only discoverable at runtime. Our team uses the **OWASP Zed Attack Proxy (ZAP)** API scan to perform DAST on our application.
+
+The ZAP API scan is integrated into our CI/CD pipeline through a dedicated reusable workflow that executes dynamic analysis on the live application. The workflow implements a risk-based strategy: it sets up a complete testing environment with PostgreSQL database, builds and runs the Java application, and then executes the ZAP scan against the live application's OpenAPI specification. The pipeline only blocks on **CRITICAL** severity vulnerabilities, while high and medium issues are recorded and reported via PR comments to enable tracking and prioritization. The workflow integrates with GitHub's native security features, uploading results in both HTML and XML formats for comprehensive analysis and team visibility.
+
+### Workflow Implementation
+
+```yaml
+name: DAST Scan (OWASP ZAP)
+
+on:
+  workflow_call:
+
+jobs:
+  dast-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: techstore
+          POSTGRES_PASSWORD: techstore
+          POSTGRES_DB: techstore
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build application
+        working-directory: backend
+        run: mvn clean package -DskipTests -q
+
+      - name: Start application
+        working-directory: backend
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/techstore
+          POSTGRES_USER: techstore
+          POSTGRES_PASSWORD: techstore
+          POSTGRES_DB: techstore
+        run: |
+          JAR_FILE=$(find target -name "*.jar" -type f | head -1)
+          java -jar "$JAR_FILE" > /tmp/app.log 2>&1 &
+          echo $! > /tmp/app.pid
+          sleep 2
+
+      - name: Wait for application ready
+        run: |
+          for i in {1..60}; do
+            if curl -s -f http://localhost:8081/api/actuator/health >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+      - name: Run OWASP ZAP scan
+        run: |
+          mkdir -p /tmp/dast-reports
+          chmod 777 /tmp/dast-reports
+          docker run --rm \
+            -v ${{ github.workspace }}/.github/workflows/dast:/zap/custom:ro \
+            -v /tmp/dast-reports:/zap/wrk \
+            --add-host="host.docker.internal:host-gateway" \
+            --user root \
+            zaproxy/zap-stable \
+            zap-api-scan.py \
+              -t http://host.docker.internal:8081/api/v3/api-docs \
+              -f openapi \
+              -S \
+              -r /zap/wrk/zap-report.html \
+              -x /zap/wrk/zap-report.xml \
+              -c /zap/custom/zap-policy.yaml || true
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-html-report
+          path: /tmp/dast-reports/zap-report.html
+
+      - name: Upload XML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-xml-report
+          path: /tmp/dast-reports/zap-report.xml
+
+      - name: Parse vulnerability results
+        if: always()
+        id: results
+        run: |
+          CRITICAL=$(grep -o '<riskcode>3</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          HIGH=$(grep -o '<riskcode>2</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+          MEDIUM=$(grep -o '<riskcode>1</riskcode>' /tmp/dast-reports/zap-report.xml | wc -l)
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "result=failed" >> $GITHUB_OUTPUT
+          else
+            echo "result=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const critical = parseInt('${{ steps.results.outputs.critical }}') || 0;
+            const high = parseInt('${{ steps.results.outputs.high }}') || 0;
+            const medium = parseInt('${{ steps.results.outputs.medium }}') || 0;
+
+            let emoji = '✅';
+            let status = 'PASSED';
+            if (critical > 0) {
+              emoji = '🚨';
+              status = 'FAILED';
+            } else if (high > 0 || medium > 0) {
+              emoji = '⚠️';
+              status = 'WARNINGS';
+            }
+
+            const body = `## ${emoji} DAST Security Scan: ${status}
+
+            | Severity | Count |
+            |----------|-------|
+            | Critical | ${critical} |
+            | High | ${high} |
+            | Medium | ${medium} |
+
+            View the full report in [Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Fail if vulnerabilities found
+        if: steps.results.outputs.result == 'failed'
+        run: exit 1
+```
+
+<img src="./images/phase-2/dast-report.png" alt="DAST Report Example" width="800">
 
 ## Container Security
 
@@ -456,6 +626,7 @@ Container security scanning is a critical practice that ensures Docker images ar
 The container security integration pulls the image from DockerHub after it has been built and pushed by the Docker publishing workflow, ensuring we scan the exact artifact that will be deployed. This guarantees that the image analysis reflects the final state of the container, including the base OS layers and all installed packages.
 
 ### Workflow Implementation
+
 ```yaml
 name: Container Security Scan
 
@@ -497,8 +668,8 @@ jobs:
         with:
           sarif_file: snyk-container.sarif
 ```
-<img src="./images/phase-2/container-sec.png" alt="Container Security in GitHub" width="800">
 
+<img src="./images/phase-2/container-sec.png" alt="Container Security in GitHub" width="800">
 
 ## Docker Image Publishing
 
@@ -550,11 +721,11 @@ The deployment process carefully removes old containers before starting new ones
     key: ${{ secrets.SSH_KEY }}
     script: |
       set -e
-      
+
       sudo docker system prune -af
       echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
       sudo docker network inspect techstore-net >/dev/null 2>&1 || sudo docker network create techstore-net
-      
+
       BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:latest"
       sudo docker pull "$BACKEND_IMAGE"
 
@@ -567,9 +738,9 @@ The deployment process carefully removes old containers before starting new ones
     key: ${{ secrets.SSH_KEY }}
     script: |
       set -e
-      
+
       BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:latest"
-      
+
       sudo docker rm -f techstore || true
       sudo docker run -d \
         --name techstore \
@@ -578,7 +749,7 @@ The deployment process carefully removes old containers before starting new ones
         -p 8080:8081 \
         --env-file /opt/techstore/backend.env \
         "$BACKEND_IMAGE"
-      
+
       sudo docker image prune -f
 ```
 
@@ -597,7 +768,7 @@ name: Release Please
 
 on:
   workflow_call:
-    
+
   workflow_dispatch:
 
 permissions:
@@ -616,4 +787,3 @@ jobs:
 ```
 
 <img src="./images/phase-2/realise-please.png" alt="Realise Please in GitHub" width="200">
-
