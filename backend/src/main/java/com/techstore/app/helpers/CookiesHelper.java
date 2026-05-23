@@ -17,10 +17,17 @@ public class CookiesHelper {
     }
 
     public static void clearAuthCookies(HttpServletResponse response) {
-        Cookie accessCookie = createCookie("access_token", "", 0);
-        Cookie refreshCookie = createCookie("refresh_token", "", 0);
+        clearAccessTokenCookie(response);
+        clearRefreshTokenCookie(response);
+    }
 
+    public static void clearAccessTokenCookie(HttpServletResponse response) {
+        Cookie accessCookie = createCookie("access_token", "", 0);
         response.addCookie(accessCookie);
+    }
+
+    public static void clearRefreshTokenCookie(HttpServletResponse response) {
+        Cookie refreshCookie = createCookie("refresh_token", "", 0);
         response.addCookie(refreshCookie);
     }
 
