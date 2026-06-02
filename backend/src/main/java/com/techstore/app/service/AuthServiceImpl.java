@@ -127,7 +127,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
             supabaseClient.revokeToken(accessToken);
             auditLogger.logLogoutAttempt("unknown", true, httpRequest);
         } catch (Exception ex) {
-            logger.warn("Logout failed on Supabase, but cookies were cleared. User is effectively logged out. Reason: {}", ex.getMessage());
+            logger.warn("Logout failed on Supabase while revoking token. Reason: {}", ex.getMessage());
             auditLogger.logLogoutAttempt("unknown", false, httpRequest);
         }
     }
