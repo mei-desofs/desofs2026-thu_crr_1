@@ -1,21 +1,15 @@
 package com.techstore.app.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import com.techstore.app.dto.auth.*;
-import com.techstore.app.exception.BusinessException;
 import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.service.interfaces.AuthService;
-import com.techstore.app.service.interfaces.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,7 +74,7 @@ public class AuthController {
             authService.logout(accessToken, httpRequest);
         }
 
-        // Clear auth cookies regardless
+        // Clear both auth cookies so refresh cannot mint a new access token after logout.
         CookiesHelper.clearAuthCookies(httpResponse);
 
         return ResponseEntity.ok().build();

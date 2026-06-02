@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    private final SupabaseAuthClient supabaseAuthClient;
+    private final SupabaseAuthClient supabaseClient;
 
     private final AuthAuditLogger auditLogger;
 
@@ -47,14 +47,14 @@ public class AuthServiceImpl implements AuthService {
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(UserService userService, UserRepository userRepository,
-        SupabaseAuthClient supabaseAuthClient,
         AuthAuditLogger auditLogger,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper,
+        SupabaseAuthClient supabaseClient) {
     this.userService = userService;
     this.userRepository = userRepository;
-    this.supabaseAuthClient = supabaseAuthClient;
     this.auditLogger = auditLogger;
     this.objectMapper = objectMapper;
+    this.supabaseClient = supabaseClient;
 }
     @Override
 public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
@@ -63,7 +63,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException("Email already registered");
         }
-        SupabaseLoginResponse supabaseResponse = supabaseAuthClient.signUp(
+        SupabaseLoginResponse supabaseResponse = supabaseClient.signUp(
                 request.email(), request.password(), DEFAULT_ROLE);
         String userId = null;
         if (supabaseResponse.user() != null) {
@@ -123,19 +123,13 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
 
     @Override
     public void logout(String accessToken, HttpServletRequest httpRequest) {
-        if (accessToken != null && !accessToken.isBlank()) {
-            try {
-                supabaseAuthClient.revokeToken(accessToken);
-            } catch (Exception ex) {
-                // Logout must still succeed locally even if token is already invalid on
-                // Supabase.
-                logger.warn("Failed to revoke access token during logout; proceeding with local cookie cleanup", ex);
-            }
-        } else {
-            logger.info("No access token provided to revoke during logout");
+        try {
+            supabaseClient.revokeToken(accessToken);
+            auditLogger.logLogoutAttempt("unknown", true, httpRequest);
+        } catch (Exception ex) {
+            logger.warn("Logout failed on Supabase while revoking token. Reason: {}", ex.getMessage());
+            auditLogger.logLogoutAttempt("unknown", false, httpRequest);
         }
-
-        auditLogger.logLogoutAttempt("unknown", true, httpRequest);
     }
 
     @Override
@@ -147,7 +141,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
         }
 
         try {
-            supabaseAuthClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
+            supabaseClient.inviteUser(inviteSignupRequest.email(), inviteSignupRequest.role());
             auditLogger.logInviteAttempt(inviteSignupRequest.email(), true, clientIp, userAgent);
         } catch (Exception ex) {
             auditLogger.logInviteAttempt(inviteSignupRequest.email(), false, clientIp, userAgent);
@@ -197,7 +191,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
             return false;
         }
 
-        if (!supabaseAuthClient.userExists(supabaseUserId)) {
+        if (!supabaseClient.userExists(supabaseUserId)) {
             auditLogger.logConfirmInvite(email, false, "Supabase user not found - possible payload manipulation");
             return false;
         }
@@ -220,7 +214,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
             logger.error("Unexpected error registering user {}, rolling back: {}", email, ex.getMessage());
             if (!userAlreadyExists) {
                 try {
-                    supabaseAuthClient.deleteUser(supabaseUserId);
+                    supabaseClient.deleteUser(supabaseUserId);
                 } catch (Exception rollbackEx) {
                     logger.error("Failed to rollback Supabase user {} — manual cleanup required", supabaseUserId);
                 }
@@ -232,13 +226,13 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
 
     @Override
     public void confirmAndSetupAccount(String tokenHash, String type) {
-        supabaseAuthClient.verifyToken(tokenHash, type);
+        supabaseClient.verifyToken(tokenHash, type);
     }
 
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            SupabaseLoginResponse supabaseResponse = supabaseAuthClient.login(request.email(), request.password());
+            SupabaseLoginResponse supabaseResponse = supabaseClient.login(request.email(), request.password());
 
             auditLogger.logLoginAttempt(request.email(), true, httpRequest);
 
@@ -261,7 +255,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
 
         try {
 
-            RefreshResponse response = supabaseAuthClient.refreshToken(refreshToken);
+            RefreshResponse response = supabaseClient.refreshToken(refreshToken);
 
             userId = extractUserId(response.accessToken());
 
@@ -306,7 +300,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
                 throw new BusinessException("Invalid email format");
             }
 
-            supabaseAuthClient.sendPasswordResetEmail(email);
+            supabaseClient.sendPasswordResetEmail(email);
             auditLogger.logPasswordResetRequest(email, true, httpRequest);
         } catch (Exception ex) {
             auditLogger.logPasswordResetRequest(email, false, httpRequest);
@@ -321,7 +315,7 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
                 throw new BusinessException("Invalid password format");
             }
 
-            supabaseAuthClient.updatePassword(accessToken, newPassword);
+            supabaseClient.updatePassword(accessToken, newPassword);
             auditLogger.logPasswordUpdate(true, httpRequest);
         } catch (Exception ex) {
             auditLogger.logPasswordUpdate(false, httpRequest);

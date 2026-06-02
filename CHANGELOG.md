@@ -1,5 +1,43 @@
 # Changelog
 
+## [2.0.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.3.0...v2.0.0) (2026-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove empty page ASVS_5.0_Tracker
+
+### Documentation
+
+* remove empty page ASVS_5.0_Tracker ([00514ee](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/00514ee7d345c2e5f15ecc254042320fc022ceb4))
+
+## [1.3.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.2.0...v1.3.0) (2026-05-18)
+
+
+### Features
+
+* added logout to security config ([25e9d60](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/25e9d60b493809b868ad66ba96c6fa4856a46031))
+* enhance JWT authentication with issuer and audience validation, update invite logic, and improve test coverage ([5f05d3e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5f05d3e24f2d24f7a67cb9f36a92aaedc8ddba2d))
+
+
+### Bug Fixes
+
+* add more envs in dast-scan ([58d123d](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/58d123dd31431750b30eec943e95bc6e50d6c2ba))
+* add more envs in dast-scan ([b61382d](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b61382dceae84debd72de94750c01f1c351802b4))
+* allow access to actuator health endpoint in security configuration ([1f35601](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1f35601113697ea85e3c062e2f474576fa1b78fd))
+* fix /confirm email in register ([4c908d6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4c908d641b5e0db1169d6669b11c9149bed3535b))
+* fix duplicated check for Register Email ([#8](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/8)) ([a11ed84](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a11ed8436aae462c71e2fa883345c51b3312588b))
+* fix logout security ([c12f688](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c12f6887151dd7c61fd09124f51e9e7798b9e75a))
+* fix security config and some fixes in report ([bc1c7f8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/bc1c7f8a0d01d69d1980e0cb1524769d2d49142e))
+* fix security config and some fixes in report ([3252c16](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/3252c166faff566ef6a5bb33d4cef8e81cdefdf0))
+* fix tests erros for new register ([#8](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/8)) ([fcae4c6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fcae4c6864111b8d4ee255342a7c92be8e2e3914))
+* restrict product endpoints to users with MANAGER role and update session management policy documentation ([e5e438c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e5e438ce6c2468768dc80cbd0bc00e6f7b4cf12a))
+* small fixes for Email in Register([#8](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/8)) ([898dbac](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/898dbaca9ea065f1b0a3ae609a571d5330f3110d))
+* sonar workflow ([fcfdd4a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/fcfdd4a39b3c05d322bcbf398266940532c22c2f))
+* update invite confirmation endpoint and update authentication logic ([b9353ca](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b9353ca268646a93dae8002cd43171a378d2c288))
+* warning in sonar ([4091a53](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4091a5356824ae7eb3ae59fa9acc51f905043db9))
+* warning in sonar ([83453f8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/83453f89cbc3b9ad93499e8eb04845b45fa45baf))
+
 ## [1.2.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.1.0...v1.2.0) (2026-05-16)
 
 
