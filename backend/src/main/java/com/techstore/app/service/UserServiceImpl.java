@@ -37,18 +37,18 @@ public class UserServiceImpl implements UserService {
 
         if (userRepository.existsBySupabaseUserId(sid)) {
             User existingUser = userRepository.findBySupabaseUserId(sid).orElseThrow();
-            ensureCustomerExists(existingUser, userRole);
+            ensureCustomerExists(existingUser);
             return existingUser;
         }
 
         User user = new User(emailVO, userRole, sid);
         User savedUser = userRepository.save(user);
-        ensureCustomerExists(savedUser, userRole);
+        ensureCustomerExists(savedUser);
         return savedUser;
     }
 
-    private void ensureCustomerExists(User user, Role role) {
-        if (role != Role.CUSTOMER || customerRepository.existsByUser(user)) {
+    private void ensureCustomerExists(User user) {
+        if (user.getRole() != Role.CUSTOMER || customerRepository.existsByUser(user)) {
             return;
         }
 
