@@ -29,7 +29,7 @@ public class Customer {
     private CustomerId id;
 
     @Embedded
-    @Column(nullable = false, unique = true)
+    @AttributeOverride(name = "value", column = @Column(name = "nif", unique = true))
     private Nif nif;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -49,13 +49,21 @@ public class Customer {
         // For JPA
     }
 
-    public Customer(Nif nif, User user) {
+    public Customer(User user) {
         this.id = CustomerId.newId();
-        if (nif == null) {
-            throw new BusinessException("NIF cannot be null.");
-        }
         if (user == null) {
             throw new BusinessException("User cannot be null.");
+        }
+        this.user = user;
+    }
+
+    public Customer(Nif nif, User user) {
+        this.id = CustomerId.newId();
+        if (user == null) {
+            throw new BusinessException("User cannot be null.");
+        }
+        if (nif == null) {
+            throw new BusinessException("NIF cannot be null.");
         }
         this.nif = nif;
         this.user = user;
