@@ -31,9 +31,10 @@ public class Cart {
 
     public Cart() {}
 
-    public Cart(List<CartItem> items) {
+    public Cart(List<CartItem> items, Customer customer) {
         this.id = CartId.newId();
         this.items = items;
+        this.customer = customer;
     }
 
     private boolean validate(List<CartItem> items) {

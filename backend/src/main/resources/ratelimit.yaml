@@ -45,3 +45,8 @@ ratelimit:
       type: IP
       capacity: 60
       duration: PT1M
+
+    add-item-to-cart:
+        type: USER
+        capacity: 20
+        duration: PT1M

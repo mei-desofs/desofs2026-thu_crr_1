@@ -2,6 +2,7 @@ package com.techstore.app.domain.product;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.domain.shared.Quantity;
 import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ class ProductTest {
         Category category = new Category("Accessories");
         Money price = new Money(new BigDecimal("49.99"));
 
-        Product product = new Product("Mouse", "Wireless mouse", price, category);
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(100));
 
         assertEquals("Mouse", product.getName().getProductName());
         assertEquals("Wireless mouse", product.getDescription().getDescription());
@@ -32,7 +33,7 @@ class ProductTest {
         Money price = new Money(new BigDecimal("49.99"));
 
         assertThrows(BusinessException.class,
-                () -> new Product("   ", "Wireless mouse", price, category));
+                () -> new Product("   ", "Wireless mouse", price, category, new Quantity(100)));
     }
 
     @Test

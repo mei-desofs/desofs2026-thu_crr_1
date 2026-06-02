@@ -3,6 +3,12 @@ package com.techstore.app.helpers;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+
+import java.util.Map;
 
 public class CookiesHelper {
 
@@ -51,5 +57,14 @@ public class CookiesHelper {
             }
         }
         return null;
+    }
+
+    public static String getCurrentUserId() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
+        return auth.getName(); // this is userId in your filter
+
     }
 }
