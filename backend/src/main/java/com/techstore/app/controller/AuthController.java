@@ -74,8 +74,8 @@ public class AuthController {
             authService.logout(accessToken, httpRequest);
         }
 
-        // Clear only the access token cookie; keep refresh token available.
-        CookiesHelper.clearAccessTokenCookie(httpResponse);
+        // Clear both auth cookies so refresh cannot mint a new access token after logout.
+        CookiesHelper.clearAuthCookies(httpResponse);
 
         return ResponseEntity.ok().build();
     }
