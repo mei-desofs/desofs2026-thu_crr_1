@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
             Category category = categoryRepository.findById(new CategoryId(dto.categoryId()))
                     .orElseThrow(() -> new BusinessException("Category not found"));
 
-            Product product = ProductMapper.toEntity(dto, category);
+            Product product = ProductMapper.toEntity(dto, category, dto.stockQuantity());
             ProductResponseDTO response = ProductMapper.toResponse(productRepository.save(product));
 
             // TODO: Change the userId from system to the real user

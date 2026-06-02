@@ -2,6 +2,7 @@ package com.techstore.app.domain.product;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.domain.shared.Quantity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,6 +31,9 @@ public class Product {
     @JoinColumn(nullable = false)
     private Category category;
 
+    @Embedded
+    private Quantity stockQuantity;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -38,12 +42,13 @@ public class Product {
 
     public Product() {}
 
-    public Product(String name, String description, Money price, Category category) {
+    public Product(String name, String description, Money price, Category category, Quantity stockQuantity) {
         this.id = ProductId.newId();
         this.name = new ProductName(name);
         this.description = new ProductDescription(description);
         this.price = price;
         this.category = category;
+        this.stockQuantity = stockQuantity;
     }
 
     @PrePersist

@@ -27,11 +27,12 @@ class CartTest {
     @Test
     void ensureConstructorInitializesProvidedFields() {
         Product mockProduct = mock(Product.class);
+        Customer mockCustomer = mock(Customer.class);
         CartItem cartItem = new CartItem(3, mockProduct);
         List<CartItem> items = new ArrayList<>();
         items.add(cartItem);
 
-        Cart cart = new Cart(items);
+        Cart cart = new Cart(items, mockCustomer);
 
         assertNotNull(cart.getId());
         assertNotNull(cart.getItems());
@@ -43,21 +44,23 @@ class CartTest {
     @Test
     void ensureConstructorCreatesNewCartId() {
         Product mockProduct = mock(Product.class);
+        Customer mockCustomer = mock(Customer.class);
         CartItem cartItem = new CartItem(2, mockProduct);
         List<CartItem> items = new ArrayList<>();
         items.add(cartItem);
 
-        Cart cart1 = new Cart(items);
-        Cart cart2 = new Cart(items);
+        Cart cart1 = new Cart(items, mockCustomer);
+        Cart cart2 = new Cart(items, mockCustomer);
 
         assertNotEquals(cart1.getId(), cart2.getId());
     }
 
     @Test
     void ensureConstructorWithEmptyItemsList() {
+        Customer mockCustomer = mock(Customer.class);
         List<CartItem> items = new ArrayList<>();
 
-        Cart cart = new Cart(items);
+        Cart cart = new Cart(items, mockCustomer);
 
         assertNotNull(cart.getId());
         assertEquals(items, cart.getItems());
@@ -92,13 +95,14 @@ class CartTest {
     void ensureCartWithMultipleItems() {
         Product mockProduct1 = mock(Product.class);
         Product mockProduct2 = mock(Product.class);
+        Customer mockCustomer = mock(Customer.class);
         CartItem item1 = new CartItem(2, mockProduct1);
         CartItem item2 = new CartItem(3, mockProduct2);
         List<CartItem> items = new ArrayList<>();
         items.add(item1);
         items.add(item2);
 
-        Cart cart = new Cart(items);
+        Cart cart = new Cart(items, mockCustomer);
 
         assertNotNull(cart.getId());
         assertEquals(2, cart.getItems().size());
@@ -112,8 +116,7 @@ class CartTest {
         items.add(cartItem);
         Customer mockCustomer = mock(Customer.class);
 
-        Cart cart = new Cart(items);
-        // Since customer is not set through constructor, we verify it's null
-        assertNull(cart.getCustomer());
+        Cart cart = new Cart(items, mockCustomer);
+        assertNotNull(cart.getCustomer());
     }
 }

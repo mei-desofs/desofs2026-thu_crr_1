@@ -5,6 +5,7 @@ import com.techstore.app.domain.category.CategoryName;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.domain.shared.Quantity;
 import com.techstore.app.dto.ProductRequestDTO;
 import com.techstore.app.service.interfaces.CategoryService;
 import com.techstore.app.service.interfaces.ProductService;
@@ -61,11 +62,11 @@ public class Bootstrapper implements CommandLineRunner {
 
     private void createProducts() {
         if  (productService.findByName(new ProductName("Smartphone")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features", new BigDecimal("599.99"), categoryService.findByName(new CategoryName("Electronics")).getId().getId()));
+            productService.save(new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features", new BigDecimal("599.99"), 100, categoryService.findByName(new CategoryName("Electronics")).getId().getId()));
         }
 
         if  (productService.findByName(new ProductName("Smartphone Case")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), categoryService.findByName(new CategoryName("Accessories")).getId().getId()));
+            productService.save(new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), 100, categoryService.findByName(new CategoryName("Accessories")).getId().getId()));
         }
 
         LOGGER.info("Products created successfully.");
