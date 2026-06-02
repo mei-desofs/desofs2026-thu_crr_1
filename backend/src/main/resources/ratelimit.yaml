@@ -50,3 +50,8 @@ ratelimit:
         type: USER
         capacity: 20
         duration: PT1M
+
+    create-order:
+      type: USER
+      capacity: 20
+      duration: PT1M

@@ -55,7 +55,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         String userId = getUserId(request);
         String ip = request.getRemoteAddr();
 
-        String key = resolver.resolve(rule.getType(), userId, ip);
+        String identityKey = resolver.resolve(rule.getType(), userId, ip);
+        String key = ruleName + ":" + identityKey;
 
         Bucket bucket = bucketManager.resolve(key, rule.getCapacity(), rule.getDuration());
 
