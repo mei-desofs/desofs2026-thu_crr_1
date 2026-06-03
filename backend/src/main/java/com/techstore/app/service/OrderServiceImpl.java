@@ -17,8 +17,10 @@ import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.repository.CartRepository;
 import com.techstore.app.repository.CustomerRepository;
 import com.techstore.app.repository.OrderRepository;
+import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.OrderService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -31,14 +33,19 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderAuditLogger orderAuditLogger;
 
+    private final NotificationService notificationService;
+
     public OrderServiceImpl(OrderRepository orderRepository, CartRepository cartRepository,
-            CustomerRepository customerRepository, OrderAuditLogger orderAuditLogger) {
+            CustomerRepository customerRepository, OrderAuditLogger orderAuditLogger,
+            NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.customerRepository = customerRepository;
         this.orderAuditLogger = orderAuditLogger;
+        this.notificationService = notificationService;
     }
 
+    @Transactional
     @Override
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request) {
         orderAuditLogger.logOrderCreationAttempt(request);
@@ -58,6 +65,13 @@ public class OrderServiceImpl implements OrderService {
 
             Order saved = orderRepository.save(order);
 
+            cart.clearItems();
+            cartRepository.save(cart);
+
+            final String emailBody = createOrderEmailBody(customer, saved);
+            notificationService.sendOrderConfirmationEmail(customer.getUser().getEmail().getEmail(),
+                    "TechStore - Order Confirmation #" + saved.getId().getId(), emailBody);
+
             OrderResponseDTO response = OrderMapper.toResponse(saved, request.cartID());
 
             orderAuditLogger.logOrderCreation(response.orderID(), response.customerID(), response.cartID());
@@ -68,5 +82,30 @@ public class OrderServiceImpl implements OrderService {
             orderAuditLogger.logOrderCreationFailure(request, exception);
             throw exception;
         }
+    }
+
+    private static String createOrderEmailBody(Customer customer, Order saved) {
+        // Send order confirmation email
+        return """
+                    <h3>Order Confirmed 🎉</h3>
+
+                    <p>Hi %s,</p>
+
+                    <p>Your order has been successfully created.</p>
+
+                    <p>
+                        <b>Order ID:</b> %s<br/>
+                        <b>Total:</b> %s€
+                    </p>
+
+                    <p>We are processing your order and will update you soon.</p>
+
+                    <br/>
+
+                    <p>Thank you for shopping with TechStore.</p>
+                """.formatted(
+                customer.getUser().getEmail().getEmail().split("@")[0], // Use the part before @ as the name
+                saved.getId().getId(),
+                saved.getTotalPrice().getMoneyValue());
     }
 }

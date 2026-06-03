@@ -5,6 +5,7 @@ import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.service.interfaces.AuthService;
+import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.testutil.TestDataFactory;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -44,6 +45,9 @@ public class RateLimitIntegrationTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private NotificationService notificationService;
 
     @Autowired
     private TestDataFactory testDataFactory;

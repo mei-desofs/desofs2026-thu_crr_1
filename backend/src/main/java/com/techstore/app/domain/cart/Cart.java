@@ -21,7 +21,7 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items;
 
     @OneToOne
@@ -80,5 +80,11 @@ public class Cart {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void clearItems() {
+        if (this.items != null) {
+            this.items.clear();
+        }
     }
 }
