@@ -22,4 +22,6 @@ public interface ProductRepository extends JpaRepository<Product, ProductId> {
     Page<Product> findByNameLike(@Param("productName") String productName, Pageable pageable);
 
     Product findById_Id(UUID idId);
+
+    Product findById(String id);
 }
