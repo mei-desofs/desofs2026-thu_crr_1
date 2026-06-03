@@ -36,10 +36,13 @@ public class CartItem {
 
     public CartItem() {}
 
-    public CartItem(Integer quantity, Product product) {
+    public CartItem(Integer quantity2, Product product2) {
         this.id = CartItemId.newId();
-        this.quantity = new Quantity(quantity);
-        this.product = product;
+
+        this.quantity = new Quantity(quantity2);
+
+        this.product = product2;
+
     }
 
     @PrePersist
@@ -53,4 +56,12 @@ public class CartItem {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void attachTo(Cart cart) {
+    if (this.cart != null) {
+        throw new IllegalStateException("CartItem already belongs to a cart");
+    }
+
+    this.cart = cart;
+}
 }

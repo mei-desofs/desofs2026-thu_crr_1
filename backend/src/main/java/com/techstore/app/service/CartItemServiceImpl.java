@@ -49,15 +49,23 @@ public class CartItemServiceImpl implements CartItemService {
                 CartItem cartItem = CartItemMapper.toEntity(cartItemDto.quantity(), product);
 
                 Cart cart = cartRepository.findCartByCustomerEmail(
-                                customer.getUser().getEmail().getEmail());
+
+                                customer.getUser().getEmail().getEmail()
+
+                );
 
                 if (cart == null) {
-                        cartService.createCart(cartItem, customer);
+
+                        cart = cartService.createCart(customer);
 
                         cartAuditLogger.logCartCreation(
+
                                         customer.getUser().getId().toString(),
-                                        "NEW_CART");
-                        return;
+
+                                        "NEW_CART"
+
+                        );
+
                 }
 
                 cartService.addNewItem(cartItem, cart.getId());

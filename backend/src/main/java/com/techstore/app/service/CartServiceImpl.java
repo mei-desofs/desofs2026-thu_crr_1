@@ -13,7 +13,9 @@ import com.techstore.app.service.interfaces.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,33 +25,35 @@ public class CartServiceImpl implements CartService {
         private final CartAuditLogger cartAuditLogger;
 
         @Override
-        public void createCart(CartItem cartItem, Customer customer) {
-                Cart cart = CartMapper.toEntity(List.of(cartItem), customer);
+        public Cart createCart(Customer customer) {
+                Cart cart = CartMapper.toEntity(customer);
 
                 cartRepository.save(cart);
 
                 cartAuditLogger.logCartCreation(
                                 customer.getUser().getId().toString(),
                                 cart.getId().toString());
-
-                cartAuditLogger.logCartItemAdded(
-                                cart.getId().toString(),
-                                cartItem.getProduct().getId().toString(),
-                                cartItem.getQuantity().getQuantity());
+                return cart;
         }
 
         @Override
         public void addNewItem(CartItem cartItem, CartId cartId) {
+                
                 Cart cart = cartRepository.findById(cartId)
                                 .orElseThrow(() -> new BusinessException("Cart not found"));
+                System.out.println(cartItem.getProduct().getId().toString());
 
                 ProductId productId = cartItem.getProduct().getId();
 
-                CartItem existingItem = cart.getItems()
-                                .stream()
+                List<CartItem> items = Optional.ofNullable(cart.getItems())
+
+        .orElseGet(ArrayList::new);
+
+                CartItem existingItem = items.stream()
                                 .filter(item -> item.getProduct().getId().equals(productId))
                                 .findFirst()
                                 .orElse(null);
+
 
                 if (existingItem != null) {
                         int addedQty = cartItem.getQuantity().getQuantity();
@@ -63,7 +67,7 @@ public class CartServiceImpl implements CartService {
                                         addedQty,
                                         oldQty + addedQty);
                 } else {
-                        cart.getItems().add(cartItem);
+                        cart.addItem(cartItem);
 
                         cartAuditLogger.logCartItemAdded(
                                         cart.getId().toString(),

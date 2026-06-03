@@ -10,9 +10,8 @@ import java.util.List;
 @Component
 public class CartMapper {
 
-    public static Cart toEntity(List<CartItem> items, Customer customer) {
+    public static Cart toEntity(Customer customer) {
         return new Cart(
-            items,
             customer
         );
     }
