@@ -17,7 +17,7 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items;
 
     @OneToOne

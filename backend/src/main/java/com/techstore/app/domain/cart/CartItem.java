@@ -17,6 +17,10 @@ public class CartItem {
     @EmbeddedId
     private CartItemId id;
 
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
+
     @Embedded
     private Quantity quantity;
 
