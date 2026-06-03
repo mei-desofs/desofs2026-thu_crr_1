@@ -68,7 +68,7 @@ public class CartItemServiceImpl implements CartItemService {
 
                 }
 
-                cartService.addNewItem(cartItem, cart.getId());
+                cartService.addNewItem(cartItem, cart);
         }
 
         @Override

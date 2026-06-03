@@ -37,17 +37,11 @@ public class CartServiceImpl implements CartService {
         }
 
         @Override
-        public void addNewItem(CartItem cartItem, CartId cartId) {
+        public void addNewItem(CartItem cartItem, Cart cart) {
                 
-                Cart cart = cartRepository.findById(cartId)
-                                .orElseThrow(() -> new BusinessException("Cart not found"));
-                System.out.println(cartItem.getProduct().getId().toString());
-
                 ProductId productId = cartItem.getProduct().getId();
 
-                List<CartItem> items = Optional.ofNullable(cart.getItems())
-
-        .orElseGet(ArrayList::new);
+                List<CartItem> items = cart.getItems();
 
                 CartItem existingItem = items.stream()
                                 .filter(item -> item.getProduct().getId().equals(productId))

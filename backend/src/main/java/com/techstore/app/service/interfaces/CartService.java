@@ -8,6 +8,6 @@ import com.techstore.app.domain.product.ProductId;
 
 public interface CartService {
     Cart createCart(Customer customer);
-    void addNewItem(CartItem cartItem, CartId cartId);
+    void addNewItem(CartItem cartItem, Cart cart);
     void updateItem(ProductId productId, Integer quantityDelta, CartId cartId);
 }
