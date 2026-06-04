@@ -36,12 +36,12 @@ public class CartItem {
 
     public CartItem() {}
 
-    public CartItem(Integer quantity2, Product product2) {
+    public CartItem(Integer quantity, Product product) {
         this.id = CartItemId.newId();
 
-        this.quantity = new Quantity(quantity2);
+        this.quantity = new Quantity(quantity);
 
-        this.product = product2;
+        this.product = product;
 
     }
 
