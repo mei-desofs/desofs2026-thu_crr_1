@@ -1,5 +1,7 @@
 package com.techstore.app.service;
 
+import com.techstore.app.domain.carrier.Carrier;
+import com.techstore.app.domain.carrier.CarrierId;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
@@ -16,6 +18,7 @@ import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.logger.OrderAuditLogger;
+import com.techstore.app.repository.CarrierRepository;
 import com.techstore.app.repository.CartRepository;
 import com.techstore.app.repository.CustomerRepository;
 import com.techstore.app.repository.OrderRepository;
@@ -53,6 +56,9 @@ class OrderServiceImplTest {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Mock
+    private CarrierRepository carrierRepository;
 
     @Mock
     private OrderAuditLogger orderAuditLogger;
@@ -245,7 +251,7 @@ class OrderServiceImplTest {
 
         CustomerId customerId = mock(CustomerId.class);
 
-        when(customerId.getId()).thenReturn(UUID.randomUUID());
+        when(customerId.getId()).thenReturn(customerUuid);
 
         when(customer.getId()).thenReturn(customerId);
 
@@ -255,6 +261,9 @@ class OrderServiceImplTest {
 
         when(order1.getCustomer()).thenReturn(customer);
         when(order2.getCustomer()).thenReturn(customer);
+
+        when(order1.getCarrier()).thenReturn(null);
+        when(order2.getCarrier()).thenReturn(null);
 
         OrderId orderId = mock(OrderId.class);
 
@@ -284,9 +293,9 @@ class OrderServiceImplTest {
 
         assertEquals(2, response.size());
 
-        verify(orderAuditLogger).logOrdersListingAttempt(customerUuid.toString());
+        verify(orderAuditLogger).logCustomerOrdersListingAttempt(customerUuid.toString());
 
-        verify(orderAuditLogger).logOrdersListingSuccess(customerUuid.toString(), 2);
+        verify(orderAuditLogger).logCustomerOrdersListingSuccess(customerUuid.toString(), 2);
     }
     @Test
     void shouldThrowWhenCustomerNotFound() {
@@ -300,9 +309,88 @@ class OrderServiceImplTest {
 
         assertEquals("Customer not found", exception.getMessage());
 
-        verify(orderAuditLogger).logOrdersListingAttempt(customerUuid.toString());
+        verify(orderAuditLogger).logCustomerOrdersListingAttempt(customerUuid.toString());
 
-        verify(orderAuditLogger).logOrdersListingFailure(eq(customerUuid.toString()), any(RuntimeException.class));
+        verify(orderAuditLogger).logCustomerOrdersListingFailure(eq(customerUuid.toString()), any(RuntimeException.class));
+    }
+
+    @Test
+    void shouldReturnOrdersForCarrier() {
+
+        Customer customer = mock(Customer.class);
+
+        CustomerId customerId = mock(CustomerId.class);
+
+        when(customerId.getId()).thenReturn(UUID.randomUUID());
+
+        when(customer.getId()).thenReturn(customerId);
+
+        UUID carrierUuid = UUID.randomUUID();
+
+        Carrier carrier = mock(Carrier.class);
+
+        CarrierId carrierId = mock(CarrierId.class);
+
+        when(carrierId.getId()).thenReturn(carrierUuid);
+
+        when(carrier.getId()).thenReturn(carrierId);
+
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
+
+        when(order1.getCustomer()).thenReturn(customer);
+        when(order2.getCustomer()).thenReturn(customer);
+
+        when(order1.getCarrier()).thenReturn(carrier);
+        when(order2.getCarrier()).thenReturn(carrier);
+
+        OrderId orderId = mock(OrderId.class);
+
+        when(orderId.getId()).thenReturn(UUID.randomUUID());
+
+        when(order1.getId()).thenReturn(orderId);
+        when(order2.getId()).thenReturn(orderId);
+
+        Address address = mock(Address.class);
+
+        when(order1.getAddress()).thenReturn(address);
+        when(order2.getAddress()).thenReturn(address);
+
+        when(address.getPostalCode()).thenReturn("4000-001");
+        when(address.getCity()).thenReturn("Porto");
+        when(address.getCountry()).thenReturn("Portugal");
+        when(address.getStreet()).thenReturn("Rua Teste");
+
+
+        when(carrierRepository.findById(CarrierId.fromString(carrierUuid.toString()))).
+                thenReturn(Optional.of(carrier));
+
+        when(orderRepository.findByCarrier(carrier))
+                .thenReturn(List.of(order1, order2));
+
+        List<OrderSummaryDTO> response = orderService.getOrdersByCarrier(carrierUuid.toString());
+
+        assertEquals(2, response.size());
+
+        verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
+
+        verify(orderAuditLogger).logCarrierOrdersListingSuccess(carrierUuid.toString(), 2);
+    }
+    @Test
+    void shouldThrowWhenCarrierNotFound() {
+
+        UUID carrierUuid = UUID.randomUUID();
+
+        when(carrierRepository.findById(CarrierId.fromString(carrierUuid.toString())))
+                .thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCarrier(carrierUuid.toString()));
+
+        assertEquals("Carrier not found", exception.getMessage());
+
+        verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
+
+        verify(orderAuditLogger).logCarrierOrdersListingFailure(eq(carrierUuid.toString()), any(RuntimeException.class));
     }
 
     private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId, UUID customerId) {

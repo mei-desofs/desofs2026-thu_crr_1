@@ -28,11 +28,18 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid CreateOrderRequestDTO request) {
         return ResponseEntity.ok(orderService.createOrder(request));
     }
-    @RateLimit("list-orders")
+    @RateLimit("customer-list-orders")
     @GetMapping
-    public ResponseEntity<List<OrderSummaryDTO>> getOrders(
+    public ResponseEntity<List<OrderSummaryDTO>> getCustomerOrders(
             @RequestParam String customerId) {
 
         return ResponseEntity.ok(orderService.getOrdersByCustomer(customerId));
+    }
+    @RateLimit("carrier-list-orders")
+    @GetMapping("/carrier")
+    public ResponseEntity<List<OrderSummaryDTO>> getCarrierOrders(
+            @RequestParam String carrierId) {
+
+        return ResponseEntity.ok(orderService.getOrdersByCarrier(carrierId));
     }
 }

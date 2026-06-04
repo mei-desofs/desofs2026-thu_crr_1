@@ -23,4 +23,12 @@ public interface OrderService {
      * @return A list of orders associated with the specified customer.
      */
     public List<OrderSummaryDTO> getOrdersByCustomer(String customerId);
+
+    /**
+     * Retrieves a list of orders for a specific carrier.
+     *
+     * @param carrierId The ID of the carrier whose orders are to be retrieved.
+     * @return A list of orders associated with the specified carrier.
+     */
+    List<OrderSummaryDTO> getOrdersByCarrier(String carrierId);
 }

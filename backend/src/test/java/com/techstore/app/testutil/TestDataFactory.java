@@ -1,5 +1,6 @@
 package com.techstore.app.testutil;
 
+import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartItem;
 import com.techstore.app.domain.category.Category;
@@ -11,12 +12,7 @@ import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
-import com.techstore.app.repository.CartItemRepository;
-import com.techstore.app.repository.CartRepository;
-import com.techstore.app.repository.CategoryRepository;
-import com.techstore.app.repository.CustomerRepository;
-import com.techstore.app.repository.ProductRepository;
-import com.techstore.app.repository.UserRepository;
+import com.techstore.app.repository.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -28,16 +24,18 @@ public class TestDataFactory {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final CarrierRepository carrierRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
 
-    public TestDataFactory(UserRepository userRepository, CustomerRepository customerRepository,
+    public TestDataFactory(UserRepository userRepository, CustomerRepository customerRepository, CarrierRepository carrierRepository,
             CategoryRepository categoryRepository, ProductRepository productRepository, CartItemRepository cartItemRepository,
             CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
+        this.carrierRepository = carrierRepository;
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.cartItemRepository = cartItemRepository;
@@ -58,6 +56,13 @@ public class TestDataFactory {
         Customer customer = new Customer(user);
 
         return customerRepository.save(customer);
+    }
+    public Carrier carrier() {
+        User user = user();
+
+        Carrier carrier = new Carrier(user);
+
+        return carrierRepository.save(carrier);
     }
 
     public Category category() {

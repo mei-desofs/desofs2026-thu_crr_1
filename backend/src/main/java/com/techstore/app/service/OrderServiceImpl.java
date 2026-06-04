@@ -3,6 +3,8 @@ package com.techstore.app.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.techstore.app.domain.carrier.Carrier;
+import com.techstore.app.domain.carrier.CarrierId;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
@@ -15,6 +17,7 @@ import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.mapper.OrderMapper;
 import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderItem;
+import com.techstore.app.repository.CarrierRepository;
 import com.techstore.app.repository.CartRepository;
 import com.techstore.app.repository.CustomerRepository;
 import com.techstore.app.repository.OrderRepository;
@@ -32,16 +35,19 @@ public class OrderServiceImpl implements OrderService {
 
     private final CustomerRepository customerRepository;
 
+    private final CarrierRepository carrierRepository;
+
     private final OrderAuditLogger orderAuditLogger;
 
     private final NotificationService notificationService;
 
     public OrderServiceImpl(OrderRepository orderRepository, CartRepository cartRepository,
-            CustomerRepository customerRepository, OrderAuditLogger orderAuditLogger,
+            CustomerRepository customerRepository, CarrierRepository carrierRepository, OrderAuditLogger orderAuditLogger,
             NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.customerRepository = customerRepository;
+        this.carrierRepository = carrierRepository;
         this.orderAuditLogger = orderAuditLogger;
         this.notificationService = notificationService;
     }
@@ -114,7 +120,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderSummaryDTO> getOrdersByCustomer(String customerId) {
 
-        orderAuditLogger.logOrdersListingAttempt(customerId);
+        orderAuditLogger.logCustomerOrdersListingAttempt(customerId);
 
         try {
             Customer customer = customerRepository
@@ -128,12 +134,40 @@ public class OrderServiceImpl implements OrderService {
                             .map(order -> OrderMapper.toSummary(order))
                             .toList();
 
-            orderAuditLogger.logOrdersListingSuccess(customerId, response.size());
+            orderAuditLogger.logCustomerOrdersListingSuccess(customerId, response.size());
 
             return response;
 
         } catch (RuntimeException exception) {
-            orderAuditLogger.logOrdersListingFailure(customerId, exception);
+            orderAuditLogger.logCustomerOrdersListingFailure(customerId, exception);
+            throw exception;
+        }
+
+    }
+    @Transactional
+    @Override
+    public List<OrderSummaryDTO> getOrdersByCarrier(String carrierId) {
+
+        orderAuditLogger.logCarrierOrdersListingAttempt(carrierId);
+
+        try {
+            Carrier carrier = carrierRepository
+                    .findById(CarrierId.fromString(carrierId))
+                    .orElseThrow(() -> new BusinessException("Carrier not found"));
+
+            List<Order> orders = orderRepository.findByCarrier(carrier);
+
+            List<OrderSummaryDTO> response =
+                    orders.stream()
+                            .map(order -> OrderMapper.toSummary(order))
+                            .toList();
+
+            orderAuditLogger.logCarrierOrdersListingSuccess(carrierId, response.size());
+
+            return response;
+
+        } catch (RuntimeException exception) {
+            orderAuditLogger.logCarrierOrdersListingFailure(carrierId, exception);
             throw exception;
         }
 

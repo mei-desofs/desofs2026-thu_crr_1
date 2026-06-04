@@ -49,6 +49,9 @@ public class OrderMapper {
                 order.getCustomer() != null && order.getCustomer().getId() != null
                         ? order.getCustomer().getId().getId().toString()
                         : null,
+                order.getCarrier() != null && order.getCarrier().getId() != null
+                        ? order.getCarrier().getId().getId().toString()
+                        : null,
                 order.getOrderStatus(),
                 order.getTotalPrice() != null ? order.getTotalPrice().getMoneyValue() : null,
                 order.getAddress() != null ? new AddressDTO(
