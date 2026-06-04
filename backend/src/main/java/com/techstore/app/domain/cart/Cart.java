@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -21,7 +22,11 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+      mappedBy = "cart",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true
+    )
     private List<CartItem> items;
 
     @OneToOne
@@ -34,12 +39,19 @@ public class Cart {
     private LocalDateTime updatedAt;
 
     public Cart() {
+
     }
 
     public Cart(List<CartItem> items, Customer customer) {
         this.id = CartId.newId();
         this.items = items;
         this.customer = customer;
+    }
+  
+    public Cart(Customer customer) {
+        this.id = CartId.newId();
+        this.customer = customer;
+        this.items = new ArrayList<>();
     }
 
     public BigDecimal calculateTotal() {
@@ -86,5 +98,13 @@ public class Cart {
         if (this.items != null) {
             this.items.clear();
         }
+    }
+
+    public void addItem(CartItem item) {
+
+        item.attachTo(this);
+
+        items.add(item);
+
     }
 }
