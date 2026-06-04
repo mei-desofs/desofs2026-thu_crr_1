@@ -5,12 +5,15 @@ import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.customer.CustomerId;
 import com.techstore.app.domain.order.Order;
+import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
+import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.repository.CartRepository;
@@ -231,6 +234,75 @@ class OrderServiceImplTest {
         verify(orderAuditLogger).logOrderCreationAttempt(request);
         verify(orderAuditLogger).logOrderCreationFailure(request, emailException);
         verify(orderAuditLogger, never()).logOrderCreation(any(), any(), any());
+    }
+
+    @Test
+    void shouldReturnOrdersForCustomer() {
+
+        UUID customerUuid = UUID.randomUUID();
+
+        Customer customer = mock(Customer.class);
+
+        CustomerId customerId = mock(CustomerId.class);
+
+        when(customerId.getId()).thenReturn(UUID.randomUUID());
+
+        when(customer.getId()).thenReturn(customerId);
+
+
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
+
+        when(order1.getCustomer()).thenReturn(customer);
+        when(order2.getCustomer()).thenReturn(customer);
+
+        OrderId orderId = mock(OrderId.class);
+
+        when(orderId.getId()).thenReturn(UUID.randomUUID());
+
+        when(order1.getId()).thenReturn(orderId);
+        when(order2.getId()).thenReturn(orderId);
+
+        Address address = mock(Address.class);
+
+        when(order1.getAddress()).thenReturn(address);
+        when(order2.getAddress()).thenReturn(address);
+
+        when(address.getPostalCode()).thenReturn("4000-001");
+        when(address.getCity()).thenReturn("Porto");
+        when(address.getCountry()).thenReturn("Portugal");
+        when(address.getStreet()).thenReturn("Rua Teste");
+
+
+        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString()))).
+                thenReturn(Optional.of(customer));
+
+        when(orderRepository.findByCustomer(customer))
+                .thenReturn(List.of(order1, order2));
+
+        List<OrderSummaryDTO> response = orderService.getOrdersByCustomer(customerUuid.toString());
+
+        assertEquals(2, response.size());
+
+        verify(orderAuditLogger).logOrdersListingAttempt(customerUuid.toString());
+
+        verify(orderAuditLogger).logOrdersListingSuccess(customerUuid.toString(), 2);
+    }
+    @Test
+    void shouldThrowWhenCustomerNotFound() {
+
+        UUID customerUuid = UUID.randomUUID();
+
+        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString())))
+                .thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCustomer(customerUuid.toString()));
+
+        assertEquals("Customer not found", exception.getMessage());
+
+        verify(orderAuditLogger).logOrdersListingAttempt(customerUuid.toString());
+
+        verify(orderAuditLogger).logOrdersListingFailure(eq(customerUuid.toString()), any(RuntimeException.class));
     }
 
     private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId, UUID customerId) {

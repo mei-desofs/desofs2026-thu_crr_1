@@ -30,6 +30,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -212,6 +213,25 @@ public class RateLimitIntegrationTest {
                                 blockedCart.getId().getId().toString(),
                                 blockedCustomer.getId().getId().toString()
                         )))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void ListOrderRateLimit() throws Exception {
+
+        Cookie customerCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        Customer customer = testDataFactory.customer();
+        String customerId = customer.getId().getId().toString();
+
+        for (int i = 1; i <= 30; i++) {
+            mvc.perform(get("/orders")
+                            .param("customerId", customerId)
+                            .cookie(customerCookie))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(get("/orders")
+                        .param("customerId", customerId)
+                        .cookie(customerCookie))
                 .andExpect(status().isTooManyRequests());
     }
 }

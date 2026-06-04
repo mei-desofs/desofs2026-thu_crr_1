@@ -9,6 +9,7 @@ import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.customer.CustomerId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
+import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.mapper.OrderMapper;
@@ -107,5 +108,34 @@ public class OrderServiceImpl implements OrderService {
                 customer.getUser().getEmail().getEmail().split("@")[0], // Use the part before @ as the name
                 saved.getId().getId(),
                 saved.getTotalPrice().getMoneyValue());
+    }
+
+    @Transactional
+    @Override
+    public List<OrderSummaryDTO> getOrdersByCustomer(String customerId) {
+
+        orderAuditLogger.logOrdersListingAttempt(customerId);
+
+        try {
+            Customer customer = customerRepository
+                    .findById(CustomerId.fromString(customerId))
+                    .orElseThrow(() -> new BusinessException("Customer not found"));
+
+            List<Order> orders = orderRepository.findByCustomer(customer);
+
+            List<OrderSummaryDTO> response =
+                    orders.stream()
+                            .map(order -> OrderMapper.toSummary(order))
+                            .toList();
+
+            orderAuditLogger.logOrdersListingSuccess(customerId, response.size());
+
+            return response;
+
+        } catch (RuntimeException exception) {
+            orderAuditLogger.logOrdersListingFailure(customerId, exception);
+            throw exception;
+        }
+
     }
 }

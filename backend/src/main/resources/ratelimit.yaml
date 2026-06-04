@@ -55,3 +55,8 @@ ratelimit:
       type: USER
       capacity: 20
       duration: PT1M
+
+    list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M

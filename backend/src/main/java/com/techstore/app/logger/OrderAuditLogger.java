@@ -36,6 +36,39 @@ public class OrderAuditLogger {
                 request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(request.customerID()) : null,
                 sanitize(exception.getMessage()));
     }
+    public void logOrdersListingAttempt(String customerId) {
+        auditLog.info(
+                "event=ORDER_LIST_ATTEMPT | customerId={} | timestamp={}",
+                sanitize(customerId),
+                System.currentTimeMillis()
+        );
+
+        appLog.info("Attempting to list customer orders: customerId={}",
+                sanitize(customerId));
+    }
+    public void logOrdersListingSuccess(String customerId, int totalOrders) {
+        auditLog.info(
+                "event=ORDER_LIST_SUCCESS | customerId={} | totalOrders={} | timestamp={}",
+                sanitize(customerId),
+                totalOrders,
+                System.currentTimeMillis()
+        );
+
+        appLog.info("Customer orders listed successfully: customerId={}, totalOrders={}",
+                sanitize(customerId), totalOrders);
+    }
+
+    public void logOrdersListingFailure(String customerId, Exception exception) {
+        auditLog.warn(
+                "event=ORDER_LIST_FAILURE | customerId={} | reason={} | timestamp={}",
+                sanitize(customerId),
+                sanitize(exception.getMessage()),
+                System.currentTimeMillis()
+        );
+
+        appLog.warn("Failed to list customer orders: customerId={}, reason={}",
+                sanitize(customerId), sanitize(exception.getMessage()));
+    }
 
     private String sanitize(String input) {
         if (input == null) return null;
