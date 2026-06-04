@@ -87,9 +87,11 @@ public class TestDataFactory {
     }
 
     public Cart cartWithItem(Product product, Customer customer) {
+        Cart cart = new Cart(customer);
+
         CartItem cartItem = cartItem(product);
 
-        Cart cart = new Cart(List.of(cartItem), customer);
+        cart.addItem(cartItem);
 
         return cartRepository.save(cart);
     }
