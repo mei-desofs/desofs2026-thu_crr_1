@@ -3,7 +3,7 @@
  * Handles all API communication with security best practices
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, isAxiosError  } from 'axios';
 import { getSecureRequestHeaders, validateResourceFetch } from './csrf';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
@@ -48,6 +48,9 @@ apiClient.interceptors.request.use((config) => {
  * V3.2: Response interceptor for security
  * Validates response headers and prevents content interpretation issues
  */
+
+let refreshPromise: Promise<void> | null = null;
+
 apiClient.interceptors.response.use(
   (response) => {
     // V3.2.1: Verify response headers indicate correct context
@@ -61,24 +64,43 @@ apiClient.interceptors.response.use(
 
     return response;
   },
-  (error) => {
-    // V3.2.1: Handle errors securely without exposing sensitive details
-    if (error.response) {
-      const status = error.response.status;
-      const message = error.response.data?.message || 'An error occurred';
+  async (error) => {
+    const originalRequest = error.config;
 
-      // Don't expose detailed error messages to avoid information disclosure
-      console.error(`API Error [${status}]:`, message);
+    if (
+    isAxiosError(error) &&
+    error.response?.status === 401 &&
+    !originalRequest._retry
+  ) {
+    originalRequest._retry = true;
 
-      if (status === 401) {
-        // Unauthorized - redirect to login
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+    try {
+      if (!refreshPromise) {
+        refreshPromise = apiClient
+          .post('/auth/refresh') 
+          .then(() => { refreshPromise = null; })
+          .catch((err) => { refreshPromise = null; throw err; });
       }
-    }
+      await refreshPromise;
 
-    return Promise.reject(error);
+      // New access_token cookie is now set by the backend, retry.
+      return apiClient(originalRequest);
+    } catch {
+      // Refresh token expired or revoked — force re-login.
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+  }
+    // V3.2.1: Handle other errors securely without exposing sensitive details
+  if (isAxiosError(error) && error.response) {
+    const status = error.response.status;
+    const message = error.response.data?.message || 'An error occurred';
+    console.error(`API Error [${status}]:`, message);
+  }
+
+  return Promise.reject(error);
   }
 );
 
