@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,8 +18,12 @@ public class Cart {
     @EmbeddedId
     private CartId id;
 
-    @OneToMany
-    private List<CartItem> items;
+    @OneToMany(
+    mappedBy = "cart",
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+)
+private List<CartItem> items;
 
     @OneToOne
     private Customer customer;
@@ -29,13 +34,18 @@ public class Cart {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Cart() {}
-
-    public Cart(List<CartItem> items, Customer customer) {
-        this.id = CartId.newId();
-        this.items = items;
-        this.customer = customer;
+    public Cart() {
     }
+
+    public Cart(Customer customer) {
+
+    this.id = CartId.newId();
+
+    this.customer = customer;
+
+    this.items = new ArrayList<>();
+
+}
 
     private boolean validate(List<CartItem> items) {
         return items != null && items.size() > 0;
@@ -52,4 +62,12 @@ public class Cart {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void addItem(CartItem item) {
+
+    item.attachTo(this);
+
+    items.add(item);
+
+}
 }
