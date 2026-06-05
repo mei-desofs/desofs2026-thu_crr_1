@@ -11,96 +11,96 @@ public class OrderAuditLogger {
     private static final Logger auditLog = LoggerFactory.getLogger("ORDER_AUDIT");
     private static final Logger appLog = LoggerFactory.getLogger("ORDER_APP");
 
-    public void logOrderCreationAttempt(CreateOrderRequestDTO request) {
-        auditLog.info("event=ORDER_CREATION_ATTEMPT | cartId={} | customerId={} | timestamp={}", sanitize(request.cartID()),
-                sanitize(request.customerID()), System.currentTimeMillis());
+    public void logOrderCreationAttempt(CreateOrderRequestDTO request, String userId) {
+        auditLog.info("event=ORDER_CREATION_ATTEMPT | cartId={} | userId={} | timestamp={}", sanitize(request.cartID()),
+                sanitize(userId), System.currentTimeMillis());
 
-        appLog.info("Attempting to create order: cartId={}, customerId={}",
-                sanitize(request.cartID()), sanitize(request.customerID()));
+        appLog.info("Attempting to create order: cartId={}, userId={}",
+                sanitize(request.cartID()), sanitize(userId));
     }
 
-    public void logOrderCreation(String orderId, String customerId, String cartId) {
-        auditLog.info("event=ORDER_CREATION_SUCCESS | orderId={} | customerId={} | cartId={} | timestamp={}",
-                sanitize(orderId), sanitize(customerId), sanitize(cartId), System.currentTimeMillis());
+    public void logOrderCreation(String orderId, String userId, String cartId) {
+        auditLog.info("event=ORDER_CREATION_SUCCESS | orderId={} | userId={} | cartId={} | timestamp={}",
+                sanitize(orderId), sanitize(userId), sanitize(cartId), System.currentTimeMillis());
 
-        appLog.info("Order created successfully: orderId={}, customerId={}, cartId={}",
-                sanitize(orderId), sanitize(customerId), sanitize(cartId));
+        appLog.info("Order created successfully: orderId={}, userId={}, cartId={}",
+                sanitize(orderId), sanitize(userId), sanitize(cartId));
     }
 
-    public void logOrderCreationFailure(CreateOrderRequestDTO request, Exception exception) {
-        auditLog.warn("event=ORDER_CREATION_FAILURE | cartId={} | customerId={} | reason={} | timestamp={}",
-                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(request.customerID()) : null,
+    public void logOrderCreationFailure(CreateOrderRequestDTO request,String userId, Exception exception) {
+        auditLog.warn("event=ORDER_CREATION_FAILURE | cartId={} | userId={} | reason={} | timestamp={}",
+                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(userId) : null,
                 sanitize(exception.getMessage()), System.currentTimeMillis());
 
-        appLog.warn("Failed to create order: cartId={}, customerId={}, reason={}",
-                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(request.customerID()) : null,
+        appLog.warn("Failed to create order: cartId={}, userId={}, reason={}",
+                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(userId) : null,
                 sanitize(exception.getMessage()));
     }
-    public void logCustomerOrdersListingAttempt(String customerId) {
+    public void logCustomerOrdersListingAttempt(String userId) {
         auditLog.info(
-                "event=CUSTOMER_ORDER_LIST_ATTEMPT | customerId={} | timestamp={}",
-                sanitize(customerId),
+                "event=CUSTOMER_ORDER_LIST_ATTEMPT | userId={} | timestamp={}",
+                sanitize(userId),
                 System.currentTimeMillis()
         );
 
-        appLog.info("Attempting to list customer orders: customerId={}",
-                sanitize(customerId));
+        appLog.info("Attempting to list customer orders: userId={}",
+                sanitize(userId));
     }
-    public void logCustomerOrdersListingSuccess(String customerId, int totalOrders) {
+    public void logCustomerOrdersListingSuccess(String userId, int totalOrders) {
         auditLog.info(
-                "event=CUSTOMER_ORDER_LIST_SUCCESS | customerId={} | totalOrders={} | timestamp={}",
-                sanitize(customerId),
+                "event=CUSTOMER_ORDER_LIST_SUCCESS | userId={} | totalOrders={} | timestamp={}",
+                sanitize(userId),
                 totalOrders,
                 System.currentTimeMillis()
         );
 
-        appLog.info("Customer orders listed successfully: customerId={}, totalOrders={}",
-                sanitize(customerId), totalOrders);
+        appLog.info("Customer orders listed successfully: userId={}, totalOrders={}",
+                sanitize(userId), totalOrders);
     }
 
-    public void logCustomerOrdersListingFailure(String customerId, Exception exception) {
+    public void logCustomerOrdersListingFailure(String userId, Exception exception) {
         auditLog.warn(
-                "event=CUSTOMER_ORDER_LIST_FAILURE | customerId={} | reason={} | timestamp={}",
-                sanitize(customerId),
+                "event=CUSTOMER_ORDER_LIST_FAILURE | userId={} | reason={} | timestamp={}",
+                sanitize(userId),
                 sanitize(exception.getMessage()),
                 System.currentTimeMillis()
         );
 
-        appLog.warn("Failed to list customer orders: customerId={}, reason={}",
-                sanitize(customerId), sanitize(exception.getMessage()));
+        appLog.warn("Failed to list customer orders: userId={}, reason={}",
+                sanitize(userId), sanitize(exception.getMessage()));
     }
-    public void logCarrierOrdersListingAttempt(String carrierId) {
+    public void logCarrierOrdersListingAttempt(String userId) {
         auditLog.info(
-                "event=CARRIER_ORDER_LIST_ATTEMPT | carrierId={} | timestamp={}",
-                sanitize(carrierId),
+                "event=CARRIER_ORDER_LIST_ATTEMPT | userId={} | timestamp={}",
+                sanitize(userId),
                 System.currentTimeMillis()
         );
 
-        appLog.info("Attempting to list carrier orders: customerId={}",
-                sanitize(carrierId));
+        appLog.info("Attempting to list carrier orders: userId={}",
+                sanitize(userId));
     }
-    public void logCarrierOrdersListingSuccess(String carrierId, int totalOrders) {
+    public void logCarrierOrdersListingSuccess(String userId, int totalOrders) {
         auditLog.info(
-                "event=CARRIER_ORDER_LIST_SUCCESS | carrierId={} | totalOrders={} | timestamp={}",
-                sanitize(carrierId),
+                "event=CARRIER_ORDER_LIST_SUCCESS | userId={} | totalOrders={} | timestamp={}",
+                sanitize(userId),
                 totalOrders,
                 System.currentTimeMillis()
         );
 
-        appLog.info("Carrier orders listed successfully: carrierId={}, totalOrders={}",
-                sanitize(carrierId), totalOrders);
+        appLog.info("Carrier orders listed successfully: userId={}, totalOrders={}",
+                sanitize(userId), totalOrders);
     }
 
-    public void logCarrierOrdersListingFailure(String carrierId, Exception exception) {
+    public void logCarrierOrdersListingFailure(String userId, Exception exception) {
         auditLog.warn(
-                "event=CARRIER_ORDER_LIST_FAILURE | carrierId={} | reason={} | timestamp={}",
-                sanitize(carrierId),
+                "event=CARRIER_ORDER_LIST_FAILURE | userId={} | reason={} | timestamp={}",
+                sanitize(userId),
                 sanitize(exception.getMessage()),
                 System.currentTimeMillis()
         );
 
-        appLog.warn("Failed to list carrier orders: carrierId={}, reason={}",
-                sanitize(carrierId), sanitize(exception.getMessage()));
+        appLog.warn("Failed to list carrier orders: userId={}, reason={}",
+                sanitize(userId), sanitize(exception.getMessage()));
     }
 
     private String sanitize(String input) {
@@ -109,27 +109,27 @@ public class OrderAuditLogger {
                 .replaceAll("\\p{Cntrl}", "");
     }
 
-    public void logPickupAttempt(String orderId, String supabaseUserId) {
-        auditLog.info("event=ORDER_PICKUP_ATTEMPT | orderId={} | supabaseUserId={} | timestamp={}",
-                sanitize(orderId), sanitize(supabaseUserId), System.currentTimeMillis());
+    public void logPickupAttempt(String orderId, String userId) {
+        auditLog.info("event=ORDER_PICKUP_ATTEMPT | orderId={} | userId={} | timestamp={}",
+                sanitize(orderId), sanitize(userId), System.currentTimeMillis());
 
-        appLog.info("Attempting to pickup carrier order: supabaseUserId={}",
-                sanitize(supabaseUserId));
+        appLog.info("Attempting to pickup carrier order: userId={}",
+                sanitize(userId));
     }
 
-    public void logPickupSuccess(String orderId, String supabaseUserId) {
-        auditLog.info("event=ORDER_PICKUP_SUCCESS | orderId={} | supabaseUserId={} | timestamp={}",
-                sanitize(orderId), sanitize(supabaseUserId), System.currentTimeMillis());
+    public void logPickupSuccess(String orderId, String userId) {
+        auditLog.info("event=ORDER_PICKUP_SUCCESS | orderId={} | userId={} | timestamp={}",
+                sanitize(orderId), sanitize(userId), System.currentTimeMillis());
 
-        appLog.info("Carrier order picked up successfully: supabaseUserId={}, orderId={}",
-                 sanitize(supabaseUserId), sanitize(orderId));
+        appLog.info("Carrier order picked up successfully: userId={}, orderId={}",
+                 sanitize(userId), sanitize(orderId));
     }
 
-    public void logPickupFailure(String orderId, String supabaseUserId, Exception ex) {
-        auditLog.warn("event=ORDER_PICKUP_FAILURE | orderId={} | supabaseUserId={} | reason={} | timestamp={}",
-                sanitize(orderId), sanitize(supabaseUserId), sanitize(ex.getMessage()), System.currentTimeMillis());
+    public void logPickupFailure(String orderId, String userId, Exception ex) {
+        auditLog.warn("event=ORDER_PICKUP_FAILURE | orderId={} | userId={} | reason={} | timestamp={}",
+                sanitize(orderId), sanitize(userId), sanitize(ex.getMessage()), System.currentTimeMillis());
 
-        appLog.warn("Failed to pickup carrier order: supabaseUserId={}, reason={}",
-                sanitize(supabaseUserId), sanitize(ex.getMessage()));
+        appLog.warn("Failed to pickup carrier order: userId={}, reason={}",
+                sanitize(userId), sanitize(ex.getMessage()));
     }
 }

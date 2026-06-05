@@ -69,12 +69,18 @@ class OrderServiceImplTest {
     void shouldCreateOrderAndReturnResponse() {
         UUID cartUuid = UUID.randomUUID();
         UUID customerUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
-        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid, customerUuid);
+        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid);
 
         Cart cart = mock(Cart.class);
         Customer customer = mock(Customer.class);
         User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
 
         CustomerId customerId = CustomerId.fromString(customerUuid.toString());
 
@@ -82,10 +88,14 @@ class OrderServiceImplTest {
         OrderItem orderItem = new OrderItem(1, new BigDecimal("99.99"), product);
         List<OrderItem> orderItems = List.of(orderItem);
 
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
+
         when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
                 .thenReturn(Optional.of(cart));
 
-        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString())))
+        when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(customer));
 
         when(cart.toOrderItems()).thenReturn(orderItems);
@@ -98,7 +108,7 @@ class OrderServiceImplTest {
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderResponseDTO response = orderService.createOrder(request);
+        OrderResponseDTO response = orderService.createOrder(request,supabaseUserId);
 
         assertNotNull(response);
         assertNotNull(response.orderID());
@@ -111,7 +121,7 @@ class OrderServiceImplTest {
         assertEquals("Rua Teste", response.address().street());
 
         verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
-        verify(customerRepository).findById(CustomerId.fromString(customerUuid.toString()));
+        verify(customerRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
         verify(cart).toOrderItems();
         verify(cart).calculateTotal();
 
@@ -126,10 +136,10 @@ class OrderServiceImplTest {
                 contains(response.orderID())
         );
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request);
+        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
         verify(orderAuditLogger).logOrderCreation(
                 response.orderID(),
-                customerUuid.toString(),
+                userUuid.toString(),
                 cartUuid.toString()
         );
     }
@@ -137,76 +147,112 @@ class OrderServiceImplTest {
     @Test
     void shouldThrowWhenCartDoesNotExist() {
         UUID cartUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+
+        when(user.getId()).thenReturn(userId);
 
         CreateOrderRequestDTO request = mockCreateOrderRequestWithCartIdOnly(cartUuid);
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
 
         when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
 
         assertEquals("Cart not found", exception.getMessage());
 
         verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
-        verify(customerRepository, never()).findById(any(CustomerId.class));
+        verify(customerRepository, never()).findBySupabaseUserId(any(SupabaseUserId.class));
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
         verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request);
-        verify(orderAuditLogger).logOrderCreationFailure(eq(request), any(RuntimeException.class));
+        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
+        verify(orderAuditLogger).logOrderCreationFailure(eq(request),eq(userUuid.toString()), any(RuntimeException.class));
     }
 
     @Test
     void shouldThrowWhenCustomerDoesNotExist() {
         UUID cartUuid = UUID.randomUUID();
         UUID customerUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
-        CreateOrderRequestDTO request = mockCreateOrderRequestWithIdsOnly(cartUuid, customerUuid);
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
+
+        CreateOrderRequestDTO request = mockCreateOrderRequestWithIdsOnly(cartUuid);
 
         Cart cart = mock(Cart.class);
 
         when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
                 .thenReturn(Optional.of(cart));
 
-        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString())))
+        when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
 
         assertEquals("Customer not found", exception.getMessage());
 
         verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
-        verify(customerRepository).findById(CustomerId.fromString(customerUuid.toString()));
+        verify(customerRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
         verify(cart, never()).toOrderItems();
         verify(cart, never()).calculateTotal();
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
         verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request);
-        verify(orderAuditLogger).logOrderCreationFailure(eq(request), any(RuntimeException.class));
+        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
+        verify(orderAuditLogger).logOrderCreationFailure(eq(request),eq(userUuid.toString()), any(RuntimeException.class));
     }
 
     @Test
     void shouldThrowWhenNotificationServiceFails() {
         UUID cartUuid = UUID.randomUUID();
-        UUID customerUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
-        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid, customerUuid);
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
+
+
+        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid);
 
         Cart cart = mock(Cart.class);
         Customer customer = mock(Customer.class);
-        User user = mock(User.class);
 
         Product product = mock(Product.class);
         OrderItem orderItem = new OrderItem(1, new BigDecimal("99.99"), product);
         List<OrderItem> orderItems = List.of(orderItem);
 
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
+
         when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
                 .thenReturn(Optional.of(cart));
 
-        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString())))
+        when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(customer));
 
         when(cart.toOrderItems()).thenReturn(orderItems);
@@ -224,7 +270,7 @@ class OrderServiceImplTest {
                 .when(notificationService)
                 .sendOrderConfirmationEmail(any(), any(), any());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
 
         assertEquals("Email failed", exception.getMessage());
 
@@ -233,21 +279,29 @@ class OrderServiceImplTest {
         verify(cartRepository).save(cart);
         verify(notificationService).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request);
-        verify(orderAuditLogger).logOrderCreationFailure(request, emailException);
+        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
+        verify(orderAuditLogger).logOrderCreationFailure(request,userUuid.toString(), emailException);
         verify(orderAuditLogger, never()).logOrderCreation(any(), any(), any());
     }
 
     @Test
     void shouldReturnOrdersForCustomer() {
 
-        UUID customerUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
 
         Customer customer = mock(Customer.class);
 
         CustomerId customerId = mock(CustomerId.class);
 
-        when(customerId.getId()).thenReturn(customerUuid);
+        when(customerId.getId()).thenReturn(UUID.randomUUID());
 
         when(customer.getId()).thenReturn(customerId);
 
@@ -278,40 +332,62 @@ class OrderServiceImplTest {
         when(address.getCountry()).thenReturn("Portugal");
         when(address.getStreet()).thenReturn("Rua Teste");
 
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
 
-        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString()))).
+        when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))).
                 thenReturn(Optional.of(customer));
 
         when(orderRepository.findByCustomer(customer))
                 .thenReturn(List.of(order1, order2));
 
-        List<OrderSummaryDTO> response = orderService.getOrdersByCustomer(customerUuid.toString());
+        List<OrderSummaryDTO> response = orderService.getOrdersByCustomer(supabaseUserId);
 
         assertEquals(2, response.size());
 
-        verify(orderAuditLogger).logCustomerOrdersListingAttempt(customerUuid.toString());
+        verify(orderAuditLogger).logCustomerOrdersListingAttempt(userUuid.toString());
 
-        verify(orderAuditLogger).logCustomerOrdersListingSuccess(customerUuid.toString(), 2);
+        verify(orderAuditLogger).logCustomerOrdersListingSuccess(userUuid.toString(), 2);
     }
     @Test
     void shouldThrowWhenCustomerNotFound() {
 
-        UUID customerUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
-        when(customerRepository.findById(CustomerId.fromString(customerUuid.toString())))
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
+
+        when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCustomer(customerUuid.toString()));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCustomer(supabaseUserId));
 
         assertEquals("Customer not found", exception.getMessage());
 
-        verify(orderAuditLogger).logCustomerOrdersListingAttempt(customerUuid.toString());
+        verify(orderAuditLogger).logCustomerOrdersListingAttempt(userUuid.toString());
 
-        verify(orderAuditLogger).logCustomerOrdersListingFailure(eq(customerUuid.toString()), any(RuntimeException.class));
+        verify(orderAuditLogger).logCustomerOrdersListingFailure(eq(userUuid.toString()), any(RuntimeException.class));
     }
 
     @Test
     void shouldReturnOrdersForCarrier() {
+
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
 
         Customer customer = mock(Customer.class);
 
@@ -327,7 +403,6 @@ class OrderServiceImplTest {
 
         UserId carrierId = mock(UserId.class);
 
-        when(carrierId.getId()).thenReturn(carrierUuid);
 
         when(carrier.getId()).thenReturn(carrierId);
 
@@ -357,50 +432,58 @@ class OrderServiceImplTest {
         when(address.getCountry()).thenReturn("Portugal");
         when(address.getStreet()).thenReturn("Rua Teste");
 
-
-        when(userRepository.findById(UserId.fromString(carrierUuid.toString()))).
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))).
                 thenReturn(Optional.of(carrier));
+        when(carrier.getId()).thenReturn(userId);
 
         when(orderRepository.findByCarrier(carrier))
                 .thenReturn(List.of(order1, order2));
 
-        List<OrderSummaryDTO> response = orderService.getOrdersByCarrier(carrierUuid.toString());
+        List<OrderSummaryDTO> response = orderService.getOrdersByCarrier(supabaseUserId);
 
         assertEquals(2, response.size());
 
-        verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
+        verify(orderAuditLogger).logCarrierOrdersListingAttempt(userUuid.toString());
 
-        verify(orderAuditLogger).logCarrierOrdersListingSuccess(carrierUuid.toString(), 2);
+        verify(orderAuditLogger).logCarrierOrdersListingSuccess(userUuid.toString(), 2);
     }
     @Test
     void shouldThrowWhenCarrierNotFound() {
 
-        UUID carrierUuid = UUID.randomUUID();
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
-        when(userRepository.findById(UserId.fromString(carrierUuid.toString())))
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCarrier(carrierUuid.toString()));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCarrier(supabaseUserId));
 
         assertEquals("User not found", exception.getMessage());
 
-        verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
-
-        verify(orderAuditLogger).logCarrierOrdersListingFailure(eq(carrierUuid.toString()), any(RuntimeException.class));
-    }
+        }
 
     @Test
     void shouldPickupOrderAndSave() {
         String supabaseUserId = UUID.randomUUID().toString();
         String orderIdUUID = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
         Order order = mock(Order.class);
         User carrier = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(carrier.getId()).thenReturn(userId);
 
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.of(order));
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(carrier));
+        when(carrier.getId()).thenReturn(userId);
 
         orderService.pickupOrder(orderIdUUID, supabaseUserId);
 
@@ -410,8 +493,8 @@ class OrderServiceImplTest {
         verify(orderRepository).save(order);
 
 
-        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
-        verify(orderAuditLogger).logPickupSuccess(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, userUuid.toString());
+        verify(orderAuditLogger).logPickupSuccess(orderIdUUID, userUuid.toString());
         verify(orderAuditLogger, never()).logPickupFailure(any(), any(), any());
     }
 
@@ -419,6 +502,17 @@ class OrderServiceImplTest {
     void shouldThrowAndLogFailureWhenOrderNotFound() {
         String supabaseUserId = UUID.randomUUID().toString();
         String orderIdUUID = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
 
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.empty());
@@ -428,8 +522,8 @@ class OrderServiceImplTest {
 
         assertEquals("Order not found", ex.getMessage());
 
-        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
-        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, userUuid.toString());
+        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(userUuid.toString()), any());
         verify(orderAuditLogger, never()).logPickupSuccess(any(), any());
         verify(orderRepository, never()).save(any());
     }
@@ -438,20 +532,23 @@ class OrderServiceImplTest {
     void shouldThrowAndLogFailureWhenCarrierProfileNotFound() {
         String supabaseUserId = UUID.randomUUID().toString();
         String orderIdUUID = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+
 
         Order order = mock(Order.class);
-        when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
-                .thenReturn(Optional.of(order));
+
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> orderService.pickupOrder(orderIdUUID, supabaseUserId));
 
-        assertEquals("Carrier not found", ex.getMessage());
+        assertEquals("User not found", ex.getMessage());
 
-        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
-        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
         verify(order, never()).pickup(any());
         verify(orderRepository, never()).save(any());
     }
@@ -459,15 +556,20 @@ class OrderServiceImplTest {
     void shouldThrowAndLogFailureWhenDomainRuleViolated() {
         String supabaseUserId = UUID.randomUUID().toString();
         String orderIdUUID = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
 
         Order order = mock(Order.class);
         User carrier = mock(User.class);
 
+        UserId userId = mock(UserId.class);
+        when(userId.getId()).thenReturn(userUuid);
+        when(carrier.getId()).thenReturn(userId);
 
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.of(order));
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(carrier));
+        when(carrier.getId()).thenReturn(userId);
 
         // Simulate domain rejecting the transition (e.g. already PICKED_UP)
         doThrow(new BusinessException("Order cannot be picked up: current status is PICKED_UP"))
@@ -478,12 +580,12 @@ class OrderServiceImplTest {
 
         assertTrue(ex.getMessage().contains("PICKED_UP"));
 
-        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
-        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, userUuid.toString());
+        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(userUuid.toString()), any());
         verify(orderRepository, never()).save(any());
     }
 
-    private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId, UUID customerId) {
+    private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId) {
         AddAddressDTO address = mock(AddAddressDTO.class);
         when(address.postalCode()).thenReturn("4000-001");
         when(address.city()).thenReturn("Porto");
@@ -492,16 +594,14 @@ class OrderServiceImplTest {
 
         CreateOrderRequestDTO request = mock(CreateOrderRequestDTO.class);
         when(request.cartID()).thenReturn(cartId.toString());
-        when(request.customerID()).thenReturn(customerId.toString());
         when(request.address()).thenReturn(address);
 
         return request;
     }
 
-    private CreateOrderRequestDTO mockCreateOrderRequestWithIdsOnly(UUID cartId, UUID customerId) {
+    private CreateOrderRequestDTO mockCreateOrderRequestWithIdsOnly(UUID cartId) {
         CreateOrderRequestDTO request = mock(CreateOrderRequestDTO.class);
         when(request.cartID()).thenReturn(cartId.toString());
-        when(request.customerID()).thenReturn(customerId.toString());
 
         return request;
     }

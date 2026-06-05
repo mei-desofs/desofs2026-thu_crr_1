@@ -14,7 +14,7 @@ public interface OrderService {
      * @param request The details required to create an order.
      * @return The created order's details.
      */
-    public OrderResponseDTO createOrder(CreateOrderRequestDTO request);
+    public OrderResponseDTO createOrder(CreateOrderRequestDTO request, String supabaseUserId);
 
     /**
      * Retrieves a list of orders for a specific customer.

@@ -194,7 +194,7 @@ public class RateLimitIntegrationTest {
             Customer customer = testDataFactory.customer();
             Cart cart = testDataFactory.cartWithItem(product, customer);
 
-            mvc.perform(post("/orders")
+            mvc.perform(post("/orders", UUID.randomUUID())
                             .with(csrf())
                             .cookie(customerCookie)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -202,13 +202,13 @@ public class RateLimitIntegrationTest {
                                     cart.getId().getId().toString(),
                                     customer.getId().getId().toString()
                             )))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
 
         Customer blockedCustomer = testDataFactory.customer();
         Cart blockedCart = testDataFactory.cartWithItem(product, blockedCustomer);
 
-        mvc.perform(post("/orders")
+        mvc.perform(post("/orders", UUID.randomUUID())
                         .with(csrf())
                         .cookie(customerCookie)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -228,13 +228,11 @@ public class RateLimitIntegrationTest {
         String customerId = customer.getId().getId().toString();
 
         for (int i = 1; i <= 30; i++) {
-            mvc.perform(get("/orders")
-                            .param("customerId", customerId)
+            mvc.perform(get("/orders", UUID.randomUUID())
                             .cookie(customerCookie))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
-        mvc.perform(get("/orders")
-                        .param("customerId", customerId)
+        mvc.perform(get("/orders", UUID.randomUUID())
                         .cookie(customerCookie))
                 .andExpect(status().isTooManyRequests());
     }
@@ -247,13 +245,11 @@ public class RateLimitIntegrationTest {
         String carrierId = carrier.getId().getId().toString();
 
         for (int i = 1; i <= 30; i++) {
-            mvc.perform(get("/orders/carrier")
-                            .param("carrierId", carrierId)
+            mvc.perform(get("/orders/carrier", UUID.randomUUID())
                             .cookie(carrierCookie))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
-        mvc.perform(get("/orders/carrier")
-                        .param("carrierId", carrierId)
+        mvc.perform(get("/orders/carrier", UUID.randomUUID())
                         .cookie(carrierCookie))
                 .andExpect(status().isTooManyRequests());
     }
@@ -267,7 +263,7 @@ public class RateLimitIntegrationTest {
             mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())
                             .with(csrf())
                             .cookie(carrierCookie))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isBadRequest());
         }
 
         mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())

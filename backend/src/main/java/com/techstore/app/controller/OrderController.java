@@ -30,22 +30,28 @@ public class OrderController {
 
     @RateLimit("create-order")
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid CreateOrderRequestDTO request) {
-        return ResponseEntity.ok(orderService.createOrder(request));
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid CreateOrderRequestDTO request, Authentication authentication) {
+        String supabaseUserId = authentication.getName();
+
+        return ResponseEntity.ok(orderService.createOrder(request,supabaseUserId));
     }
     @RateLimit("customer-list-orders")
     @GetMapping
     public ResponseEntity<List<OrderSummaryDTO>> getCustomerOrders(
-            @RequestParam String customerId) {
+            Authentication authentication) {
 
-        return ResponseEntity.ok(orderService.getOrdersByCustomer(customerId));
+        String supabaseUserId = authentication.getName();
+
+        return ResponseEntity.ok(orderService.getOrdersByCustomer(supabaseUserId));
     }
     @RateLimit("carrier-list-orders")
     @GetMapping("/carrier")
     public ResponseEntity<List<OrderSummaryDTO>> getCarrierOrders(
-            @RequestParam String carrierId) {
+            Authentication authentication) {
 
-        return ResponseEntity.ok(orderService.getOrdersByCarrier(carrierId));
+        String supabaseUserId = authentication.getName();
+
+        return ResponseEntity.ok(orderService.getOrdersByCarrier(supabaseUserId));
     }
 
     @RateLimit("carrier-pickup-order")
