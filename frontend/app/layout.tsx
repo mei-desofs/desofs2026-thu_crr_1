@@ -2,6 +2,7 @@ import "./globals.css";
 import Link from "next/link";
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";
+import LogoutButton from "@/components/LogoutButton";
 
 export const metadata: Metadata = {
   title: "TechStore - Secure E-Commerce",
@@ -88,6 +89,15 @@ export default function RootLayout({
                 >
                   Sign In
                 </Link>
+
+                <Link
+                  href="/auth/register"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Sign Up
+                </Link>
+
+                <LogoutButton />
               </nav>
             </div>
           </header>
