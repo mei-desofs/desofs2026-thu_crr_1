@@ -20,6 +20,7 @@ export default function LogoutButton() {
       setShowConfirm(false);
       setLoggingOut(false);
       router.push('/auth/login');
+      router.refresh();
     } catch (err: unknown) {
       console.error('Logout error:', err);
       setError('Failed to logout. Please try again.');
