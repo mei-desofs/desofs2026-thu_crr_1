@@ -1,7 +1,7 @@
 package com.techstore.app.repository;
 
-import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.customer.Customer;
+import com.techstore.app.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.techstore.app.domain.order.Order;
@@ -13,5 +13,5 @@ public interface OrderRepository extends JpaRepository<Order, OrderId> {
 
     List<Order> findByCustomer(Customer customer);
 
-    List<Order> findByCarrier(Carrier carrier);
+    List<Order> findByCarrier(User carrier);
 }

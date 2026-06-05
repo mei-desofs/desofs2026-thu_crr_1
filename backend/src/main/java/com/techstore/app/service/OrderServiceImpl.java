@@ -3,12 +3,12 @@ package com.techstore.app.service;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.techstore.app.domain.carrier.Carrier;
-import com.techstore.app.domain.carrier.CarrierId;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.customer.CustomerId;
+import com.techstore.app.domain.user.User;
+import com.techstore.app.domain.user.UserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
@@ -17,10 +17,7 @@ import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.mapper.OrderMapper;
 import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderItem;
-import com.techstore.app.repository.CarrierRepository;
-import com.techstore.app.repository.CartRepository;
-import com.techstore.app.repository.CustomerRepository;
-import com.techstore.app.repository.OrderRepository;
+import com.techstore.app.repository.*;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.OrderService;
 import org.springframework.stereotype.Service;
@@ -35,19 +32,19 @@ public class OrderServiceImpl implements OrderService {
 
     private final CustomerRepository customerRepository;
 
-    private final CarrierRepository carrierRepository;
+    private final UserRepository userRepository;
 
     private final OrderAuditLogger orderAuditLogger;
 
     private final NotificationService notificationService;
 
     public OrderServiceImpl(OrderRepository orderRepository, CartRepository cartRepository,
-            CustomerRepository customerRepository, CarrierRepository carrierRepository, OrderAuditLogger orderAuditLogger,
+            CustomerRepository customerRepository, UserRepository userRepository, OrderAuditLogger orderAuditLogger,
             NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.customerRepository = customerRepository;
-        this.carrierRepository = carrierRepository;
+        this.userRepository = userRepository;
         this.orderAuditLogger = orderAuditLogger;
         this.notificationService = notificationService;
     }
@@ -151,9 +148,9 @@ public class OrderServiceImpl implements OrderService {
         orderAuditLogger.logCarrierOrdersListingAttempt(carrierId);
 
         try {
-            Carrier carrier = carrierRepository
-                    .findById(CarrierId.fromString(carrierId))
-                    .orElseThrow(() -> new BusinessException("Carrier not found"));
+            User carrier = userRepository
+                    .findById(UserId.fromString(carrierId))
+                    .orElseThrow(() -> new BusinessException("User not found"));
 
             List<Order> orders = orderRepository.findByCarrier(carrier);
 
