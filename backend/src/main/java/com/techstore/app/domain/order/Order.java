@@ -3,6 +3,7 @@ package com.techstore.app.domain.order;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -32,8 +33,13 @@ public class Order {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "carrier_id", nullable = true)
+    private User carrier;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

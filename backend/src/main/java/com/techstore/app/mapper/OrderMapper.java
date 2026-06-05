@@ -6,7 +6,9 @@ import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.OrderItemDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
+import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.dto.shared.AddressDTO;
 import org.springframework.stereotype.Component;
@@ -39,5 +41,42 @@ public class OrderMapper {
 
         return new OrderResponseDTO(order.getId().getId().toString(),
                 order.getCustomer().getId().getId().toString(), cartID, addressDTO);
+    }
+    public static OrderSummaryDTO toSummary(Order order) {
+
+        return new OrderSummaryDTO(
+                order.getId() != null ? order.getId().getId().toString() : null,
+                order.getCustomer() != null && order.getCustomer().getId() != null
+                        ? order.getCustomer().getId().getId().toString()
+                        : null,
+                order.getCarrier() != null && order.getCarrier().getId() != null
+                        ? order.getCarrier().getId().getId().toString()
+                        : null,
+                order.getOrderStatus(),
+                order.getTotalPrice() != null ? order.getTotalPrice().getMoneyValue() : null,
+                order.getAddress() != null ? new AddressDTO(
+                        order.getAddress().getPostalCode(),
+                        order.getAddress().getCity(),
+                        order.getAddress().getCountry(),
+                        order.getAddress().getStreet()
+                ) : null,
+                mapItems(order.getOrderItems())
+        );
+    }
+    private static List<OrderItemDTO> mapItems(List<OrderItem> items) {
+        if (items == null) return List.of();
+
+        return items.stream()
+                .map(i -> new OrderItemDTO(
+                        i.getProduct() != null && i.getProduct().getId() != null
+                                ? i.getProduct().getId().getId().toString()
+                                : null,
+                        i.getProduct() != null && i.getProduct().getName() != null
+                                ? i.getProduct().getName().getProductName()
+                                : null,
+                        i.getQuantity() != null ? i.getQuantity().getQuantity() : null,
+                        i.getPrice() != null ? i.getPrice().getMoneyValue() : null
+                ))
+                .toList();
     }
 }

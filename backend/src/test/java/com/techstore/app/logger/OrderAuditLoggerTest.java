@@ -102,4 +102,92 @@ class OrderAuditLoggerTest {
 
         assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request, exception));
     }
+    @Test
+    void shouldLogCustomerOrdersListingAttempt() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCustomerOrdersListingAttempt(
+                        "customer-123"));
+    }
+    @Test
+    void shouldLogCustomerOrdersListingAttempWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCustomerOrdersListingAttempt(
+                        "customer\n123"));
+    }
+    @Test
+    void shouldLogCustomerOrdersListingSuccess() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCustomerOrdersListingSuccess(
+                        "customer-123",
+                        5));
+    }
+    @Test
+    void shouldLogCustomerOrdersListingSuccessWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCustomerOrdersListingSuccess(
+                        "customer\n123",
+                        10));
+    }
+    @Test
+    void shouldLogCustomerOrdersListingFailure() {
+
+        Exception ex = new RuntimeException("Database error");
+
+        assertDoesNotThrow(() -> orderAuditLogger.logCustomerOrdersListingFailure("customer-123", ex));
+    }
+    @Test
+    void shouldLogCustomerOrdersListingFailureWithUnsafeCharacters() {
+        Exception exception = new RuntimeException("Error\rwith\nunsafe\tchars");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCustomerOrdersListingFailure(
+                        "customer\n123",
+                        exception));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingAttempt() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCarrierOrdersListingAttempt(
+                        "carrier-123"));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingAttempWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCarrierOrdersListingAttempt(
+                        "carrier\n123"));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingSuccess() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCarrierOrdersListingSuccess(
+                        "carrier-123",
+                        5));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingSuccessWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCarrierOrdersListingSuccess(
+                        "carrier\n123",
+                        10));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingFailure() {
+
+        Exception ex = new RuntimeException("Database error");
+
+        assertDoesNotThrow(() -> orderAuditLogger.logCarrierOrdersListingFailure("carrier-123", ex));
+    }
+    @Test
+    void shouldLogCarrierOrdersListingFailureWithUnsafeCharacters() {
+        Exception exception = new RuntimeException("Error\rwith\nunsafe\tchars");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logCarrierOrdersListingFailure(
+                        "carrier\n123",
+                        exception));
+    }
 }

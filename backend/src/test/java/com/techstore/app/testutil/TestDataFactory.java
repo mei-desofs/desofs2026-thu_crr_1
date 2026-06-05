@@ -20,7 +20,6 @@ import com.techstore.app.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -58,6 +57,11 @@ public class TestDataFactory {
         Customer customer = new Customer(user);
 
         return customerRepository.save(customer);
+    }
+    public User carrier() {
+        User user = user();
+
+        return userRepository.save(user);
     }
 
     public Category category() {

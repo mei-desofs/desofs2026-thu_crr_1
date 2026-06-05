@@ -9,3 +9,13 @@ ratelimit:
       type: USER
       capacity: 20
       duration: PT1M
+
+    customer-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M
+
+    carrier-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M

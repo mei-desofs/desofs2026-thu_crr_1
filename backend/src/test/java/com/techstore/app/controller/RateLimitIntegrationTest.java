@@ -4,6 +4,7 @@ import com.techstore.app.config.jwt.JWTAuthFilter;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.testutil.TestDataFactory;
@@ -30,6 +31,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -212,6 +214,45 @@ public class RateLimitIntegrationTest {
                                 blockedCart.getId().getId().toString(),
                                 blockedCustomer.getId().getId().toString()
                         )))
+                .andExpect(status().isTooManyRequests());
+    }
+
+    @Test
+    void CustomerListOrderRateLimit() throws Exception {
+
+        Cookie customerCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        Customer customer = testDataFactory.customer();
+        String customerId = customer.getId().getId().toString();
+
+        for (int i = 1; i <= 30; i++) {
+            mvc.perform(get("/orders")
+                            .param("customerId", customerId)
+                            .cookie(customerCookie))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(get("/orders")
+                        .param("customerId", customerId)
+                        .cookie(customerCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void CarrierListOrderRateLimit() throws Exception {
+
+        Cookie carrierCookie = accessTokenCookie("carrier-user", "CARRIER");
+
+        User carrier = testDataFactory.carrier();
+        String carrierId = carrier.getId().getId().toString();
+
+        for (int i = 1; i <= 30; i++) {
+            mvc.perform(get("/orders/carrier")
+                            .param("carrierId", carrierId)
+                            .cookie(carrierCookie))
+                    .andExpect(status().isOk());
+        }
+        mvc.perform(get("/orders/carrier")
+                        .param("carrierId", carrierId)
+                        .cookie(carrierCookie))
                 .andExpect(status().isTooManyRequests());
     }
 }

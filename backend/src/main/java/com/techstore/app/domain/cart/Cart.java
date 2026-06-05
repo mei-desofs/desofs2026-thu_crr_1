@@ -47,7 +47,7 @@ public class Cart {
         this.items = items;
         this.customer = customer;
     }
-  
+
     public Cart(Customer customer) {
         this.id = CartId.newId();
         this.customer = customer;
