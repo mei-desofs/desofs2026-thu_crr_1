@@ -24,7 +24,7 @@ public class CartItem {
     @Embedded
     private Quantity quantity;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Product product;
 

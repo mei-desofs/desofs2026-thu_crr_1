@@ -51,7 +51,22 @@ ratelimit:
         capacity: 20
         duration: PT1M
 
+    create-order:
+      type: USER
+      capacity: 20
+      duration: PT1M
+
     update-item-in-cart:
         type: USER
         capacity: 35
-        duration: PT1M    
+        duration: PT1M
+
+    customer-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M
+
+    carrier-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M

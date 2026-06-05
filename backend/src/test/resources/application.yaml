@@ -12,6 +12,21 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
 
+  mail:
+    host: localhost
+    port: 1025
+
+    from:
+      email: no-reply@techstore.com
+      name: TechStore
+
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
 supabase:
   url: http://localhost:54321
   service-role-key: dummy-key
