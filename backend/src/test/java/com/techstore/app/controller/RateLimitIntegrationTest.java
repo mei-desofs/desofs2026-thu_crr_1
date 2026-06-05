@@ -4,7 +4,7 @@ import com.techstore.app.config.jwt.JWTAuthFilter;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
-import com.techstore.app.domain.carrier.Carrier;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.testutil.TestDataFactory;
@@ -243,7 +243,7 @@ public class RateLimitIntegrationTest {
 
         Cookie carrierCookie = accessTokenCookie("carrier-user", "CARRIER");
 
-        Carrier carrier = testDataFactory.carrier();
+        User carrier = testDataFactory.carrier();
         String carrierId = carrier.getId().getId().toString();
 
         for (int i = 1; i <= 30; i++) {

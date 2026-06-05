@@ -1,7 +1,5 @@
 package com.techstore.app.service;
 
-import com.techstore.app.domain.carrier.Carrier;
-import com.techstore.app.domain.carrier.CarrierId;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
@@ -14,16 +12,17 @@ import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
+import com.techstore.app.domain.user.UserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.OrderAuditLogger;
-import com.techstore.app.repository.CarrierRepository;
 import com.techstore.app.repository.CartRepository;
 import com.techstore.app.repository.CustomerRepository;
 import com.techstore.app.repository.OrderRepository;
+import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +54,7 @@ class OrderServiceImplTest {
     private CustomerRepository customerRepository;
 
     @Mock
-    private CarrierRepository carrierRepository;
+    private UserRepository userRepository;
 
     @Mock
     private OrderAuditLogger orderAuditLogger;
@@ -324,9 +323,9 @@ class OrderServiceImplTest {
 
         UUID carrierUuid = UUID.randomUUID();
 
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
-        CarrierId carrierId = mock(CarrierId.class);
+        UserId carrierId = mock(UserId.class);
 
         when(carrierId.getId()).thenReturn(carrierUuid);
 
@@ -359,7 +358,7 @@ class OrderServiceImplTest {
         when(address.getStreet()).thenReturn("Rua Teste");
 
 
-        when(carrierRepository.findById(CarrierId.fromString(carrierUuid.toString()))).
+        when(userRepository.findById(UserId.fromString(carrierUuid.toString()))).
                 thenReturn(Optional.of(carrier));
 
         when(orderRepository.findByCarrier(carrier))
@@ -378,12 +377,12 @@ class OrderServiceImplTest {
 
         UUID carrierUuid = UUID.randomUUID();
 
-        when(carrierRepository.findById(CarrierId.fromString(carrierUuid.toString())))
+        when(userRepository.findById(UserId.fromString(carrierUuid.toString())))
                 .thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.getOrdersByCarrier(carrierUuid.toString()));
 
-        assertEquals("Carrier not found", exception.getMessage());
+        assertEquals("User not found", exception.getMessage());
 
         verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
 
@@ -396,11 +395,11 @@ class OrderServiceImplTest {
         String orderIdUUID = UUID.randomUUID().toString();
 
         Order order = mock(Order.class);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.of(order));
-        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(carrier));
 
         orderService.pickupOrder(orderIdUUID, supabaseUserId);
@@ -443,7 +442,7 @@ class OrderServiceImplTest {
         Order order = mock(Order.class);
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.of(order));
-        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class,
@@ -462,12 +461,12 @@ class OrderServiceImplTest {
         String orderIdUUID = UUID.randomUUID().toString();
 
         Order order = mock(Order.class);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
 
         when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
                 .thenReturn(Optional.of(order));
-        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(carrier));
 
         // Simulate domain rejecting the transition (e.g. already PICKED_UP)

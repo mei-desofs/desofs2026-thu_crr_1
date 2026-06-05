@@ -1,9 +1,9 @@
 package com.techstore.app.domain.order;
 
-import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.shared.Money;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -42,7 +42,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "carrier_id", nullable = true)
-    private Carrier carrier;
+    private User carrier;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -98,7 +98,7 @@ public class Order {
         this.customer = customer;
     }
 
-    public void pickup(Carrier carrier) {
+    public void pickup(User carrier) {
 
         if(carrier == null){
             throw new BusinessException("Order's carrier cannot be null.");

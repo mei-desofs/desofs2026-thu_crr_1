@@ -1,6 +1,5 @@
 package com.techstore.app.testutil;
 
-import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartItem;
 import com.techstore.app.domain.category.Category;
@@ -16,13 +15,11 @@ import com.techstore.app.repository.CartItemRepository;
 import com.techstore.app.repository.CartRepository;
 import com.techstore.app.repository.CategoryRepository;
 import com.techstore.app.repository.CustomerRepository;
-import com.techstore.app.repository.CarrierRepository;
 import com.techstore.app.repository.ProductRepository;
 import com.techstore.app.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -30,18 +27,16 @@ public class TestDataFactory {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
-    private final CarrierRepository carrierRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
 
-    public TestDataFactory(UserRepository userRepository, CustomerRepository customerRepository, CarrierRepository carrierRepository,
+    public TestDataFactory(UserRepository userRepository, CustomerRepository customerRepository,
             CategoryRepository categoryRepository, ProductRepository productRepository, CartItemRepository cartItemRepository,
             CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
-        this.carrierRepository = carrierRepository;
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.cartItemRepository = cartItemRepository;
@@ -63,12 +58,10 @@ public class TestDataFactory {
 
         return customerRepository.save(customer);
     }
-    public Carrier carrier() {
+    public User carrier() {
         User user = user();
 
-        Carrier carrier = new Carrier(user);
-
-        return carrierRepository.save(carrier);
+        return userRepository.save(user);
     }
 
     public Category category() {
