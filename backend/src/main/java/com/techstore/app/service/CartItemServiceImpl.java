@@ -31,65 +31,120 @@ public class CartItemServiceImpl implements CartItemService {
 
         @Override
         public void addItemToCart(CartItemDto cartItemDto, HttpServletRequest request) {
-                SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
 
-                Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
-                                .orElseThrow(() -> new BusinessException("User not found"));
+                try {
+                        SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
 
-                Product product = productRepository.findById_Id(cartItemDto.productId());
+                        Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
+                                        .orElseThrow(() -> new BusinessException("User not found"));
 
-                if (product == null) {
-                        cartAuditLogger.logCartUpdateFailure(
-                                        "N/A",
-                                        String.valueOf(cartItemDto.productId()),
-                                        "Product not found");
-                        throw new BusinessException("Product not found");
-                }
+                        Product product = productRepository.findById_Id(cartItemDto.productId());
 
-                CartItem cartItem = CartItemMapper.toEntity(cartItemDto.quantity(), product);
+                        if (product == null) {
+                                cartAuditLogger.logCartUpdateFailure(
+                                                "N/A",
+                                                String.valueOf(cartItemDto.productId()),
+                                                "Product not found");
+                                throw new BusinessException("Product not found");
+                        }
 
-                Cart cart = cartRepository.findCartByCustomerEmail(
+                        CartItem cartItem = CartItemMapper.toEntity(cartItemDto.quantity(), product);
 
-                                customer.getUser().getEmail().getEmail()
+                        Cart cart = cartRepository.findCartByCustomerEmail(
 
-                );
-
-                if (cart == null) {
-
-                        cart = cartService.createCart(customer);
-
-                        cartAuditLogger.logCartCreation(
-
-                                        customer.getUser().getId().toString(),
-
-                                        "NEW_CART"
+                                        customer.getUser().getEmail().getEmail()
 
                         );
 
-                }
+                        if (cart == null) {
 
-                cartService.addNewItem(cartItem, cart);
+                                cart = cartService.createCart(customer);
+
+                                cartAuditLogger.logCartCreation(
+                                                customer.getUser().getId().toString(),
+                                                cart.getId().toString());
+                        }
+
+                        cartService.addNewItem(cartItem, cart);
+                } catch (BusinessException e) {
+                        cartAuditLogger.logCartUpdateFailure(
+                                        "UNKNOWN",
+                                        cartItemDto.productId().toString(),
+                                        e.getMessage());
+                        throw e;
+                }
         }
 
         @Override
         public void updateItemInCart(String productIdStr, UpdateCartItemDto updateCartItemDto,
                         HttpServletRequest request) {
-                SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
-                Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
-                                .orElseThrow(() -> new BusinessException("User not found"));
+                try {
+                        SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
+                        Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
+                                        .orElseThrow(() -> new BusinessException("User not found"));
 
-                ProductId productId = ProductId.fromString(productIdStr);
+                        ProductId productId = ProductId.fromString(productIdStr);
 
-                Product product = productRepository.findById(productId)
-                                .orElseThrow(() -> new BusinessException("Product not found"));
+                        Product product = productRepository.findById(productId)
+                                        .orElseThrow(() -> new BusinessException("Product not found"));
 
-                Cart cart = cartRepository.findCartByCustomerEmail(
-                                customer.getUser().getEmail().getEmail());
+                        Cart cart = cartRepository.findCartByCustomerEmail(
+                                        customer.getUser().getEmail().getEmail());
 
-                if (cart == null) {
-                        throw new BusinessException("Cart not found");
+                        if (cart == null) {
+
+                                cartAuditLogger.logCartUpdateFailure(
+                                                "UNKNOWN",
+                                                productIdStr,
+                                                "Cart not found");
+                                throw new BusinessException("Cart not found");
+                        }
+
+                        cartService.updateItem(productId, updateCartItemDto.quantityDelta(), cart.getId());
+
+                } catch (BusinessException e) {
+
+                        cartAuditLogger.logCartUpdateFailure(
+                                        "UNKNOWN",
+                                        productIdStr,
+                                        e.getMessage());
+                        throw e;
                 }
-
-                cartService.updateItem(productId, updateCartItemDto.quantityDelta(), cart.getId());
         }
+
+        @Override
+        public void removeItemFromCart(String productIdStr, HttpServletRequest request) {
+                try {
+                        SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
+
+                        Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
+                                        .orElseThrow(() -> new BusinessException("User not found"));
+
+                        ProductId productId = ProductId.fromString(productIdStr);
+
+                        Product product = productRepository.findById(productId)
+                                        .orElseThrow(() -> new BusinessException("Product not found"));
+
+                        Cart cart = cartRepository.findCartByCustomerEmail(
+                                        customer.getUser().getEmail().getEmail());
+
+                        if (cart == null) {
+                                cartAuditLogger.logCartUpdateFailure(
+                                                "UNKNOWN",
+                                                productIdStr,
+                                                "Cart not found");
+                                throw new BusinessException("Cart not found");
+                        }
+
+                        cartService.removeItem(productId, cart.getId());
+                } catch (BusinessException e) {
+
+                        cartAuditLogger.logCartUpdateFailure(
+                                        "UNKNOWN",
+                                        productIdStr,
+                                        e.getMessage());
+                        throw e;
+                }
+        }
+
 }

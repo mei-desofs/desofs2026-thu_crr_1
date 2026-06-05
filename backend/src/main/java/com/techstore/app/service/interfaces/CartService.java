@@ -10,4 +10,5 @@ public interface CartService {
     Cart createCart(Customer customer);
     void addNewItem(CartItem cartItem, Cart cart);
     void updateItem(ProductId productId, Integer quantityDelta, CartId cartId);
+    void removeItem(ProductId productId, CartId id);
 }

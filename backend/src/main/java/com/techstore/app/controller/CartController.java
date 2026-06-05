@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,13 @@ public class CartController {
 
     @RateLimit("update-item-in-cart")
     @PostMapping("/items/{productId}")
-    public void updateItemInCart(@PathVariable String productId, @Valid @RequestBody UpdateCartItemDto updateCartItemDto, HttpServletRequest request) {
-        cartItemService.updateItemInCart(productId,updateCartItemDto, request);
+    public void updateItemInCart(@PathVariable String productId,
+            @Valid @RequestBody UpdateCartItemDto updateCartItemDto, HttpServletRequest request) {
+        cartItemService.updateItemInCart(productId, updateCartItemDto, request);
+    }
+
+    @DeleteMapping("/items/{productId}")
+    public void removeItemFromCart(@PathVariable String productId, HttpServletRequest request) {
+        cartItemService.removeItemFromCart(productId, request);
     }
 }

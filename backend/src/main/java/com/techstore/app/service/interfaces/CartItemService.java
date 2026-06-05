@@ -7,4 +7,5 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface CartItemService {
     void addItemToCart(CartItemDto cartItemDto, HttpServletRequest request);
     void updateItemInCart(String productId,UpdateCartItemDto cartItemDto, HttpServletRequest request);
+    void removeItemFromCart(String productId, HttpServletRequest request);
 }
