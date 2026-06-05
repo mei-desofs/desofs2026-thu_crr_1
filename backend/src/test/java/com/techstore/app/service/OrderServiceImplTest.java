@@ -9,6 +9,7 @@ import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.shared.Address;
+import com.techstore.app.domain.shared.Money;
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
@@ -472,7 +473,32 @@ class OrderServiceImplTest {
         String orderIdUUID = UUID.randomUUID().toString();
         UUID userUuid = UUID.randomUUID();
 
+        Address address = mock(Address.class);
+        when(address.getCity()).thenReturn("Porto");
+        when(address.getCountry()).thenReturn("Portugal");
+        when(address.getStreet()).thenReturn("Rua Teste");
+
+        Money money = mock(Money.class);
+        when(money.getMoneyValue()).thenReturn(new BigDecimal("99.99"));
+
+        Email email = mock(Email.class);
+        when(email.getEmail()).thenReturn("john@email.com");
+
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn(email);
+
+        Customer customer = mock(Customer.class);
+        when(customer.getUser()).thenReturn(user);
+
+        OrderId orderId = mock(OrderId.class);
+        when(orderId.getId()).thenReturn(UUID.randomUUID());
+
         Order order = mock(Order.class);
+        when(order.getCustomer()).thenReturn(customer);
+        when(order.getId()).thenReturn(orderId);
+        when(order.getTotalPrice()).thenReturn(money);
+        when(order.getAddress()).thenReturn(address);
+
         User carrier = mock(User.class);
 
         UserId userId = mock(UserId.class);

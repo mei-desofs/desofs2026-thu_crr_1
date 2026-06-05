@@ -202,11 +202,40 @@ public class OrderServiceImpl implements OrderService {
 
             orderRepository.save(order);
 
+            String customerEmail = order.getCustomer().getUser().getEmail().getEmail();
+            String subject = "TechStore - Your order #" + order.getId().getId() + " has been picked up";
+            String body = createPickupEmailBody(order);
+            notificationService.sendOrderConfirmationEmail(customerEmail, subject, body);
+
             orderAuditLogger.logPickupSuccess(orderId, userId);
 
         } catch (RuntimeException ex) {
             orderAuditLogger.logPickupFailure(orderId, userId, ex);
             throw ex;
         }
+    }
+    private static String createPickupEmailBody(Order order) {
+        return """
+                <h3>Your order is on the way! 🚚</h3>
+
+                <p>Good news! Your order has been picked up by a carrier and is now on its way to you.</p>
+
+                <p>
+                    <b>Order ID:</b> %s<br/>
+                    <b>Total:</b> %s€<br/>
+                    <b>Delivery address:</b> %s, %s, %s
+                </p>
+
+                <p>You will be notified once your order has been delivered.</p>
+
+                <br/>
+
+                <p>Thank you for shopping with TechStore.</p>
+            """.formatted(
+                order.getId().getId(),
+                order.getTotalPrice().getMoneyValue(),
+                order.getAddress().getStreet(),
+                order.getAddress().getCity(),
+                order.getAddress().getCountry());
     }
 }
