@@ -30,10 +30,19 @@ public class Quantity {
     }
   
     public void incrementQuantity(Integer quantity) {
-        this.quantity += quantity;
+        if (quantity <= 0) {
+        throw new BusinessException("Quantity increment must be positive");
+    }
+    this.quantity += quantity;  
     }
 
     public void decrementQuantity(Integer quantity) {
-        this.quantity -= quantity;
+        if (quantity <= 0) {
+        throw new BusinessException("Quantity decrement must be positive");
+    }
+    if (this.quantity - quantity < 0) {
+        throw new BusinessException("Cannot have negative quantity");
+    }
+    this.quantity -= quantity;
     }
 }

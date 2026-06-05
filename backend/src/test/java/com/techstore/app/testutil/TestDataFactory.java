@@ -12,7 +12,13 @@ import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
-import com.techstore.app.repository.*;
+import com.techstore.app.repository.CartItemRepository;
+import com.techstore.app.repository.CartRepository;
+import com.techstore.app.repository.CategoryRepository;
+import com.techstore.app.repository.CustomerRepository;
+import com.techstore.app.repository.CarrierRepository;
+import com.techstore.app.repository.ProductRepository;
+import com.techstore.app.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -92,9 +98,11 @@ public class TestDataFactory {
     }
 
     public Cart cartWithItem(Product product, Customer customer) {
+        Cart cart = new Cart(customer);
+
         CartItem cartItem = cartItem(product);
 
-        Cart cart = new Cart(List.of(cartItem), customer);
+        cart.addItem(cartItem);
 
         return cartRepository.save(cart);
     }

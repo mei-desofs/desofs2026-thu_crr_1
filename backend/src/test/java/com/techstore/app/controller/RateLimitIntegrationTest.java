@@ -1,10 +1,10 @@
 package com.techstore.app.controller;
 
 import com.techstore.app.config.jwt.JWTAuthFilter;
-import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.service.interfaces.AuthService;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.testutil.TestDataFactory;
@@ -216,6 +216,7 @@ public class RateLimitIntegrationTest {
                         )))
                 .andExpect(status().isTooManyRequests());
     }
+
     @Test
     void CustomerListOrderRateLimit() throws Exception {
 
