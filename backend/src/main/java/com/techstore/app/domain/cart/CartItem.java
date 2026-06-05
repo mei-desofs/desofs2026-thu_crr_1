@@ -34,7 +34,8 @@ public class CartItem {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public CartItem() {}
+    public CartItem() {
+    }
 
     public CartItem(Integer quantity, Product product) {
         this.id = CartItemId.newId();
@@ -58,10 +59,11 @@ public class CartItem {
     }
 
     public void attachTo(Cart cart) {
-    if (this.cart != null) {
-        throw new IllegalStateException("CartItem already belongs to a cart");
-    }
+        if (this.cart != null) {
+            throw new IllegalStateException("CartItem already belongs to a cart");
+        }
 
-    this.cart = cart;
-}
+        this.cart = cart;
+    }
+    
 }
