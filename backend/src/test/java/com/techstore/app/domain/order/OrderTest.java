@@ -30,15 +30,17 @@ class OrderTest {
     }
 
     @Test
-    void ensureConstructorInitializesProvidedFieldsWithEmptyItemsList() {
+    void ensureConstructorInitializesProvidedFieldsWithItems() {
+        List<OrderItem> items = mockOrderItems();
+
         Order order = new Order(
-            new BigDecimal("199.98"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("199.98"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                items
         );
 
         assertNotNull(order.getId());
@@ -47,7 +49,36 @@ class OrderTest {
         assertNotNull(order.getAddress());
         assertEquals(OrderStatus.PENDING, order.getOrderStatus());
         assertNotNull(order.getOrderItems());
-        assertEquals(0, order.getOrderItems().size());
+        assertEquals(items, order.getOrderItems());
+        assertEquals(1, order.getOrderItems().size());
+        assertNull(order.getCustomer());
+        assertNull(order.getCreatedAt());
+        assertNull(order.getUpdatedAt());
+    }
+
+    @Test
+    void ensureConstructorInitializesProvidedFieldsWithCustomer() {
+        List<OrderItem> items = mockOrderItems();
+        Customer mockCustomer = mock(Customer.class);
+
+        Order order = new Order(
+                new BigDecimal("199.98"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                items,
+                mockCustomer
+        );
+
+        assertNotNull(order.getId());
+        assertNotNull(order.getTotalPrice());
+        assertEquals(new BigDecimal("199.98"), order.getTotalPrice().getMoneyValue());
+        assertNotNull(order.getAddress());
+        assertEquals(OrderStatus.PENDING, order.getOrderStatus());
+        assertEquals(items, order.getOrderItems());
+        assertEquals(mockCustomer, order.getCustomer());
         assertNull(order.getCreatedAt());
         assertNull(order.getUpdatedAt());
     }
@@ -55,43 +86,96 @@ class OrderTest {
     @Test
     void ensureConstructorCreatesNewOrderId() {
         Order order1 = new Order(
-            new BigDecimal("50.00"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("50.00"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                mockOrderItems()
         );
+
         Order order2 = new Order(
-            new BigDecimal("50.00"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("50.00"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                mockOrderItems()
         );
 
         assertNotEquals(order1.getId(), order2.getId());
     }
 
     @Test
-    void ensureConstructorThrowsExceptionWhenOrderHasItems() {
-        Product mockProduct = mock(Product.class);
-        OrderItem orderItem = new OrderItem(1, new BigDecimal("100.00"), mockProduct);
-        List<OrderItem> items = new ArrayList<>();
-        items.add(orderItem);
+    void ensureConstructorThrowsExceptionWhenOrderItemsIsEmpty() {
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            new Order(
+                    new BigDecimal("100.00"),
+                    "1000-000",
+                    "Lisbon",
+                    "Portugal",
+                    "Main Street",
+                    OrderStatus.PENDING,
+                    new ArrayList<>()
+            );
+        });
+
+        assertEquals("An order must contain at least one item.", exception.getMessage());
+    }
+
+    @Test
+    void ensureConstructorThrowsExceptionWhenOrderItemsIsNull() {
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            new Order(
+                    new BigDecimal("100.00"),
+                    "1000-000",
+                    "Lisbon",
+                    "Portugal",
+                    "Main Street",
+                    OrderStatus.PENDING,
+                    null
+            );
+        });
+
+        assertEquals("An order must contain at least one item.", exception.getMessage());
+    }
+
+    @Test
+    void ensureConstructorWithCustomerThrowsExceptionWhenOrderItemsIsEmpty() {
+        Customer mockCustomer = mock(Customer.class);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             new Order(
-                new BigDecimal("100.00"),
-                "1000-000",
-                "Lisbon",
-                "Portugal",
-                "Main Street",
-                OrderStatus.PENDING,
-                items
+                    new BigDecimal("100.00"),
+                    "1000-000",
+                    "Lisbon",
+                    "Portugal",
+                    "Main Street",
+                    OrderStatus.PENDING,
+                    new ArrayList<>(),
+                    mockCustomer
+            );
+        });
+
+        assertEquals("An order must contain at least one item.", exception.getMessage());
+    }
+
+    @Test
+    void ensureConstructorWithCustomerThrowsExceptionWhenOrderItemsIsNull() {
+        Customer mockCustomer = mock(Customer.class);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            new Order(
+                    new BigDecimal("100.00"),
+                    "1000-000",
+                    "Lisbon",
+                    "Portugal",
+                    "Main Street",
+                    OrderStatus.PENDING,
+                    null,
+                    mockCustomer
             );
         });
 
@@ -125,40 +209,51 @@ class OrderTest {
 
     @Test
     void ensureOrderWithMultipleItems() {
+        Product mockProduct1 = mock(Product.class);
+        Product mockProduct2 = mock(Product.class);
+
+        OrderItem item1 = new OrderItem(2, new BigDecimal("99.99"), mockProduct1);
+        OrderItem item2 = new OrderItem(1, new BigDecimal("149.97"), mockProduct2);
+
+        List<OrderItem> items = new ArrayList<>();
+        items.add(item1);
+        items.add(item2);
+
         Order order = new Order(
-            new BigDecimal("349.95"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("349.95"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                items
         );
 
         assertNotNull(order.getId());
-        assertEquals(0, order.getOrderItems().size());
+        assertEquals(2, order.getOrderItems().size());
+        assertEquals(items, order.getOrderItems());
     }
 
     @Test
     void ensureOrderWithDifferentStatuses() {
         Order orderPending = new Order(
-            new BigDecimal("50.00"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("50.00"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.PENDING,
+                mockOrderItems()
         );
 
         Order orderShipped = new Order(
-            new BigDecimal("50.00"),
-            "1000-000",
-            "Lisbon",
-            "Portugal",
-            "Main Street",
-            OrderStatus.SHIPPED,
-            new ArrayList<>()
+                new BigDecimal("50.00"),
+                "1000-000",
+                "Lisbon",
+                "Portugal",
+                "Main Street",
+                OrderStatus.SHIPPED,
+                mockOrderItems()
         );
 
         assertEquals(OrderStatus.PENDING, orderPending.getOrderStatus());
@@ -168,15 +263,44 @@ class OrderTest {
     @Test
     void ensureOrderContainsAddressInformation() {
         Order order = new Order(
-            new BigDecimal("100.00"),
-            "2700-000",
-            "Amadora",
-            "Portugal",
-            "Secondary Street",
-            OrderStatus.PENDING,
-            new ArrayList<>()
+                new BigDecimal("100.00"),
+                "2700-000",
+                "Amadora",
+                "Portugal",
+                "Secondary Street",
+                OrderStatus.PENDING,
+                mockOrderItems()
         );
 
         assertNotNull(order.getAddress());
+    }
+
+    @Test
+    void ensureSetCustomerUpdatesCustomer() {
+        Order order = new Order(
+                new BigDecimal("100.00"),
+                "2700-000",
+                "Amadora",
+                "Portugal",
+                "Secondary Street",
+                OrderStatus.PENDING,
+                mockOrderItems()
+        );
+
+        Customer mockCustomer = mock(Customer.class);
+
+        order.setCustomer(mockCustomer);
+
+        assertEquals(mockCustomer, order.getCustomer());
+    }
+
+    private List<OrderItem> mockOrderItems() {
+        Product mockProduct = mock(Product.class);
+        OrderItem orderItem = new OrderItem(1, new BigDecimal("50.00"), mockProduct);
+
+        List<OrderItem> items = new ArrayList<>();
+        items.add(orderItem);
+
+        return items;
     }
 }

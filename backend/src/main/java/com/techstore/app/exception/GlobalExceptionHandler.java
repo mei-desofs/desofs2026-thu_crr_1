@@ -224,4 +224,15 @@ public class GlobalExceptionHandler {
         errorResponse.setCode(ErrorCodeConstants.SYSTEM_ERROR);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    /**
+     * Handle rate limit exceptions - Too Many Requests (429)
+     */
+    @ExceptionHandler(RateLimitException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitException ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(429, ex.getMessage(), "Too Many Requests", request.getRequestURI());
+        errorResponse.setCode(ErrorCodeConstants.RATE_LIMIT);
+        return new ResponseEntity<>(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
+    }
 }

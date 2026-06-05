@@ -25,7 +25,8 @@ public class OrderItem {
     @Embedded
     private Money price;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(nullable = false)
     private Product product;
 
     @Column(nullable = false, updatable = false)
