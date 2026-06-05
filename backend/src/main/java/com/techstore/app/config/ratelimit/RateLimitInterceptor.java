@@ -3,6 +3,7 @@ package com.techstore.app.config.ratelimit;
 import java.util.Map;
 
 import com.techstore.app.config.jwt.JWTAuthFilter;
+import com.techstore.app.exception.RateLimitException;
 import com.techstore.app.helpers.CookiesHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -61,9 +62,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         Bucket bucket = bucketManager.resolve(key, rule.getCapacity(), rule.getDuration());
 
         if (!bucket.tryConsume(1)) {
-            response.setStatus(429);
-            response.getWriter().write("Too many requests");
-            return false;
+            throw new RateLimitException();
         }
 
         return true;
