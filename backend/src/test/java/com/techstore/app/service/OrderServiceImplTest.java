@@ -12,11 +12,13 @@ import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.user.Email;
+import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
+import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.repository.CarrierRepository;
 import com.techstore.app.repository.CartRepository;
@@ -34,16 +36,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
@@ -224,7 +221,7 @@ class OrderServiceImplTest {
 
         RuntimeException emailException = new RuntimeException("Email failed");
 
-        org.mockito.Mockito.doThrow(emailException)
+        doThrow(emailException)
                 .when(notificationService)
                 .sendOrderConfirmationEmail(any(), any(), any());
 
@@ -391,6 +388,100 @@ class OrderServiceImplTest {
         verify(orderAuditLogger).logCarrierOrdersListingAttempt(carrierUuid.toString());
 
         verify(orderAuditLogger).logCarrierOrdersListingFailure(eq(carrierUuid.toString()), any(RuntimeException.class));
+    }
+
+    @Test
+    void shouldPickupOrderAndSave() {
+        String supabaseUserId = UUID.randomUUID().toString();
+        String orderIdUUID = UUID.randomUUID().toString();
+
+        Order order = mock(Order.class);
+        Carrier carrier = mock(Carrier.class);
+
+        when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
+                .thenReturn(Optional.of(order));
+        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(carrier));
+
+        orderService.pickupOrder(orderIdUUID, supabaseUserId);
+
+
+        verify(order).pickup(carrier);
+
+        verify(orderRepository).save(order);
+
+
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger).logPickupSuccess(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger, never()).logPickupFailure(any(), any(), any());
+    }
+
+    @Test
+    void shouldThrowAndLogFailureWhenOrderNotFound() {
+        String supabaseUserId = UUID.randomUUID().toString();
+        String orderIdUUID = UUID.randomUUID().toString();
+
+        when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
+                .thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> orderService.pickupOrder(orderIdUUID, supabaseUserId));
+
+        assertEquals("Order not found", ex.getMessage());
+
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
+        verify(orderAuditLogger, never()).logPickupSuccess(any(), any());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowAndLogFailureWhenCarrierProfileNotFound() {
+        String supabaseUserId = UUID.randomUUID().toString();
+        String orderIdUUID = UUID.randomUUID().toString();
+
+        Order order = mock(Order.class);
+        when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
+                .thenReturn(Optional.of(order));
+        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> orderService.pickupOrder(orderIdUUID, supabaseUserId));
+
+        assertEquals("Carrier not found", ex.getMessage());
+
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
+        verify(order, never()).pickup(any());
+        verify(orderRepository, never()).save(any());
+    }
+    @Test
+    void shouldThrowAndLogFailureWhenDomainRuleViolated() {
+        String supabaseUserId = UUID.randomUUID().toString();
+        String orderIdUUID = UUID.randomUUID().toString();
+
+        Order order = mock(Order.class);
+        Carrier carrier = mock(Carrier.class);
+
+
+        when(orderRepository.findById(OrderId.fromString(orderIdUUID)))
+                .thenReturn(Optional.of(order));
+        when(carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(carrier));
+
+        // Simulate domain rejecting the transition (e.g. already PICKED_UP)
+        doThrow(new BusinessException("Order cannot be picked up: current status is PICKED_UP"))
+                .when(order).pickup(carrier);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> orderService.pickupOrder(orderIdUUID, supabaseUserId));
+
+        assertTrue(ex.getMessage().contains("PICKED_UP"));
+
+        verify(orderAuditLogger).logPickupAttempt(orderIdUUID, supabaseUserId);
+        verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(supabaseUserId), any());
+        verify(orderRepository, never()).save(any());
     }
 
     private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId, UUID customerId) {

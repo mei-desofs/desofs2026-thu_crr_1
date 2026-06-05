@@ -1,9 +1,13 @@
 package com.techstore.app.domain.order;
 
+import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.exception.BusinessException;
+import com.techstore.app.testutil.TestDataFactory;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,8 +16,26 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-
+@SpringBootTest
 class OrderTest {
+
+    private Order pendingOrder() {
+        return new Order(
+                new BigDecimal("99.99"),
+                "4000-001", "Porto", "Portugal", "Rua Teste",
+                OrderStatus.PENDING,
+                List.of(new OrderItem(1, new BigDecimal("99.99"), mock(Product.class)))
+        );
+    }
+
+    private Order orderWithStatus(OrderStatus status) {
+        return new Order(
+                new BigDecimal("99.99"),
+                "4000-001", "Porto", "Portugal", "Rua Teste",
+                status,
+                List.of(new OrderItem(1, new BigDecimal("99.99"), mock(Product.class)))
+        );
+    }
 
     @Test
     void ensureDefaultConstructorLeavesFieldsNull() {
@@ -302,5 +324,77 @@ class OrderTest {
         items.add(orderItem);
 
         return items;
+    }
+    @Test
+    void shouldAssignCarrierAndSetPickedUpStatus() {
+        Order order = pendingOrder();
+        Carrier carrier = mock(Carrier.class);
+
+        order.pickup(carrier);
+
+        assertEquals(OrderStatus.PICKED_UP, order.getOrderStatus());
+        assertEquals(carrier, order.getCarrier());
+    }
+
+    @Test
+    void shouldThrowWhenOrderIsAlreadyPickedUp() {
+        Order order = orderWithStatus(OrderStatus.PICKED_UP);
+        Carrier carrier = mock(Carrier.class);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> order.pickup(carrier));
+
+        assertTrue(ex.getMessage().contains("PICKED_UP"));
+    }
+
+    @Test
+    void shouldThrowWhenOrderIsShipped() {
+        Order order = orderWithStatus(OrderStatus.SHIPPED);
+        Carrier carrier = mock(Carrier.class);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> order.pickup(carrier));
+
+        assertTrue(ex.getMessage().contains("SHIPPED"));
+    }
+
+    @Test
+    void shouldThrowWhenOrderIsDelivered() {
+        Order order = orderWithStatus(OrderStatus.DELIVERED);
+        Carrier carrier = mock(Carrier.class);
+
+        assertThrows(BusinessException.class, () -> order.pickup(carrier));
+    }
+
+    @Test
+    void shouldThrowWhenOrderIsCancelled() {
+        Order order = orderWithStatus(OrderStatus.CANCELLED);
+        Carrier carrier = mock(Carrier.class);
+
+        assertThrows(BusinessException.class, () -> order.pickup(carrier));
+    }
+    @Test
+    void shouldThrowWhenOrderAlreadyHasACarrierAssigned() {
+
+        Order order = pendingOrder();
+        Carrier firstCarrier  = mock(Carrier.class);
+        Carrier secondCarrier = mock(Carrier.class);
+
+        order.pickup(firstCarrier);
+
+        Order anotherPending = pendingOrder();
+        anotherPending.pickup(firstCarrier);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> anotherPending.pickup(secondCarrier));
+
+        assertNotNull(ex.getMessage());
+    }
+
+    @Test
+    void shouldThrowWhenCarrierIsNull() {
+        Order order = pendingOrder();
+
+        assertThrows(Exception.class, () -> order.pickup(null));
     }
 }

@@ -27,11 +27,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -252,6 +254,24 @@ public class RateLimitIntegrationTest {
         }
         mvc.perform(get("/orders/carrier")
                         .param("carrierId", carrierId)
+                        .cookie(carrierCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+
+    @Test
+    void CarrierPickupRateLimit() throws Exception {
+        String supabaseUserId = UUID.randomUUID().toString();
+        Cookie carrierCookie  = accessTokenCookie(supabaseUserId, "CARRIER");
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())
+                            .with(csrf())
+                            .cookie(carrierCookie))
+                    .andExpect(status().isNotFound());
+        }
+
+        mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())
+                        .with(csrf())
                         .cookie(carrierCookie))
                 .andExpect(status().isTooManyRequests());
     }

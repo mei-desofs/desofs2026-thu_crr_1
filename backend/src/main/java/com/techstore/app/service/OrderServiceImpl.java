@@ -9,6 +9,8 @@ import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.customer.CustomerId;
+import com.techstore.app.domain.order.OrderId;
+import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
@@ -171,5 +173,30 @@ public class OrderServiceImpl implements OrderService {
             throw exception;
         }
 
+    }
+
+    @Transactional
+    @Override
+    public void pickupOrder(String orderId, String supabaseUserId) {
+
+        orderAuditLogger.logPickupAttempt(orderId, supabaseUserId);
+
+        try {
+            Order order = orderRepository.findById(OrderId.fromString(orderId))
+                    .orElseThrow(() -> new BusinessException("Order not found"));
+
+            Carrier carrier = carrierRepository.findByUserSupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                    .orElseThrow(() -> new BusinessException("Carrier not found"));
+
+            order.pickup(carrier);
+
+            orderRepository.save(order);
+
+            orderAuditLogger.logPickupSuccess(orderId, supabaseUserId);
+
+        } catch (RuntimeException ex) {
+            orderAuditLogger.logPickupFailure(orderId, supabaseUserId, ex);
+            throw ex;
+        }
     }
 }

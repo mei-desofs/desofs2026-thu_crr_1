@@ -22,7 +22,7 @@ public class CarrierId implements Serializable {
 
     public CarrierId(UUID id) {
         if (id == null) {
-            throw new BusinessException("Customer ID cannot be null.");
+            throw new BusinessException("Carrier ID cannot be null.");
         }
         this.id = id;
     }

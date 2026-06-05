@@ -108,4 +108,28 @@ public class OrderAuditLogger {
         return input.replaceAll("[\\r\\n\\t]", "_")
                 .replaceAll("\\p{Cntrl}", "");
     }
+
+    public void logPickupAttempt(String orderId, String supabaseUserId) {
+        auditLog.info("event=ORDER_PICKUP_ATTEMPT | orderId={} | supabaseUserId={} | timestamp={}",
+                sanitize(orderId), sanitize(supabaseUserId), System.currentTimeMillis());
+
+        appLog.info("Attempting to pickup carrier order: supabaseUserId={}",
+                sanitize(supabaseUserId));
+    }
+
+    public void logPickupSuccess(String orderId, String supabaseUserId) {
+        auditLog.info("event=ORDER_PICKUP_SUCCESS | orderId={} | supabaseUserId={} | timestamp={}",
+                sanitize(orderId), sanitize(supabaseUserId), System.currentTimeMillis());
+
+        appLog.info("Carrier order picked up successfully: supabaseUserId={}, orderId={}",
+                 sanitize(supabaseUserId), sanitize(orderId));
+    }
+
+    public void logPickupFailure(String orderId, String supabaseUserId, Exception ex) {
+        auditLog.warn("event=ORDER_PICKUP_FAILURE | orderId={} | supabaseUserId={} | reason={} | timestamp={}",
+                sanitize(orderId), sanitize(supabaseUserId), sanitize(ex.getMessage()), System.currentTimeMillis());
+
+        appLog.warn("Failed to pickup carrier order: supabaseUserId={}, reason={}",
+                sanitize(supabaseUserId), sanitize(ex.getMessage()));
+    }
 }

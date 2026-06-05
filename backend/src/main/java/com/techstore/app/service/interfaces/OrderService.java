@@ -31,4 +31,6 @@ public interface OrderService {
      * @return A list of orders associated with the specified carrier.
      */
     List<OrderSummaryDTO> getOrdersByCarrier(String carrierId);
+
+    void pickupOrder(String orderId, String carrierId);
 }

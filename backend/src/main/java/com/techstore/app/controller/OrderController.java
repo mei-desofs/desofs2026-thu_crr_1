@@ -2,6 +2,7 @@ package com.techstore.app.controller;
 
 import com.techstore.app.dto.order.OrderSummaryDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +46,18 @@ public class OrderController {
             @RequestParam String carrierId) {
 
         return ResponseEntity.ok(orderService.getOrdersByCarrier(carrierId));
+    }
+
+    @RateLimit("carrier-pickup-order")
+    @PatchMapping("/{orderId}/pickup")
+    public ResponseEntity<Void> pickupOrder(
+            @PathVariable String orderId,
+            Authentication authentication) {
+
+        String supabaseUserId = authentication.getName();
+
+        orderService.pickupOrder(orderId, supabaseUserId);
+
+        return ResponseEntity.noContent().build();
     }
 }
