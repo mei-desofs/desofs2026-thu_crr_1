@@ -1,8 +1,8 @@
 package com.techstore.app.domain.order;
 
-import com.techstore.app.domain.carrier.Carrier;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.testutil.TestDataFactory;
 import org.junit.jupiter.api.Test;
@@ -328,7 +328,7 @@ class OrderTest {
     @Test
     void shouldAssignCarrierAndSetPickedUpStatus() {
         Order order = pendingOrder();
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         order.pickup(carrier);
 
@@ -339,7 +339,7 @@ class OrderTest {
     @Test
     void shouldThrowWhenOrderIsAlreadyPickedUp() {
         Order order = orderWithStatus(OrderStatus.PICKED_UP);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> order.pickup(carrier));
@@ -350,7 +350,7 @@ class OrderTest {
     @Test
     void shouldThrowWhenOrderIsShipped() {
         Order order = orderWithStatus(OrderStatus.SHIPPED);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> order.pickup(carrier));
@@ -361,7 +361,7 @@ class OrderTest {
     @Test
     void shouldThrowWhenOrderIsDelivered() {
         Order order = orderWithStatus(OrderStatus.DELIVERED);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         assertThrows(BusinessException.class, () -> order.pickup(carrier));
     }
@@ -369,7 +369,7 @@ class OrderTest {
     @Test
     void shouldThrowWhenOrderIsCancelled() {
         Order order = orderWithStatus(OrderStatus.CANCELLED);
-        Carrier carrier = mock(Carrier.class);
+        User carrier = mock(User.class);
 
         assertThrows(BusinessException.class, () -> order.pickup(carrier));
     }
@@ -377,8 +377,8 @@ class OrderTest {
     void shouldThrowWhenOrderAlreadyHasACarrierAssigned() {
 
         Order order = pendingOrder();
-        Carrier firstCarrier  = mock(Carrier.class);
-        Carrier secondCarrier = mock(Carrier.class);
+        User firstCarrier  = mock(User.class);
+        User secondCarrier = mock(User.class);
 
         order.pickup(firstCarrier);
 
