@@ -169,11 +169,9 @@ public class CartItemServiceImpl implements CartItemService {
                 throw new BusinessException("Cart not found");
             }
  
-            // ✅ Convert each CartItem to CartProductResponseDto
             List<CartProductResponseDto> response = new ArrayList<>();
  
             for (CartItem cartItem : cart.getItems()) {
-                // ✅ Get product details from repository
                 ProductId productId = cartItem.getProduct().getId();
                 Product product = productRepository.findById(productId)
                         .orElseThrow(() -> new BusinessException("Product not found for item in cart"));
