@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiGet } from "@/lib/api";
 import Link from "next/link";
 import { useSafeTextContent } from "@/lib/hooks";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
   id: string;
@@ -14,20 +16,53 @@ interface CartItem {
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate loading cart from localStorage for demo
-    // In production, this would come from the API
-    setLoading(false);
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
+    const loadCart = async () => {
+      setLoading(true);
+
       try {
-        const items = JSON.parse(savedCart);
-        setCartItems(items);
+        const serverResp = await apiGet<any>('/cart');
+        const productsMap = serverResp?.products;
+
+        if (productsMap && typeof productsMap === 'object') {
+            const items: CartItem[] = Object.entries(productsMap).map(
+                ([id, cartProduct]: [string, any]) => ({
+                    id,
+                    name: cartProduct.productName,
+                    quantity: cartProduct.quantity,
+                    price: cartProduct.unitPrice,
+                })
+            );
+
+            setCartItems(items);
+            setLoading(false);
+            return;
+        }
+      } catch (err: any) {
+        // If endpoint not available or returns error, fall back to localStorage
+        console.debug(
+          "Server cart unavailable, falling back to localStorage:",
+          err?.message || err,
+        );
+      }
+
+      // Fallback: load cart from localStorage (demo)
+      try {
+        const savedCart = localStorage.getItem("cart");
+        if (savedCart) {
+          const items = JSON.parse(savedCart);
+          setCartItems(items);
+        }
       } catch (e) {
         console.error("Failed to load cart:", e);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    loadCart();
   }, []);
 
   const calculateTotal = (): number => {
@@ -99,14 +134,6 @@ export default function CartPage() {
                   <span>Subtotal:</span>
                   <span>€{calculateTotal().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Shipping:</span>
-                  <span>€0.00</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Tax:</span>
-                  <span>€0.00</span>
-                </div>
               </div>
 
               <div className="flex justify-between items-center mb-6">
@@ -123,16 +150,12 @@ export default function CartPage() {
                 Proceed to Checkout
               </button>
 
-              <button className="w-full px-6 py-3 bg-slate-700 text-white rounded hover:bg-slate-600 transition">
+              <button
+                onClick={() => router.push('/products')}
+                className="w-full px-6 py-3 bg-slate-700 text-white rounded hover:bg-slate-600 transition"
+              >
                 Continue Shopping
               </button>
-
-              {/* Security Info */}
-              <div className="mt-6 pt-6 border-t border-slate-700 text-xs text-slate-400">
-                <p className="mb-2">✓ Secure checkout</p>
-                <p className="mb-2">✓ SSL encrypted</p>
-                <p>✓ PCI compliant</p>
-              </div>
             </div>
           </div>
         )}

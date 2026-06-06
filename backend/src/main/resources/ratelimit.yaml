@@ -70,3 +70,8 @@ ratelimit:
       type: USER
       capacity: 30
       duration: PT1M
+
+    get-cart-items:
+      type: USER
+      capacity: 20
+      duration: PT1M

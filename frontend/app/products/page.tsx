@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import { useSafeTextContent } from "@/lib/hooks";
 
 interface Product {
@@ -158,6 +159,37 @@ interface ProductCardProps {
 function ProductCard({ product }: ProductCardProps) {
   const nameRef = useSafeTextContent(product.name);
   const descriptionRef = useSafeTextContent(product.description);
+  const router = useRouter();
+  const [adding, setAdding] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const handleAddToCart = async () => {
+    if (product.stockQuantity === 0 || adding) return;
+
+    setAdding(true);
+    setMessage(null);
+
+    try {
+      await apiPost("/cart/items", { productId: product.id, quantity: 1 });
+      setMessage("Added to cart");
+    } catch (err: any) {
+      console.error("Add to cart failed:", err);
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        // Not authenticated — redirect to login with message and next url
+        const message = encodeURIComponent(
+          "Please sign in to add items to your cart",
+        );
+        const next = encodeURIComponent(`/products`);
+        router.push(`/auth/login?message=${message}&next=${next}`);
+      } else {
+        setMessage("Failed to add to cart. Try again.");
+      }
+    } finally {
+      setAdding(false);
+      window.setTimeout(() => setMessage(null), 3000);
+    }
+  };
 
   return (
     <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-blue-500 transition">
@@ -191,12 +223,28 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          <button
-            disabled={product.stockQuantity === 0}
-            className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
-          >
-            {product.stockQuantity > 0 ? "Add to Cart" : "Out of Stock"}
-          </button>
+          <div>
+            <button
+              onClick={handleAddToCart}
+              disabled={product.stockQuantity === 0 || adding}
+              className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition flex items-center justify-center"
+            >
+              {adding ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  Adding...
+                </>
+              ) : product.stockQuantity > 0 ? (
+                "Add to Cart"
+              ) : (
+                "Out of Stock"
+              )}
+            </button>
+
+            {message && (
+              <div className="mt-2 text-sm text-slate-300">{message}</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

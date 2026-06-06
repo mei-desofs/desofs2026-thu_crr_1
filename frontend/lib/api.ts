@@ -86,9 +86,15 @@ apiClient.interceptors.response.use(
       // New access_token cookie is now set by the backend, retry.
       return apiClient(originalRequest);
     } catch {
-      // Refresh token expired or revoked — force re-login.
+      // Refresh token expired or revoked — force re-login to the auth page
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        try {
+          const message = encodeURIComponent('Please sign in to continue');
+          const next = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `/auth/login?message=${message}&next=${next}`;
+        } catch {
+          window.location.href = '/auth/login';
+        }
       }
       return Promise.reject(error);
     }

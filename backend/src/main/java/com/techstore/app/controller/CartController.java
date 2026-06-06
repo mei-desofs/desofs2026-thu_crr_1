@@ -2,18 +2,14 @@ package com.techstore.app.controller;
 
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import com.techstore.app.dto.cart.CartItemDto;
+import com.techstore.app.dto.cart.CartReponseDTO;
 import com.techstore.app.dto.cart.UpdateCartItemDto;
 import com.techstore.app.service.interfaces.CartItemService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cart")
@@ -38,5 +34,11 @@ public class CartController {
     @DeleteMapping("/items/{productId}")
     public void removeItemFromCart(@PathVariable String productId, HttpServletRequest request) {
         cartItemService.removeItemFromCart(productId, request);
+    }
+
+    @RateLimit("get-cart-items")
+    @GetMapping()
+    public CartReponseDTO getCartItems(HttpServletRequest request) {
+        return cartItemService.getCartItems(request);
     }
 }

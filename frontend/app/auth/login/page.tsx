@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost } from "@/lib/api";
 
 interface LoginRequest {
@@ -15,6 +15,9 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams?.get("next") || "/products";
+  const infoMessage = searchParams?.get("message") || null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ export default function AuthPage() {
       // withCredentials: true in apiClient ensures cookies are stored by the browser
       await apiPost("/auth/login", payload);
 
-      router.push("/products");
+      router.push(redirectTo);
       router.refresh();
     } catch (err: unknown) {
       console.error("Login failed:", err);
@@ -73,6 +76,12 @@ export default function AuthPage() {
           {error && (
             <div className="p-3 bg-red-900/60 border border-red-700 rounded text-red-200 text-sm">
               {error}
+            </div>
+          )}
+
+          {infoMessage && (
+            <div className="p-3 mb-3 bg-blue-900/60 border border-blue-700 rounded text-blue-200 text-sm">
+              {infoMessage}
             </div>
           )}
 
