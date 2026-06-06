@@ -119,21 +119,6 @@ export default function CartPage() {
                 Order Summary
               </h2>
 
-              <div className="space-y-4 mb-6 border-b border-slate-700 pb-6">
-                <div className="flex justify-between text-slate-300">
-                  <span>Subtotal:</span>
-                  <span>€{calculateTotal().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Shipping:</span>
-                  <span>€0.00</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>Tax:</span>
-                  <span>€0.00</span>
-                </div>
-              </div>
-
               <div className="flex justify-between items-center mb-6">
                 <span className="text-xl font-bold text-white">Total:</span>
                 <span className="text-3xl font-bold text-green-400">
