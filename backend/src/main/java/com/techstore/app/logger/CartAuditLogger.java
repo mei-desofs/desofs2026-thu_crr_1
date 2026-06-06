@@ -107,6 +107,21 @@ public class CartAuditLogger {
         );
     }
 
+    public void logCartRetrieved(String cartId, int itemCount) {
+        auditLog.info(
+                "event=CART_RETRIEVED | cartId={} | itemCount={} | timestamp={}",
+                sanitize(cartId),
+                itemCount,
+                Instant.now()
+        );
+        appLog.info(
+                "Cart retrieved: cartId={}, itemCount={}",
+                sanitize(cartId),
+                itemCount
+        );
+    }
+
+
     private String sanitize(String input) {
         if (input == null) return null;
         return input.replaceAll("[\\r\\n\\t]", "_")

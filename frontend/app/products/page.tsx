@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { useSafeTextContent } from "@/lib/hooks";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: string;
@@ -28,6 +29,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -65,7 +67,6 @@ export default function ProductsPage() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-6">Products</h1>
 
-          {/* Search Form */}
           <form onSubmit={handleSearch} className="flex gap-2 mb-6">
             <input
               type="text"
@@ -83,14 +84,12 @@ export default function ProductsPage() {
           </form>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded text-red-100">
             {error}
           </div>
         )}
 
-        {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
             <div className="inline-block animate-spin">
@@ -100,7 +99,6 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* Products Grid */}
         {!loading && products.length > 0 && (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -109,7 +107,6 @@ export default function ProductsPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-8">
                 <button
@@ -136,7 +133,6 @@ export default function ProductsPage() {
           </>
         )}
 
-        {/* No Products State */}
         {!loading && products.length === 0 && !error && (
           <div className="text-center py-12">
             <p className="text-slate-400 text-lg">No products found.</p>
@@ -147,17 +143,52 @@ export default function ProductsPage() {
   );
 }
 
-interface ProductCardProps {
-  product: Product;
-}
-
-/**
- * V3.2.2: Product card with safe text rendering
- * Uses textContent and safe rendering to prevent XSS
- */
-function ProductCard({ product }: ProductCardProps) {
+function ProductCard({ product }: { product: Product }) {
   const nameRef = useSafeTextContent(product.name);
   const descriptionRef = useSafeTextContent(product.description);
+  const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+
+  const handleAddToCart = async () => {
+    try {
+      setAdding(true);
+      await apiPost("/cart/items", {
+        productId: product.id,
+        quantity,
+      });
+      setQuantity(1);
+    } catch (err: any) {
+      console.error("Add to cart failed:", err);
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        // Not authenticated — redirect to login with message and next url
+        const message = encodeURIComponent(
+          "Please sign in to add items to your cart",
+        );
+        const next = encodeURIComponent(`/products`);
+        router.push(`/auth/login?message=${message}&next=${next}`);
+      } else {
+        setMessage("Failed to add to cart. Try again.");
+      }
+    } finally {
+      setAdding(false);
+      window.setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const handleIncrement = () => {
+    if (quantity < product.stockQuantity) {
+      setQuantity(quantity + 1);
+    }
+  };
 
   return (
     <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-blue-500 transition">
@@ -191,12 +222,77 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
+          {/* Quantity Controls */}
+          {product.stockQuantity > 0 && (
+            <div className="mt-4 mb-4">
+              <p className="text-slate-400 text-sm mb-2 text-center">
+                Quantity
+              </p>
+
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleDecrement}
+                  disabled={quantity <= 1 || adding}
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          bg-slate-700
+          text-white
+          text-xl
+          font-bold
+          rounded
+          hover:bg-slate-600
+          disabled:opacity-50
+          disabled:cursor-not-allowed
+        "
+                >
+                  -
+                </button>
+
+                <div className="min-w-[50px] text-center">
+                  <span className="text-white text-xl font-bold">
+                    {quantity}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleIncrement}
+                  disabled={quantity >= product.stockQuantity || adding}
+                  className="
+          w-10 h-10
+          flex items-center justify-center
+          bg-slate-700
+          text-white
+          text-xl
+          font-bold
+          rounded
+          hover:bg-slate-600
+          disabled:opacity-50
+          disabled:cursor-not-allowed
+        "
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
-            disabled={product.stockQuantity === 0}
+            onClick={handleAddToCart}
+            disabled={product.stockQuantity === 0 || adding}
             className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
           >
-            {product.stockQuantity > 0 ? "Add to Cart" : "Out of Stock"}
+            {adding
+              ? "Adding..."
+              : product.stockQuantity > 0
+                ? `Add ${quantity} to Cart`
+                : "Out of Stock"}
           </button>
+          {message && (
+              <div className="mt-2 text-sm text-slate-300">{message}</div>
+            )}
         </div>
       </div>
     </div>

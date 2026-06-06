@@ -7,16 +7,22 @@ import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.product.ProductId;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.dto.cart.CartItemDto;
+import com.techstore.app.dto.cart.CartProductResponseDto;
 import com.techstore.app.dto.cart.UpdateCartItemDto;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.logger.CartAuditLogger;
 import com.techstore.app.mapper.CartItemMapper;
+import com.techstore.app.mapper.CartProductMapper;
 import com.techstore.app.repository.*;
 import com.techstore.app.service.interfaces.CartItemService;
 import com.techstore.app.service.interfaces.CartService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -146,5 +152,49 @@ public class CartItemServiceImpl implements CartItemService {
                         throw e;
                 }
         }
+
+        @Override
+    public List<CartProductResponseDto> getAllCartItems(HttpServletRequest request) {
+        try {
+            SupabaseUserId supabaseUserId = SupabaseUserId.fromString(CookiesHelper.getCurrentUserId());
+ 
+            Customer customer = customerRepository.findBySupabaseUserId(supabaseUserId)
+                    .orElseThrow(() -> new BusinessException("User not found"));
+ 
+            Cart cart = cartRepository.findCartByCustomerEmail(
+                    customer.getUser().getEmail().getEmail()
+            );
+ 
+            if (cart == null) {
+                throw new BusinessException("Cart not found");
+            }
+ 
+            List<CartProductResponseDto> response = new ArrayList<>();
+ 
+            for (CartItem cartItem : cart.getItems()) {
+                ProductId productId = cartItem.getProduct().getId();
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new BusinessException("Product not found for item in cart"));
+ 
+                CartProductResponseDto dto = CartProductMapper.toResponseDto(cartItem, product);
+                response.add(dto);
+            }
+ 
+            cartAuditLogger.logCartRetrieved(
+                    cart.getId().toString(),
+                    response.size()
+            );
+ 
+            return response;
+ 
+        } catch (BusinessException e) {
+            cartAuditLogger.logCartUpdateFailure(
+                    "UNKNOWN",
+                    "MULTIPLE",
+                    e.getMessage()
+            );
+            throw e;
+        }
+    }
 
 }
