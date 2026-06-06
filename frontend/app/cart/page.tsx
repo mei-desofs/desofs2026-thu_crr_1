@@ -140,12 +140,6 @@ export default function CartPage() {
                 Continue Shopping
               </Link>
 
-              {/* Security Info */}
-              <div className="mt-6 pt-6 border-t border-slate-700 text-xs text-slate-400">
-                <p className="mb-2">✓ Secure checkout</p>
-                <p className="mb-2">✓ SSL encrypted</p>
-                <p>✓ PCI compliant</p>
-              </div>
             </div>
           </div>
         )}
