@@ -17,10 +17,14 @@ public class CartItem {
     @EmbeddedId
     private CartItemId id;
 
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
+
     @Embedded
     private Quantity quantity;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Product product;
 
@@ -30,12 +34,16 @@ public class CartItem {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public CartItem() {}
+    public CartItem() {
+    }
 
     public CartItem(Integer quantity, Product product) {
         this.id = CartItemId.newId();
+
         this.quantity = new Quantity(quantity);
+
         this.product = product;
+
     }
 
     @PrePersist
@@ -49,4 +57,13 @@ public class CartItem {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void attachTo(Cart cart) {
+        if (this.cart != null) {
+            throw new IllegalStateException("CartItem already belongs to a cart");
+        }
+
+        this.cart = cart;
+    }
+    
 }

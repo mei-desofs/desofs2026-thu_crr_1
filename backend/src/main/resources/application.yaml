@@ -19,6 +19,20 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+
+    from:
+      email: ${MAIL_FROM}
+      name: ${MAIL_FROM_NAME}
+
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
 server:
   servlet:
     context-path: /api

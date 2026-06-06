@@ -23,6 +23,11 @@ public record ProductRequestDTO (
         @DecimalMax(value = "999999.99", message = "Product price must be less than or equal to 999,999.99")
         BigDecimal price,
 
+        @NotNull(message = "Product stock quantity cannot be null")
+        @DecimalMin(value = "0", message = "Product stock quantity must be a positive value")
+        @DecimalMax(value = "999999", message = "Product stock quantity must be less than or equal to 999,999")
+        Integer stockQuantity,
+
         @NotNull(message = "Category cannot be null")
         UUID categoryId
 ) {}

@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, ProductId> {
@@ -19,4 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, ProductId> {
 
     @Query("SELECT p FROM Product p WHERE upper(p.name.productName) LIKE upper(concat('%', :productName, '%'))")
     Page<Product> findByNameLike(@Param("productName") String productName, Pageable pageable);
+
+    Product findById_Id(UUID idId);
+
+    Product findById(String id);
 }

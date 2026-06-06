@@ -147,7 +147,7 @@ public class SupabaseAuthClient {
     private String determineErrorCode(String message) {
         String lower = message.toLowerCase();
 
-        if (lower.contains("already registered") || lower.contains("duplicate")) {
+        if (lower.contains("already registered") || lower.contains("duplicate") || lower.contains("already been registered")) {
             return ErrorCodeConstants.AUTH_DUPLICATE_EMAIL;
         }
 

@@ -45,3 +45,42 @@ ratelimit:
       type: IP
       capacity: 60
       duration: PT1M
+
+    add-item-to-cart:
+        type: USER
+        capacity: 20
+        duration: PT1M
+
+    create-order:
+      type: USER
+      capacity: 20
+      duration: PT1M
+
+    delete-order:
+      type: USER
+      capacity: 20
+      duration: PT1M
+      
+    update-item-in-cart:
+        type: USER
+        capacity: 35
+        duration: PT1M
+        
+    get-cart-items:
+      type: USER
+      capacity: 20
+      duration: PT1M
+    customer-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M
+
+    carrier-list-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M
+
+    carrier-pickup-order:
+      type: USER
+      capacity: 10
+      duration: PT1M

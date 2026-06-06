@@ -39,6 +39,17 @@ public class CustomerTest {
     }
 
     @Test
+    void ensureConstructorWithoutNifInitializesUserAndLeavesNifNull() {
+        User user = new User(new Email("customer@example.com"), Role.CUSTOMER, SupabaseUserId.newId());
+
+        Customer customer = new Customer(user);
+
+        assertNotNull(customer.getId());
+        assertNull(customer.getNif());
+        assertEquals(user, customer.getUser());
+    }
+
+    @Test
     void ensureConstructorRejectsNullNif() {
         User user = new User(new Email("customer@example.com"), Role.CUSTOMER, SupabaseUserId.newId());
         BusinessException exception = assertThrows(BusinessException.class, () -> new Customer(null, user));

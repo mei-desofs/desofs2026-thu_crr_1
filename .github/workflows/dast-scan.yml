@@ -28,6 +28,10 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      mailpit:
+        image: axllent/mailpit:v1.27.8
+        ports:
+          - 1025:1025
 
     steps:
       - name: Checkout code
@@ -60,6 +64,10 @@ jobs:
           SUPABASE_ISSUER: ${{ secrets.SUPABASE_ISSUER || 'http://localhost:8081/dummy-issuer' }}
           SUPABASE_JWKS_URL: ${{ secrets.SUPABASE_JWKS_URL || 'http://localhost:8081/dummy-jwks.json' }}
           SUPABASE_JWT_AUDIENCE: ${{ secrets.SUPABASE_JWT_AUDIENCE || 'dummy-audience' }}
+          MAIL_HOST: localhost
+          MAIL_PORT: 1025
+          MAIL_FROM: no-reply@techstore.com
+          MAIL_FROM_NAME: TechStore
           
         run: |
           JAR_FILE=$(find target -name "*.jar" -type f | head -1)
