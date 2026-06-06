@@ -11,31 +11,32 @@ public class OrderAuditLogger {
     private static final Logger auditLog = LoggerFactory.getLogger("ORDER_AUDIT");
     private static final Logger appLog = LoggerFactory.getLogger("ORDER_APP");
 
-    public void logOrderCreationAttempt(CreateOrderRequestDTO request, String userId) {
-        auditLog.info("event=ORDER_CREATION_ATTEMPT | cartId={} | userId={} | timestamp={}", sanitize(request.cartID()),
-                sanitize(userId), System.currentTimeMillis());
+    public void logOrderCreationAttempt(String userId, String cartId) {
 
-        appLog.info("Attempting to create order: cartId={}, userId={}",
-                sanitize(request.cartID()), sanitize(userId));
+        auditLog.info("event=ORDER_CREATION_ATTEMPT | userId={} | cartId={} | timestamp={}",
+                sanitize(userId), sanitize(cartId), System.currentTimeMillis());
+
+        appLog.info("Attempting order creation: userId={}, cartId={}", sanitize(userId), sanitize(cartId));
     }
 
-    public void logOrderCreation(String orderId, String userId, String cartId) {
+    public void logOrderCreationSuccess(String orderId, String userId, String cartId) {
+
         auditLog.info("event=ORDER_CREATION_SUCCESS | orderId={} | userId={} | cartId={} | timestamp={}",
                 sanitize(orderId), sanitize(userId), sanitize(cartId), System.currentTimeMillis());
 
-        appLog.info("Order created successfully: orderId={}, userId={}, cartId={}",
-                sanitize(orderId), sanitize(userId), sanitize(cartId));
+        appLog.info("Order created successfully: orderId={}, userId={}, cartId={}", sanitize(orderId), sanitize(userId),
+                sanitize(cartId));
     }
 
-    public void logOrderCreationFailure(CreateOrderRequestDTO request,String userId, Exception exception) {
-        auditLog.warn("event=ORDER_CREATION_FAILURE | cartId={} | userId={} | reason={} | timestamp={}",
-                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(userId) : null,
-                sanitize(exception.getMessage()), System.currentTimeMillis());
+    public void logOrderCreationFailure(String userId, String cartId, Exception exception) {
 
-        appLog.warn("Failed to create order: cartId={}, userId={}, reason={}",
-                request != null ? sanitize(request.cartID()) : null, request != null ? sanitize(userId) : null,
-                sanitize(exception.getMessage()));
+        auditLog.warn("event=ORDER_CREATION_FAILURE | userId={} | cartId={} | reason={} | timestamp={}",
+                sanitize(userId), sanitize(cartId), sanitize(exception.getMessage()), System.currentTimeMillis());
+
+        appLog.warn("Order creation failed: userId={}, cartId={}, reason={}", sanitize(userId),
+                sanitize(cartId), sanitize(exception.getMessage()), exception);
     }
+
     public void logCustomerOrdersListingAttempt(String userId) {
         auditLog.info(
                 "event=CUSTOMER_ORDER_LIST_ATTEMPT | userId={} | timestamp={}",

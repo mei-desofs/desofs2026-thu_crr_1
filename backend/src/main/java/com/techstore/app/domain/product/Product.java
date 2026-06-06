@@ -3,6 +3,8 @@ package com.techstore.app.domain.product;
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.domain.shared.Quantity;
+import com.techstore.app.exception.BusinessException;
+
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -61,5 +63,12 @@ public class Product {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void decreaseStock(Quantity quantity) {
+        if (this.stockQuantity.getQuantity() < quantity.getQuantity()) {
+            throw new BusinessException("Not enough stock for product: " + this.name.getProductName());
+        }
+        this.stockQuantity = new Quantity(this.stockQuantity.getQuantity() - quantity.getQuantity());
     }
 }

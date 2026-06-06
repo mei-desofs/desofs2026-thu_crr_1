@@ -2,13 +2,12 @@ package com.techstore.app.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
-import com.techstore.app.domain.customer.CustomerId;
 import com.techstore.app.domain.user.User;
-import com.techstore.app.domain.user.UserId;
 import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
@@ -22,6 +21,9 @@ import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.repository.*;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.OrderService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final NotificationService notificationService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
+
     public OrderServiceImpl(OrderRepository orderRepository, CartRepository cartRepository,
             CustomerRepository customerRepository, UserRepository userRepository, OrderAuditLogger orderAuditLogger,
             NotificationService notificationService) {
@@ -55,20 +59,28 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request, String supabaseUserId) {
 
-        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)).
-                orElseThrow(()-> new BusinessException("User not found")).getId().getId().toString();
-
-        orderAuditLogger.logOrderCreationAttempt(request, userId);
+        String userId = userRepository.findBySupabaseUserId(
+                        SupabaseUserId.fromString(supabaseUserId))
+                .orElseThrow(() -> new BusinessException("User not found")).getId().getId().toString();
 
         try {
-            Cart cart = cartRepository.findById(CartId.fromString(request.cartID()))
-                    .orElseThrow(() -> new BusinessException("Cart not found"));
+            Cart cart = cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)).orElseThrow(() ->
+                    new BusinessException("Cart not found"));
 
-            Customer customer = customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+            String cartId = cart.getId().getId().toString();
+
+            orderAuditLogger.logOrderCreationAttempt(userId, cartId);
+
+            Customer customer = customerRepository.findBySupabaseUserId(
+                            SupabaseUserId.fromString(supabaseUserId))
                     .orElseThrow(() -> new BusinessException("Customer not found"));
 
             List<OrderItem> orderItems = cart.toOrderItems();
             BigDecimal total = cart.calculateTotal();
+
+            // Stock validation + decrease
+            orderItems.forEach(item ->
+                    item.getProduct().decreaseStock(item.getQuantity()));
 
             Order order = OrderMapper.toEntity(request, orderItems, total);
             order.setCustomer(customer);
@@ -78,18 +90,29 @@ public class OrderServiceImpl implements OrderService {
             cart.clearItems();
             cartRepository.save(cart);
 
-            final String emailBody = createOrderEmailBody(customer, saved);
-            notificationService.sendOrderConfirmationEmail(customer.getUser().getEmail().getEmail(),
-                    "TechStore - Order Confirmation #" + saved.getId().getId(), emailBody);
+            String customerEmail = customer.getUser().getEmail().getEmail();
+            String emailBody = createOrderEmailBody(customer, saved);
 
-            OrderResponseDTO response = OrderMapper.toResponse(saved, request.cartID());
+            try {
+                notificationService.sendOrderConfirmationEmail(customerEmail, "TechStore - Order Confirmation #"
+                                + saved.getId().getId(), emailBody);
+            } catch (Exception exception) {
+                LOGGER.warn("Failed to send confirmation email for order {}", saved.getId().getId(), exception);
+            }
 
-            orderAuditLogger.logOrderCreation(response.orderID(), userId, response.cartID());
+            OrderResponseDTO response = OrderMapper.toResponse(saved, cartId);
+
+            orderAuditLogger.logOrderCreationSuccess(saved.getId().getId().toString(), userId, cartId);
 
             return response;
 
         } catch (RuntimeException exception) {
-            orderAuditLogger.logOrderCreationFailure(request, userId, exception);
+
+            Cart fallbackCart = cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)).orElse(null);
+            String cartId = fallbackCart != null ? fallbackCart.getId().getId().toString() : null;
+
+            orderAuditLogger.logOrderCreationFailure(userId, cartId, exception);
+
             throw exception;
         }
     }

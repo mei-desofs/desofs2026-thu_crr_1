@@ -19,10 +19,10 @@ public interface OrderService {
     /**
      * Retrieves a list of orders for a specific customer.
      *
-     * @param customerId The ID of the customer whose orders are to be retrieved.
+     * @param supabaseUserId The Supabase user ID of the customer whose orders are to be retrieved.
      * @return A list of orders associated with the specified customer.
      */
-    public List<OrderSummaryDTO> getOrdersByCustomer(String customerId);
+    public List<OrderSummaryDTO> getOrdersByCustomer(String supabaseUserId);
 
     /**
      * Retrieves a list of orders for a specific carrier.
