@@ -19,3 +19,8 @@ ratelimit:
       type: USER
       capacity: 30
       duration: PT1M
+
+    carrier-pickup-order:
+      type: USER
+      capacity: 10
+      duration: PT1M

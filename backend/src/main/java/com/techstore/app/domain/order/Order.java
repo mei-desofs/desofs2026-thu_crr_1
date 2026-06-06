@@ -19,6 +19,9 @@ import java.util.List;
 @Table(name = "orders")
 public class Order {
 
+    @Version
+    private Long version;
+
     @EmbeddedId
     private OrderId id;
 
@@ -93,5 +96,22 @@ public class Order {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    public void pickup(User carrier) {
+
+        if(carrier == null){
+            throw new BusinessException("Order's carrier cannot be null.");
+        }
+
+        if (this.orderStatus != OrderStatus.PENDING) {
+            throw new BusinessException(
+                    "Order cannot be picked up: current status is " + this.orderStatus);
+        }
+        if (this.carrier != null) {
+            throw new BusinessException("Order already has a carrier assigned.");
+        }
+        this.carrier = carrier;
+        this.orderStatus = OrderStatus.PICKED_UP;
     }
 }

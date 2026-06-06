@@ -27,11 +27,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -192,7 +194,7 @@ public class RateLimitIntegrationTest {
             Customer customer = testDataFactory.customer();
             Cart cart = testDataFactory.cartWithItem(product, customer);
 
-            mvc.perform(post("/orders")
+            mvc.perform(post("/orders", UUID.randomUUID())
                             .with(csrf())
                             .cookie(customerCookie)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -200,13 +202,13 @@ public class RateLimitIntegrationTest {
                                     cart.getId().getId().toString(),
                                     customer.getId().getId().toString()
                             )))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
 
         Customer blockedCustomer = testDataFactory.customer();
         Cart blockedCart = testDataFactory.cartWithItem(product, blockedCustomer);
 
-        mvc.perform(post("/orders")
+        mvc.perform(post("/orders", UUID.randomUUID())
                         .with(csrf())
                         .cookie(customerCookie)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -226,13 +228,11 @@ public class RateLimitIntegrationTest {
         String customerId = customer.getId().getId().toString();
 
         for (int i = 1; i <= 30; i++) {
-            mvc.perform(get("/orders")
-                            .param("customerId", customerId)
+            mvc.perform(get("/orders", UUID.randomUUID())
                             .cookie(customerCookie))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
-        mvc.perform(get("/orders")
-                        .param("customerId", customerId)
+        mvc.perform(get("/orders", UUID.randomUUID())
                         .cookie(customerCookie))
                 .andExpect(status().isTooManyRequests());
     }
@@ -245,13 +245,29 @@ public class RateLimitIntegrationTest {
         String carrierId = carrier.getId().getId().toString();
 
         for (int i = 1; i <= 30; i++) {
-            mvc.perform(get("/orders/carrier")
-                            .param("carrierId", carrierId)
+            mvc.perform(get("/orders/carrier", UUID.randomUUID())
                             .cookie(carrierCookie))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isBadRequest());
         }
-        mvc.perform(get("/orders/carrier")
-                        .param("carrierId", carrierId)
+        mvc.perform(get("/orders/carrier", UUID.randomUUID())
+                        .cookie(carrierCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+
+    @Test
+    void CarrierPickupRateLimit() throws Exception {
+        String supabaseUserId = UUID.randomUUID().toString();
+        Cookie carrierCookie  = accessTokenCookie(supabaseUserId, "CARRIER");
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())
+                            .with(csrf())
+                            .cookie(carrierCookie))
+                    .andExpect(status().isBadRequest());
+        }
+
+        mvc.perform(patch("/orders/{orderId}/pickup", UUID.randomUUID())
+                        .with(csrf())
                         .cookie(carrierCookie))
                 .andExpect(status().isTooManyRequests());
     }

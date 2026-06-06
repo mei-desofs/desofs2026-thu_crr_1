@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/orders").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/orders").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/orders/carrier").hasRole("CARRIER")
+                        .requestMatchers(HttpMethod.PATCH, "/orders/*/pickup").hasRole("CARRIER")
 
                         .anyRequest().authenticated()
                 );

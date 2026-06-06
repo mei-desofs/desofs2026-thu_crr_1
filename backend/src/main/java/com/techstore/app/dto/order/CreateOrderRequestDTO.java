@@ -17,13 +17,6 @@ public record CreateOrderRequestDTO(
 
         @NotNull(message = "Address is required")
         @Valid
-        AddAddressDTO address,
-
-        @NotBlank(message = "Customer ID is required")
-        @Pattern(
-                regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                message = "Invalid Customer ID format"
-        )
-        String customerID
+        AddAddressDTO address
 ) {
 }

@@ -2,6 +2,7 @@ package com.techstore.app.logger;
 
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
+import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,11 +26,10 @@ class OrderAuditLoggerTest {
     @Test
     void shouldLogOrderCreationAttempt() {
         CreateOrderRequestDTO request = createRequest(
-                "11111111-1111-1111-1111-111111111111",
-                "22222222-2222-2222-2222-222222222222"
+                "11111111-1111-1111-1111-111111111111"
         );
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationAttempt(request));
+        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationAttempt(request,"22222222-2222-2222-2222-222222222222"));
     }
 
     @Test
@@ -59,7 +59,7 @@ class OrderAuditLoggerTest {
         ));
     }
 
-    private CreateOrderRequestDTO createRequest(String cartId, String customerId) {
+    private CreateOrderRequestDTO createRequest(String cartId) {
         return new CreateOrderRequestDTO(
                 cartId,
                 new AddAddressDTO(
@@ -67,40 +67,37 @@ class OrderAuditLoggerTest {
                         "Porto",
                         "Portugal",
                         "Rua Teste"
-                ),
-                customerId
+                )
         );
     }
 
     @Test
     void shouldLogOrderCreationFailure() {
         CreateOrderRequestDTO request = createRequest(
-                "11111111-1111-1111-1111-111111111111",
-                "22222222-2222-2222-2222-222222222222"
+                "11111111-1111-1111-1111-111111111111"
         );
 
         Exception exception = new RuntimeException("Cart not found");
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request, exception));
+        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request,"22222222-2222-2222-2222-222222222222", exception));
     }
 
     @Test
     void shouldLogOrderCreationFailureWithNullRequest() {
         Exception exception = new RuntimeException("Customer not found");
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(null, exception));
+        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(null,null, exception));
     }
 
     @Test
     void shouldLogOrderCreationFailureWithUnsafeCharacters() {
         CreateOrderRequestDTO request = createRequest(
-                "cart\n123",
-                "customer\t456"
+                "cart\n123"
         );
 
         Exception exception = new RuntimeException("Error\rwith\nunsafe\tchars");
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request, exception));
+        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request,"customer\t456", exception));
     }
     @Test
     void shouldLogCustomerOrdersListingAttempt() {
@@ -189,5 +186,69 @@ class OrderAuditLoggerTest {
                 orderAuditLogger.logCarrierOrdersListingFailure(
                         "carrier\n123",
                         exception));
+    }
+    @Test
+    void shouldLogPickupAttempt() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupAttempt("order-123", "carrier-456"));
+    }
+
+    @Test
+    void shouldLogPickupAttemptWithNullValues() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupAttempt(null, null));
+    }
+
+    @Test
+    void shouldLogPickupAttemptWithUnsafeCharacters() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupAttempt("order\n123", "carrier\t456"));
+    }
+    @Test
+    void shouldLogPickupSuccess() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupSuccess("order-123", "carrier-456"));
+    }
+
+    @Test
+    void shouldLogPickupSuccessWithNullValues() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupSuccess(null, null));
+    }
+
+    @Test
+    void shouldLogPickupSuccessWithUnsafeCharacters() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupSuccess("order\n123", "carrier\t456"));
+    }
+    @Test
+    void shouldLogPickupFailure() {
+        Exception ex = new RuntimeException("Order not found");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupFailure("order-123", "carrier-456", ex));
+    }
+
+    @Test
+    void shouldLogPickupFailureWithNullValues() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupFailure(null, null, new RuntimeException("err")));
+    }
+
+    @Test
+    void shouldLogPickupFailureWithUnsafeCharacters() {
+        Exception ex = new RuntimeException("Error\rwith\nunsafe\tchars");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupFailure("order\n123", "carrier\t456", ex));
+    }
+
+    @Test
+    void shouldLogPickupFailureWithBusinessException() {
+        Exception ex = new BusinessException(
+                "Order cannot be picked up: current status is PICKED_UP");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPickupFailure("order-123", "carrier-456", ex));
     }
 }

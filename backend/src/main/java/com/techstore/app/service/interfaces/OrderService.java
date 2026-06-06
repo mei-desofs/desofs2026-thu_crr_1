@@ -14,7 +14,7 @@ public interface OrderService {
      * @param request The details required to create an order.
      * @return The created order's details.
      */
-    public OrderResponseDTO createOrder(CreateOrderRequestDTO request);
+    public OrderResponseDTO createOrder(CreateOrderRequestDTO request, String supabaseUserId);
 
     /**
      * Retrieves a list of orders for a specific customer.
@@ -31,4 +31,6 @@ public interface OrderService {
      * @return A list of orders associated with the specified carrier.
      */
     List<OrderSummaryDTO> getOrdersByCarrier(String carrierId);
+
+    void pickupOrder(String orderId, String carrierId);
 }
