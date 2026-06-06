@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { useSafeTextContent } from "@/lib/hooks";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: string;
@@ -28,6 +29,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -146,6 +148,8 @@ function ProductCard({ product }: { product: Product }) {
   const descriptionRef = useSafeTextContent(product.description);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
 
   const handleAddToCart = async () => {
     try {
@@ -155,11 +159,22 @@ function ProductCard({ product }: { product: Product }) {
         quantity,
       });
       setQuantity(1);
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-      alert("Failed to add to cart");
+    } catch (err: any) {
+      console.error("Add to cart failed:", err);
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        // Not authenticated — redirect to login with message and next url
+        const message = encodeURIComponent(
+          "Please sign in to add items to your cart",
+        );
+        const next = encodeURIComponent(`/products`);
+        router.push(`/auth/login?message=${message}&next=${next}`);
+      } else {
+        setMessage("Failed to add to cart. Try again.");
+      }
     } finally {
       setAdding(false);
+      window.setTimeout(() => setMessage(null), 3000);
     }
   };
 
@@ -275,6 +290,9 @@ function ProductCard({ product }: { product: Product }) {
                 ? `Add ${quantity} to Cart`
                 : "Out of Stock"}
           </button>
+          {message && (
+              <div className="mt-2 text-sm text-slate-300">{message}</div>
+            )}
         </div>
       </div>
     </div>

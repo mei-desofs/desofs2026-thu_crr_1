@@ -65,7 +65,11 @@ ratelimit:
         type: USER
         capacity: 35
         duration: PT1M
-
+        
+    get-cart-items:
+      type: USER
+      capacity: 20
+      duration: PT1M
     customer-list-orders:
       type: USER
       capacity: 30

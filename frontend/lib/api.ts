@@ -88,7 +88,13 @@ apiClient.interceptors.response.use(
     } catch {
       // Refresh token expired or revoked — force re-login.
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        try {
+          const message = encodeURIComponent('Please sign in to continue');
+          const next = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `/auth/login?message=${message}&next=${next}`;
+        } catch {
+          window.location.href = '/auth/login';
+        }
       }
       return Promise.reject(error);
     }

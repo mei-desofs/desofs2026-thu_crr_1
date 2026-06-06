@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CartController {
 
     private final CartItemService cartItemService;
-
+    @RateLimit("get-cart-items")
     @GetMapping("/items")
     public ResponseEntity<List<CartProductResponseDto>> getAllCartItems(HttpServletRequest request) {
         List<CartProductResponseDto> items = cartItemService.getAllCartItems(request);
