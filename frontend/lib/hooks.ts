@@ -78,7 +78,7 @@ export function useSafeHTML(html: string) {
  * V3.2.3: Hook to avoid storing global variables on document
  * Uses local state instead of window/document properties
  */
-export function useSafeGlobalState<T>(key: string, initialValue: T) {
+export function useSafeGlobalState<T>(_key: string, initialValue: T) {
   const stateRef = useRef<T>(initialValue);
 
   const setState = useCallback((value: T) => {

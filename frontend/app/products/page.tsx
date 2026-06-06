@@ -29,7 +29,6 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [totalPages, setTotalPages] = useState(0);
-  const router = useRouter();
 
   useEffect(() => {
     const loadProducts = async () => {
