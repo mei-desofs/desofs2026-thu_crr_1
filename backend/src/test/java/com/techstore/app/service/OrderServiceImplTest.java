@@ -68,22 +68,19 @@ class OrderServiceImplTest {
 
     @Test
     void shouldCreateOrderAndReturnResponse() {
+        String supabaseUserId = UUID.randomUUID().toString();
+
+        UUID userUuid = UUID.randomUUID();
         UUID cartUuid = UUID.randomUUID();
         UUID customerUuid = UUID.randomUUID();
-        String supabaseUserId = UUID.randomUUID().toString();
-        UUID userUuid = UUID.randomUUID();
 
-        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid);
+        CreateOrderRequestDTO request = createRequest();
+
+        User user = mock(User.class);
+        UserId userId = mock(UserId.class);
 
         Cart cart = mock(Cart.class);
         Customer customer = mock(Customer.class);
-        User user = mock(User.class);
-
-        UserId userId = mock(UserId.class);
-        when(userId.getId()).thenReturn(userUuid);
-        when(user.getId()).thenReturn(userId);
-
-        CustomerId customerId = CustomerId.fromString(customerUuid.toString());
 
         Product product = mock(Product.class);
         OrderItem orderItem = new OrderItem(1, new BigDecimal("99.99"), product);
@@ -91,25 +88,28 @@ class OrderServiceImplTest {
 
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(user));
-        when(user.getId()).thenReturn(userId);
 
-        when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
+        when(user.getId()).thenReturn(userId);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getEmail()).thenReturn(new Email("john@example.com"));
+
+        when(cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(cart));
+
+        when(cart.getId()).thenReturn(CartId.fromString(cartUuid.toString()));
+        when(cart.toOrderItems()).thenReturn(orderItems);
+        when(cart.calculateTotal()).thenReturn(new BigDecimal("99.99"));
 
         when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(customer));
 
-        when(cart.toOrderItems()).thenReturn(orderItems);
-        when(cart.calculateTotal()).thenReturn(new BigDecimal("99.99"));
-
-        when(customer.getId()).thenReturn(customerId);
+        when(customer.getId()).thenReturn(CustomerId.fromString(customerUuid.toString()));
         when(customer.getUser()).thenReturn(user);
-        when(user.getEmail()).thenReturn(new Email("john@example.com"));
 
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderResponseDTO response = orderService.createOrder(request,supabaseUserId);
+        OrderResponseDTO response = orderService.createOrder(request, supabaseUserId);
 
         assertNotNull(response);
         assertNotNull(response.orderID());
@@ -121,10 +121,19 @@ class OrderServiceImplTest {
         assertEquals("Portugal", response.address().country());
         assertEquals("Rua Teste", response.address().street());
 
-        verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
+        verify(userRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+        verify(cartRepository).findBySupabaseUserId(UUID.fromString(supabaseUserId));
         verify(customerRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+
+        verify(orderAuditLogger).logOrderCreationAttempt(
+                userUuid.toString(),
+                cartUuid.toString()
+        );
+
         verify(cart).toOrderItems();
         verify(cart).calculateTotal();
+
+        verify(product).decreaseStock(orderItem.getQuantity());
 
         verify(orderRepository).save(any(Order.class));
 
@@ -133,111 +142,135 @@ class OrderServiceImplTest {
 
         verify(notificationService).sendOrderConfirmationEmail(
                 eq("john@example.com"),
-                contains(response.orderID()),
-                contains(response.orderID())
+                contains("TechStore - Order Confirmation #"),
+                contains("Order Confirmed")
         );
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
-        verify(orderAuditLogger).logOrderCreation(
-                response.orderID(),
-                userUuid.toString(),
-                cartUuid.toString()
+        verify(orderAuditLogger).logOrderCreationSuccess(
+                eq(response.orderID()),
+                eq(userUuid.toString()),
+                eq(cartUuid.toString())
         );
+
+        verify(orderAuditLogger, never()).logOrderCreationFailure(any(), any(), any());
     }
 
     @Test
     void shouldThrowWhenCartDoesNotExist() {
-        UUID cartUuid = UUID.randomUUID();
         String supabaseUserId = UUID.randomUUID().toString();
+
         UUID userUuid = UUID.randomUUID();
 
+        CreateOrderRequestDTO request = createRequest();
+
         User user = mock(User.class);
-
         UserId userId = mock(UserId.class);
-        when(userId.getId()).thenReturn(userUuid);
-
-        when(user.getId()).thenReturn(userId);
-
-        CreateOrderRequestDTO request = mockCreateOrderRequestWithCartIdOnly(cartUuid);
 
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(user));
-        when(user.getId()).thenReturn(userId);
 
-        when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
+        when(user.getId()).thenReturn(userId);
+        when(userId.getId()).thenReturn(userUuid);
+
+        when(cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> orderService.createOrder(request, supabaseUserId)
+        );
 
         assertEquals("Cart not found", exception.getMessage());
 
-        verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
+        verify(userRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+
+        verify(cartRepository, times(2)).findBySupabaseUserId(UUID.fromString(supabaseUserId));
+
         verify(customerRepository, never()).findBySupabaseUserId(any(SupabaseUserId.class));
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
         verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
-        verify(orderAuditLogger).logOrderCreationFailure(eq(request),eq(userUuid.toString()), any(RuntimeException.class));
+        verify(orderAuditLogger, never()).logOrderCreationAttempt(any(), any());
+
+        verify(orderAuditLogger).logOrderCreationFailure(
+                eq(userUuid.toString()),
+                isNull(),
+                same(exception)
+        );
     }
 
     @Test
     void shouldThrowWhenCustomerDoesNotExist() {
-        UUID cartUuid = UUID.randomUUID();
-        UUID customerUuid = UUID.randomUUID();
         String supabaseUserId = UUID.randomUUID().toString();
+
         UUID userUuid = UUID.randomUUID();
+        UUID cartUuid = UUID.randomUUID();
+
+        CreateOrderRequestDTO request = createRequest();
 
         User user = mock(User.class);
-
         UserId userId = mock(UserId.class);
-        when(userId.getId()).thenReturn(userUuid);
-        when(user.getId()).thenReturn(userId);
-
-        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
-                .thenReturn(Optional.of(user));
-        when(user.getId()).thenReturn(userId);
-
-        CreateOrderRequestDTO request = mockCreateOrderRequestWithIdsOnly(cartUuid);
 
         Cart cart = mock(Cart.class);
 
-        when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+
+        when(user.getId()).thenReturn(userId);
+        when(userId.getId()).thenReturn(userUuid);
+
+        when(cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(cart));
+
+        when(cart.getId()).thenReturn(CartId.fromString(cartUuid.toString()));
 
         when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> orderService.createOrder(request, supabaseUserId)
+        );
 
         assertEquals("Customer not found", exception.getMessage());
 
-        verify(cartRepository).findById(CartId.fromString(cartUuid.toString()));
+        verify(userRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+
+        verify(cartRepository, times(2)).findBySupabaseUserId(UUID.fromString(supabaseUserId));
+
         verify(customerRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+
+        verify(orderAuditLogger).logOrderCreationAttempt(
+                userUuid.toString(),
+                cartUuid.toString()
+        );
+
         verify(cart, never()).toOrderItems();
         verify(cart, never()).calculateTotal();
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
         verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
-        verify(orderAuditLogger).logOrderCreationFailure(eq(request),eq(userUuid.toString()), any(RuntimeException.class));
+        verify(orderAuditLogger).logOrderCreationFailure(
+                eq(userUuid.toString()),
+                eq(cartUuid.toString()),
+                same(exception)
+        );
     }
 
     @Test
-    void shouldThrowWhenNotificationServiceFails() {
-        UUID cartUuid = UUID.randomUUID();
+    void shouldCreateOrderEvenWhenNotificationServiceFails() {
         String supabaseUserId = UUID.randomUUID().toString();
+
         UUID userUuid = UUID.randomUUID();
+        UUID cartUuid = UUID.randomUUID();
+        UUID customerUuid = UUID.randomUUID();
+
+        CreateOrderRequestDTO request = createRequest();
 
         User user = mock(User.class);
-
         UserId userId = mock(UserId.class);
-        when(userId.getId()).thenReturn(userUuid);
-        when(user.getId()).thenReturn(userId);
-
-
-        CreateOrderRequestDTO request = mockCompleteCreateOrderRequest(cartUuid);
 
         Cart cart = mock(Cart.class);
         Customer customer = mock(Customer.class);
@@ -248,41 +281,66 @@ class OrderServiceImplTest {
 
         when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(user));
-        when(user.getId()).thenReturn(userId);
 
-        when(cartRepository.findById(CartId.fromString(cartUuid.toString())))
+        when(user.getId()).thenReturn(userId);
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getEmail()).thenReturn(new Email("john@example.com"));
+
+        when(cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(cart));
+
+        when(cart.getId()).thenReturn(CartId.fromString(cartUuid.toString()));
+        when(cart.toOrderItems()).thenReturn(orderItems);
+        when(cart.calculateTotal()).thenReturn(new BigDecimal("99.99"));
 
         when(customerRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
                 .thenReturn(Optional.of(customer));
 
-        when(cart.toOrderItems()).thenReturn(orderItems);
-        when(cart.calculateTotal()).thenReturn(new BigDecimal("99.99"));
-
+        when(customer.getId()).thenReturn(CustomerId.fromString(customerUuid.toString()));
         when(customer.getUser()).thenReturn(user);
-        when(user.getEmail()).thenReturn(new Email("john@example.com"));
 
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        RuntimeException emailException = new RuntimeException("Email failed");
-
-        doThrow(emailException)
+        doThrow(new RuntimeException("Email failed"))
                 .when(notificationService)
                 .sendOrderConfirmationEmail(any(), any(), any());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> orderService.createOrder(request,supabaseUserId));
+        OrderResponseDTO response = orderService.createOrder(request, supabaseUserId);
 
-        assertEquals("Email failed", exception.getMessage());
+        assertNotNull(response);
+        assertNotNull(response.orderID());
+        assertEquals(customerUuid.toString(), response.customerID());
+        assertEquals(cartUuid.toString(), response.cartID());
 
         verify(orderRepository).save(any(Order.class));
         verify(cart).clearItems();
         verify(cartRepository).save(cart);
         verify(notificationService).sendOrderConfirmationEmail(any(), any(), any());
 
-        verify(orderAuditLogger).logOrderCreationAttempt(request,userUuid.toString());
-        verify(orderAuditLogger).logOrderCreationFailure(request,userUuid.toString(), emailException);
-        verify(orderAuditLogger, never()).logOrderCreation(any(), any(), any());
+        verify(orderAuditLogger).logOrderCreationAttempt(
+                userUuid.toString(),
+                cartUuid.toString()
+        );
+
+        verify(orderAuditLogger).logOrderCreationSuccess(
+                eq(response.orderID()),
+                eq(userUuid.toString()),
+                eq(cartUuid.toString())
+        );
+
+        verify(orderAuditLogger, never()).logOrderCreationFailure(any(), any(), any());
+    }
+
+    private CreateOrderRequestDTO createRequest() {
+        return new CreateOrderRequestDTO(
+                new AddAddressDTO(
+                        "4000-001",
+                        "Porto",
+                        "Portugal",
+                        "Rua Teste"
+                )
+        );
     }
 
     @Test
@@ -609,33 +667,5 @@ class OrderServiceImplTest {
         verify(orderAuditLogger).logPickupAttempt(orderIdUUID, userUuid.toString());
         verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(userUuid.toString()), any());
         verify(orderRepository, never()).save(any());
-    }
-
-    private CreateOrderRequestDTO mockCompleteCreateOrderRequest(UUID cartId) {
-        AddAddressDTO address = mock(AddAddressDTO.class);
-        when(address.postalCode()).thenReturn("4000-001");
-        when(address.city()).thenReturn("Porto");
-        when(address.country()).thenReturn("Portugal");
-        when(address.street()).thenReturn("Rua Teste");
-
-        CreateOrderRequestDTO request = mock(CreateOrderRequestDTO.class);
-        when(request.cartID()).thenReturn(cartId.toString());
-        when(request.address()).thenReturn(address);
-
-        return request;
-    }
-
-    private CreateOrderRequestDTO mockCreateOrderRequestWithIdsOnly(UUID cartId) {
-        CreateOrderRequestDTO request = mock(CreateOrderRequestDTO.class);
-        when(request.cartID()).thenReturn(cartId.toString());
-
-        return request;
-    }
-
-    private CreateOrderRequestDTO mockCreateOrderRequestWithCartIdOnly(UUID cartId) {
-        CreateOrderRequestDTO request = mock(CreateOrderRequestDTO.class);
-        when(request.cartID()).thenReturn(cartId.toString());
-
-        return request;
     }
 }

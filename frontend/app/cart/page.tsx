@@ -126,12 +126,12 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button
-                disabled={cartItems.length === 0}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded font-semibold disabled:opacity-50 hover:from-blue-600 hover:to-blue-700 transition mb-3"
+              <Link
+                href="/checkout"
+                className="block w-full text-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded font-semibold hover:from-blue-600 hover:to-blue-700 transition mb-3"
               >
                 Proceed to Checkout
-              </button>
+              </Link>
 
               <Link
                 href="/products"

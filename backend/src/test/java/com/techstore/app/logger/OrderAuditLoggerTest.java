@@ -1,7 +1,5 @@
 package com.techstore.app.logger;
 
-import com.techstore.app.dto.order.CreateOrderRequestDTO;
-import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,80 +23,73 @@ class OrderAuditLoggerTest {
 
     @Test
     void shouldLogOrderCreationAttempt() {
-        CreateOrderRequestDTO request = createRequest(
-                "11111111-1111-1111-1111-111111111111"
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationAttempt(
+                        "user-123",
+                        "cart-456"
+                )
         );
-
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationAttempt(request,"22222222-2222-2222-2222-222222222222"));
     }
 
     @Test
-    void shouldLogOrderCreation() {
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreation(
-                "33333333-3333-3333-3333-333333333333",
-                "22222222-2222-2222-2222-222222222222",
-                "11111111-1111-1111-1111-111111111111"
-        ));
-    }
-
-    @Test
-    void shouldLogOrderCreationWithNullValues() {
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreation(
-                null,
-                null,
-                null
-        ));
-    }
-
-    @Test
-    void shouldLogOrderCreationWithUnsafeCharacters() {
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreation(
-                "order\n123",
-                "customer\t456",
-                "cart\r789"
-        ));
-    }
-
-    private CreateOrderRequestDTO createRequest(String cartId) {
-        return new CreateOrderRequestDTO(
-                cartId,
-                new AddAddressDTO(
-                        "4000-001",
-                        "Porto",
-                        "Portugal",
-                        "Rua Teste"
+    void shouldLogOrderCreationSuccess() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationSuccess(
+                        "order-789",
+                        "user-123",
+                        "cart-456"
                 )
         );
     }
 
     @Test
     void shouldLogOrderCreationFailure() {
-        CreateOrderRequestDTO request = createRequest(
-                "11111111-1111-1111-1111-111111111111"
-        );
-
         Exception exception = new RuntimeException("Cart not found");
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request,"22222222-2222-2222-2222-222222222222", exception));
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationFailure(
+                        "user-123",
+                        "cart-456",
+                        exception
+                )
+        );
     }
 
     @Test
-    void shouldLogOrderCreationFailureWithNullRequest() {
-        Exception exception = new RuntimeException("Customer not found");
+    void shouldLogOrderCreationWithNullValues() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationSuccess(
+                        null,
+                        null,
+                        null
+                )
+        );
+    }
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(null,null, exception));
+    @Test
+    void shouldLogOrderCreationWithUnsafeCharacters() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationSuccess(
+                        "order\n123",
+                        "user\t456",
+                        "cart\r789"
+                )
+        );
     }
 
     @Test
     void shouldLogOrderCreationFailureWithUnsafeCharacters() {
-        CreateOrderRequestDTO request = createRequest(
-                "cart\n123"
-        );
-
         Exception exception = new RuntimeException("Error\rwith\nunsafe\tchars");
 
-        assertDoesNotThrow(() -> orderAuditLogger.logOrderCreationFailure(request,"customer\t456", exception));
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logOrderCreationFailure(
+                        "user\n123",
+                        "cart\t456",
+                        exception
+                )
+        );
     }
+
     @Test
     void shouldLogCustomerOrdersListingAttempt() {
         assertDoesNotThrow(() ->
