@@ -1,5 +1,4 @@
 name: Build and Push Docker Image
-
 on:
   push:
     tags:
@@ -7,16 +6,15 @@ on:
   workflow_call:
 
 env:
-  IMAGE_NAME: diogomartins00/techstore
+  BACKEND_IMAGE: diogomartins00/techstore
+  FRONTEND_IMAGE: diogomartins00/techstore-frontend
 
 jobs:
   docker:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,40 +31,56 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Define Docker metadata
-        id: meta
+      - name: Define metadata (backend)
+        id: meta-backend
         run: |
-          IMAGE="${{ env.IMAGE_NAME }}"
-
+          IMAGE="${{ env.BACKEND_IMAGE }}"
           TAGS="$IMAGE:sha-${GITHUB_SHA::7}"
-
-          # If this is a git tag (v1.0.0)
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            VERSION="${GITHUB_REF_NAME}"
-            TAGS="$IMAGE:$VERSION"
+            TAGS="$IMAGE:${GITHUB_REF_NAME}"
           fi
-
-          # If this is main branch push
           if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" == "main" ]]; then
             TAGS="$TAGS,$IMAGE:latest"
           fi
-
-          # Optional branch tagging (ONLY non-main branches if you ever enable them)
           if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" != "main" ]]; then
             TAGS="$TAGS,$IMAGE:${GITHUB_REF_NAME}"
           fi
-
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker image
+      - name: Define metadata (frontend)
+        id: meta-frontend
+        run: |
+          IMAGE="${{ env.FRONTEND_IMAGE }}"
+          TAGS="$IMAGE:sha-${GITHUB_SHA::7}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAGS="$IMAGE:${GITHUB_REF_NAME}"
+          fi
+          if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" == "main" ]]; then
+            TAGS="$TAGS,$IMAGE:latest"
+          fi
+          if [[ "${GITHUB_REF_TYPE}" == "branch" && "${GITHUB_REF_NAME}" != "main" ]]; then
+            TAGS="$TAGS,$IMAGE:${GITHUB_REF_NAME}"
+          fi
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and push backend
         uses: docker/build-push-action@v5
         with:
           context: backend
           file: backend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-          tags: ${{ steps.meta.outputs.tags }}
-
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

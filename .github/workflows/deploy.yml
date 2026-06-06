@@ -1,12 +1,10 @@
 name: Deploy on main (docker only)
-
 on:
   workflow_call:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -18,33 +16,20 @@ jobs:
           script: |
             set -e
 
-            sudo docker system prune -af
+            BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:latest"
+            FRONTEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore-frontend:latest"
 
-            # ---- Docker login on SERVER ----
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            # ---- Docker login ----
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login \
+              -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
             # ---- Network ----
-            sudo docker network inspect techstore-net >/dev/null 2>&1 || sudo docker network create techstore-net
+            sudo docker network inspect techstore-net >/dev/null 2>&1 \
+              || sudo docker network create techstore-net
 
-            BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:latest"
-            # FRONTEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:frontend-latest"
-
+            # ---- Pull new images ----
             sudo docker pull "$BACKEND_IMAGE"
-            # sudo docker pull "$FRONTEND_IMAGE"
-
-
-      - name: Start containers
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: 22
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -e
-
-            BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:latest"
-            # FRONTEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/techstore:frontend-latest"
+            sudo docker pull "$FRONTEND_IMAGE"
 
             # ---- Backend ----
             sudo docker rm -f techstore || true
@@ -57,12 +42,20 @@ jobs:
               "$BACKEND_IMAGE"
 
             # ---- Frontend ----
-            # sudo docker rm -f techstore-frontend || true
-            # sudo docker run -d \
-            #   --name techstore-frontend \
-            #   --restart unless-stopped \
-            #   --network techstore-net \
-            #   -p 3002:3000 \
-            #   "$FRONTEND_IMAGE"
+            sudo docker rm -f techstore-frontend || true
+            sudo docker run -d \
+              --name techstore-frontend \
+              --restart unless-stopped \
+              --network techstore-net \
+              -p 3002:3000 \
+              "$FRONTEND_IMAGE"
 
+            # ---- Health Check ----
+            sleep 5
+            sudo docker inspect -f '{{.State.Running}}' techstore | grep -q true \
+              || (echo "Backend failed to start" && exit 1)
+            sudo docker inspect -f '{{.State.Running}}' techstore-frontend | grep -q true \
+              || (echo "Frontend failed to start" && exit 1)
+
+            # ---- Cleanup (only after everything is up) ----
             sudo docker image prune -f
