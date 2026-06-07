@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -155,5 +156,14 @@ public class AuthController {
         String accessToken = authHeader.replace("Bearer ", "");
         authService.updatePassword(accessToken, request.newPassword(), httpRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me(Authentication authentication) {
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse(null);
+        return ResponseEntity.ok(new MeResponse(role));
     }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter,useSearchParams } from "next/navigation";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 
 interface LoginRequest {
   email: string;
@@ -31,8 +31,15 @@ export default function AuthPage() {
       // Calls backend directly — backend sets HttpOnly cookies (access_token, refresh_token)
       // withCredentials: true in apiClient ensures cookies are stored by the browser
       await apiPost("/auth/login", payload);
+      const me = await apiGet<{ role: string }>("/auth/me");
 
-      router.push(redirectTo);
+      if (me.role === "MANAGER") {
+        router.push("/manager/dashboard");
+      } else if (me.role === "CARRIER") {
+        router.push("/carrier/dashboard");
+      } else {
+        router.push(redirectTo);
+      }
       router.refresh();
     } catch (err: unknown) {
       console.error("Login failed:", err);
