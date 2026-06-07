@@ -24,3 +24,5 @@
 | 20 | Carrier Pickup Update Response | Returns state transition result or transition errors. | Order Data, Status Data, Validation/Error Data | State machine bypass, integrity issues, status disclosure |
 | 21 | Backup Endpoint Response | Returns backup initiation/output or backup errors. | Backup Data, Operational Metadata, Validation/Error Data | Unencrypted backups, access control failures, sensitive data exposure |
 | 22 | Backup Completion Notification | Returns backup-ready notifications through async channels. | Backup Data, Notification Data, Operational Metadata | URL tampering, weak signature checks, link expiration bypass |
+| 23 | Me Endpoint Response | Returns authenticated user information or auth errors. | User Data, Auth Data, Validation/Error Data | PII exposure, token misuse, weak access control |
+| 24 | Get Category Endpoint Response | Returns category listing or retrieval errors. | Category Data, Validation/Error Data | Data overexposure, enumeration, query abuse |
