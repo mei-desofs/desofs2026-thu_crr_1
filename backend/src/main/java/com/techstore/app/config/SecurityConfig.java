@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")
                         .requestMatchers("/auth/logout").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers("/auth/me").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
 
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers("/backup/**").hasRole("MANAGER")
@@ -58,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("MANAGER")
+
+                        .requestMatchers(HttpMethod.GET, "/categories/**").hasRole("MANAGER")
 
                         .requestMatchers("/cart/items").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.POST, "/orders").hasRole("CUSTOMER")

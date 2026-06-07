@@ -12,45 +12,41 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-const MANAGER_ROUTES = ["/dashboard", "/invite"];
+const MANAGER_ROUTES = ["/manager/dashboard", "/invite", "/backups", "/products/manage"];
+
+function redirectToLogin(request: NextRequest, pathname: string) {
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = "/auth/login";
+  loginUrl.searchParams.set("redirect", pathname);
+  return NextResponse.redirect(loginUrl);
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("access_token")?.value;
-
-  if (!accessToken) {
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+  if (!accessToken) return redirectToLogin(request, pathname);
 
   const payload = decodeJwtPayload(accessToken);
-
-  if (!payload) {
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+  if (!payload) return redirectToLogin(request, pathname);
 
   const exp = payload.exp as number | undefined;
-  if (exp && Date.now() / 1000 > exp) {
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+  if (exp && Date.now() / 1000 > exp) return redirectToLogin(request, pathname);
 
   const userMetadata = payload.user_metadata as Record<string, unknown> | undefined;
   const role = (userMetadata?.role as string | undefined)?.toUpperCase();
 
   const isManagerRoute = MANAGER_ROUTES.some((r) => pathname.startsWith(r));
-  if (isManagerRoute && role !== "MANAGER") {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
-  }
+  if (isManagerRoute && role !== "MANAGER") return redirectToLogin(request, pathname);
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/invite/:path*"],
+  matcher: [
+    "/manager/dashboard/:path*",
+    "/invite/:path*",
+    "/backups/:path*",
+    "/products/manage/:path*",
+  ],
 };
