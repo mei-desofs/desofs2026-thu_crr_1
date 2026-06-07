@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/index.html", "/reset-password.html", "/auth/login", "/auth/refresh",
                                 "/auth/callback", "/auth/register",
                                 "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/swagger-ui.html", "/actuator/health")
+                                "/swagger-ui.html", "/actuator/health", "/auth/password-reset/request")
                         .permitAll()
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")

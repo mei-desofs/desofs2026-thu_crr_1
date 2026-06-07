@@ -1,38 +1,43 @@
 package com.techstore.app.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.user.Email;
+import com.techstore.app.domain.user.SupabaseUserId;
+import com.techstore.app.domain.user.User;
 import com.techstore.app.dto.auth.InviteSignupRequest;
 import com.techstore.app.dto.auth.RegisterRequest;
 import com.techstore.app.dto.auth.RegisterResponse;
 import com.techstore.app.dto.auth.SupabaseLoginResponse;
 import com.techstore.app.dto.auth.SupabaseUserResponse;
 import com.techstore.app.exception.BusinessException;
+import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.repository.UserRepository;
+import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.UserService;
+import com.techstore.app.util.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
@@ -49,11 +54,20 @@ class AuthServiceImplTest {
     @Mock
     private HttpServletRequest httpRequest;
 
-    @InjectMocks
-    private AuthServiceImpl authService;
-
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordUtils passwordUtils;
+
+    @Mock
+    private NotificationService notificationService;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @InjectMocks
+    private AuthServiceImpl authService;
 
     @Test
     void shouldRegisterUserAndReturnConfirmationMessage() {
@@ -69,7 +83,10 @@ class AuthServiceImplTest {
         assertEquals(request.email(), response.email());
         assertEquals("supabase-id", response.userId());
         assertEquals("Check your email for confirmation link", response.message());
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient).signUp(request.email(), request.password(), "customer");
         verify(auditLogger).logRegisterAttempt(request.email(), true, httpRequest);
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -83,7 +100,38 @@ class AuthServiceImplTest {
                 .signUp(request.email(), request.password(), "customer");
 
         assertThrows(IllegalStateException.class, () -> authService.register(request, httpRequest));
+
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient).signUp(request.email(), request.password(), "customer");
         verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
+
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    void shouldLogFailedRegisterAttemptWhenPasswordValidationFails() {
+        RegisterRequest request = new RegisterRequest("user@example.com", "password123");
+
+        Email email = new Email(request.email());
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+
+        doThrow(new BusinessException("Password is too common"))
+                .when(passwordUtils)
+                .validate(request.password(), request.email());
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.register(request, httpRequest)
+        );
+
+        assertEquals("Password is too common", exception.getMessage());
+
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient, never()).signUp(any(), any(), any());
+        verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
+
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -98,11 +146,15 @@ class AuthServiceImplTest {
     void shouldRejectInviteWithUnsupportedRole() {
         InviteSignupRequest request = new InviteSignupRequest("manager@example.com", "CUSTOMER");
 
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> authService.inviteUser(request, "127.0.0.1", "JUnit"));
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.inviteUser(request, "127.0.0.1", "JUnit")
+        );
 
         assertEquals("Invalid role: only MANAGER and CARRIER can be invited", exception.getMessage());
+
         verifyNoInteractions(supabaseAuthClient);
+        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -110,7 +162,6 @@ class AuthServiceImplTest {
         setWebhookSecret("webhook-secret");
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("role", "customer");
 
         Map<String, Object> record = new HashMap<>();
         record.put("id", "supabase-id");
@@ -127,13 +178,270 @@ class AuthServiceImplTest {
 
         boolean confirmed = authService.confirmInvite("webhook-secret", Map.of(
                 "record", record,
-                "old_record", oldRecord));
+                "old_record", oldRecord
+        ));
 
         assertTrue(confirmed);
+
         verify(userService).registerUser("supabase-id", "user@example.com", "customer");
         verify(userService).confirmUserEmail("supabase-id");
+
+        verify(notificationService).sendEmail(
+                eq("user@example.com"),
+                eq("TechStore - Registration Completed"),
+                contains("Welcome to TechStore")
+        );
+
         verify(auditLogger).logConfirmInvite("user@example.com", true, null);
         verify(supabaseAuthClient, never()).deleteUser("supabase-id");
+    }
+
+    @Test
+    void shouldConfirmInviteWithProvidedRoleAndSendEmail() throws Exception {
+        setWebhookSecret("webhook-secret");
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("role", "carrier");
+
+        Map<String, Object> record = new HashMap<>();
+        record.put("id", "supabase-id");
+        record.put("email", "carrier@example.com");
+        record.put("email_confirmed_at", "2026-05-15T00:00:00Z");
+        record.put("invited_at", "2026-05-14T00:00:00Z");
+        record.put("raw_user_meta_data", metadata);
+
+        Map<String, Object> oldRecord = new HashMap<>();
+        oldRecord.put("email_confirmed_at", null);
+
+        when(supabaseAuthClient.userExists("supabase-id")).thenReturn(true);
+        when(userService.getUserBySupabaseId("supabase-id")).thenReturn(Optional.empty());
+
+        boolean confirmed = authService.confirmInvite("webhook-secret", Map.of(
+                "record", record,
+                "old_record", oldRecord
+        ));
+
+        assertTrue(confirmed);
+
+        verify(userService).registerUser("supabase-id", "carrier@example.com", "carrier");
+        verify(userService).confirmUserEmail("supabase-id");
+
+        verify(notificationService).sendEmail(
+                eq("carrier@example.com"),
+                eq("TechStore - Registration Completed"),
+                contains("Welcome to TechStore")
+        );
+
+        verify(auditLogger).logConfirmInvite("carrier@example.com", true, null);
+        verify(supabaseAuthClient, never()).deleteUser("supabase-id");
+    }
+
+    @Test
+    void shouldConfirmInviteEvenWhenRegistrationEmailFails() throws Exception {
+        setWebhookSecret("webhook-secret");
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("role", "manager");
+
+        Map<String, Object> record = new HashMap<>();
+        record.put("id", "supabase-id");
+        record.put("email", "manager@example.com");
+        record.put("email_confirmed_at", "2026-05-15T00:00:00Z");
+        record.put("invited_at", "2026-05-14T00:00:00Z");
+        record.put("raw_user_meta_data", metadata);
+
+        Map<String, Object> oldRecord = new HashMap<>();
+        oldRecord.put("email_confirmed_at", null);
+
+        when(supabaseAuthClient.userExists("supabase-id")).thenReturn(true);
+        when(userService.getUserBySupabaseId("supabase-id")).thenReturn(Optional.empty());
+
+        doThrow(new RuntimeException("SMTP failed"))
+                .when(notificationService)
+                .sendEmail(anyString(), anyString(), anyString());
+
+        boolean confirmed = authService.confirmInvite("webhook-secret", Map.of(
+                "record", record,
+                "old_record", oldRecord
+        ));
+
+        assertTrue(confirmed);
+
+        verify(userService).registerUser("supabase-id", "manager@example.com", "manager");
+        verify(userService).confirmUserEmail("supabase-id");
+
+        verify(notificationService).sendEmail(
+                eq("manager@example.com"),
+                eq("TechStore - Registration Completed"),
+                contains("Welcome to TechStore")
+        );
+
+        verify(auditLogger).logConfirmInvite("manager@example.com", true, null);
+        verify(supabaseAuthClient, never()).deleteUser("supabase-id");
+    }
+
+    @Test
+    void shouldUpdatePasswordAndSendEmail() {
+        String accessToken = "access-token";
+        String newPassword = "StrongPhrase2026!";
+        String supabaseUserId = UUID.randomUUID().toString();
+        String email = "user@example.com";
+
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn(new Email(email));
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+
+        try (MockedStatic<CookiesHelper> cookiesHelper = mockStatic(CookiesHelper.class)) {
+            cookiesHelper.when(CookiesHelper::getCurrentUserId).thenReturn(supabaseUserId);
+
+            assertDoesNotThrow(() ->
+                    authService.updatePassword(accessToken, newPassword, httpRequest)
+            );
+        }
+
+        verify(userRepository).findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId));
+        verify(passwordUtils).validate(newPassword, email);
+        verify(supabaseAuthClient).updatePassword(accessToken, newPassword);
+
+        verify(notificationService).sendEmail(eq(email),
+                eq("TechStore - Password Updated Successfully"), contains("Password Updated Successfully"));
+
+        verify(auditLogger).logPasswordUpdate(true, httpRequest);
+        verify(auditLogger, never()).logPasswordUpdate(false, httpRequest);
+    }
+
+    @Test
+    void shouldUpdatePasswordWithoutSendingEmailWhenUserEmailIsNotFound() {
+        String accessToken = "access-token";
+        String newPassword = "StrongPhrase2026!";
+        String supabaseUserId = UUID.randomUUID().toString();
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.empty());
+
+        try (MockedStatic<CookiesHelper> cookiesHelper = mockStatic(CookiesHelper.class)) {
+            cookiesHelper.when(CookiesHelper::getCurrentUserId).thenReturn(supabaseUserId);
+
+            assertDoesNotThrow(() ->
+                    authService.updatePassword(accessToken, newPassword, httpRequest)
+            );
+        }
+
+        verify(passwordUtils).validate(newPassword, null);
+        verify(supabaseAuthClient).updatePassword(accessToken, newPassword);
+        verify(notificationService, never()).sendEmail(anyString(), anyString(), anyString());
+
+        verify(auditLogger).logPasswordUpdate(true, httpRequest);
+        verify(auditLogger, never()).logPasswordUpdate(false, httpRequest);
+    }
+
+    @Test
+    void shouldLogFailedPasswordUpdateWhenPasswordValidationFails() {
+        String accessToken = "access-token";
+        String newPassword = "weak-password";
+        String supabaseUserId = UUID.randomUUID().toString();
+        String email = "user@example.com";
+
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn(new Email(email));
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+
+        doThrow(new BusinessException("Password is too common"))
+                .when(passwordUtils)
+                .validate(newPassword, email);
+
+        try (MockedStatic<CookiesHelper> cookiesHelper = mockStatic(CookiesHelper.class)) {
+            cookiesHelper.when(CookiesHelper::getCurrentUserId).thenReturn(supabaseUserId);
+
+            BusinessException exception = assertThrows(
+                    BusinessException.class,
+                    () -> authService.updatePassword(accessToken, newPassword, httpRequest)
+            );
+
+            assertEquals("Password is too common", exception.getMessage());
+        }
+
+        verify(passwordUtils).validate(newPassword, email);
+        verify(supabaseAuthClient, never()).updatePassword(anyString(), anyString());
+        verify(notificationService, never()).sendEmail(anyString(), anyString(), anyString());
+
+        verify(auditLogger).logPasswordUpdate(false, httpRequest);
+        verify(auditLogger, never()).logPasswordUpdate(true, httpRequest);
+    }
+
+    @Test
+    void shouldLogFailedPasswordUpdateWhenSupabaseUpdateFails() {
+        String accessToken = "access-token";
+        String newPassword = "StrongPhrase2026!";
+        String supabaseUserId = UUID.randomUUID().toString();
+        String email = "user@example.com";
+
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn(new Email(email));
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+
+        doThrow(new IllegalStateException("Supabase failed"))
+                .when(supabaseAuthClient)
+                .updatePassword(accessToken, newPassword);
+
+        try (MockedStatic<CookiesHelper> cookiesHelper = mockStatic(CookiesHelper.class)) {
+            cookiesHelper.when(CookiesHelper::getCurrentUserId).thenReturn(supabaseUserId);
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> authService.updatePassword(accessToken, newPassword, httpRequest)
+            );
+
+            assertEquals("Supabase failed", exception.getMessage());
+        }
+
+        verify(passwordUtils).validate(newPassword, email);
+        verify(supabaseAuthClient).updatePassword(accessToken, newPassword);
+        verify(notificationService, never()).sendEmail(anyString(), anyString(), anyString());
+
+        verify(auditLogger).logPasswordUpdate(false, httpRequest);
+        verify(auditLogger, never()).logPasswordUpdate(true, httpRequest);
+    }
+
+    @Test
+    void shouldUpdatePasswordEvenWhenEmailFails() {
+        String accessToken = "access-token";
+        String newPassword = "StrongPhrase2026!";
+        String supabaseUserId = UUID.randomUUID().toString();
+        String email = "user@example.com";
+
+        User user = mock(User.class);
+        when(user.getEmail()).thenReturn(new Email(email));
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+
+        doThrow(new RuntimeException("SMTP failed"))
+                .when(notificationService)
+                .sendEmail(anyString(), anyString(), anyString());
+
+        try (MockedStatic<CookiesHelper> cookiesHelper = mockStatic(CookiesHelper.class)) {
+            cookiesHelper.when(CookiesHelper::getCurrentUserId).thenReturn(supabaseUserId);
+
+            assertDoesNotThrow(() ->
+                    authService.updatePassword(accessToken, newPassword, httpRequest)
+            );
+        }
+
+        verify(passwordUtils).validate(newPassword, email);
+        verify(supabaseAuthClient).updatePassword(accessToken, newPassword);
+        verify(notificationService).sendEmail(eq(email),
+                eq("TechStore - Password Updated Successfully"),
+                contains("Password Updated Successfully"));
+
+        verify(auditLogger).logPasswordUpdate(true, httpRequest);
+        verify(auditLogger, never()).logPasswordUpdate(false, httpRequest);
     }
 
     private void setWebhookSecret(String value) throws Exception {

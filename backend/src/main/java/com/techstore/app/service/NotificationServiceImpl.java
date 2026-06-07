@@ -23,7 +23,7 @@ public class NotificationServiceImpl implements NotificationService {
     private String fromName;
 
     @Override
-    public void sendOrderConfirmationEmail(String to, String subject, String body) {
+    public void sendEmail(String to, String subject, String body) {
 
         try {
             MimeMessage message = mailSender.createMimeMessage();

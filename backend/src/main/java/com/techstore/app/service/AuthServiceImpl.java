@@ -5,11 +5,14 @@ import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.shared.EmailAddress;
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.Role;
+import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
+import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.logger.AuthAuditLogger;
 import com.techstore.app.repository.UserRepository;
 import com.techstore.app.service.interfaces.AuthService;
+import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
 
@@ -43,68 +46,86 @@ public class AuthServiceImpl implements AuthService {
 
     private ObjectMapper objectMapper;
 
+    private final PasswordUtils passwordUtils;
+
+    private final NotificationService notificationService;
+
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(UserService userService, UserRepository userRepository,
-        AuthAuditLogger auditLogger,
-        ObjectMapper objectMapper,
-        SupabaseAuthClient supabaseClient) {
-    this.userService = userService;
-    this.userRepository = userRepository;
-    this.auditLogger = auditLogger;
-    this.objectMapper = objectMapper;
-    this.supabaseClient = supabaseClient;
-}
+                           AuthAuditLogger auditLogger, ObjectMapper objectMapper,
+                           SupabaseAuthClient supabaseClient, PasswordUtils passwordUtils,
+                           NotificationService notificationService) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+        this.auditLogger = auditLogger;
+        this.objectMapper = objectMapper;
+        this.supabaseClient = supabaseClient;
+        this.passwordUtils = passwordUtils;
+        this.notificationService = notificationService;
+    }
+
     @Override
-public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
-    try {
-        Email email = new Email(request.email());
-        if (userRepository.existsByEmail(email)) {
-            throw new BusinessException("Email already registered");
+    public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+        try {
+            Email email = new Email(request.email());
+            if (userRepository.existsByEmail(email)) {
+                throw new BusinessException("Email already registered");
+            }
+            passwordUtils.validate(request.password(), request.email());
+
+            SupabaseLoginResponse supabaseResponse = supabaseClient.signUp(
+                    request.email(), request.password(), DEFAULT_ROLE);
+            String userId = null;
+            if (supabaseResponse.user() != null) {
+                userId = supabaseResponse.user().id();
+            }
+            auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
+            return new RegisterResponse(
+                    request.email(),
+                    userId,
+                    "Check your email for confirmation link");
+        } catch (BusinessException ex) {
+            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("Register failed for {}: {}", request.email(), ex.getMessage(), ex);
+            auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
+            throw ex;
         }
-        SupabaseLoginResponse supabaseResponse = supabaseClient.signUp(
-                request.email(), request.password(), DEFAULT_ROLE);
-        String userId = null;
-        if (supabaseResponse.user() != null) {
-            userId = supabaseResponse.user().id();
-        }
-        auditLogger.logRegisterAttempt(request.email(), true, httpRequest);
-        return new RegisterResponse(
-                request.email(),
-                userId,
-                "Check your email for confirmation link");
-    } catch (BusinessException ex) {
-        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-        throw ex;
-    } catch (Exception ex) {
-        logger.error("Register failed for {}: {}", request.email(), ex.getMessage(), ex);
-        auditLogger.logRegisterAttempt(request.email(), false, httpRequest);
-        throw ex;
     }
-}
+
     public void confirmEmailFromRegister(String accessToken) {
-         try {
-        Map<String, Object> claims = decodeJwtClaims(accessToken);
+        try {
+            Map<String, Object> claims = decodeJwtClaims(accessToken);
 
-        String supabaseUserId = (String) claims.get("sub");
-        String email = (String) claims.get("email");
+            String supabaseUserId = (String) claims.get("sub");
+            String email = (String) claims.get("email");
 
-        if (supabaseUserId == null || supabaseUserId.isBlank() || email == null || email.isBlank()) {
-            throw new BusinessException("Invalid token");
+            if (supabaseUserId == null || supabaseUserId.isBlank() || email == null || email.isBlank()) {
+                throw new BusinessException("Invalid token");
+            }
+
+            String role = Role.CUSTOMER.toString();
+
+            if (userService.getUserBySupabaseId(supabaseUserId).isEmpty()) {
+                userService.registerUser(supabaseUserId, email, role);
+            }
+
+            userService.confirmUserEmail(supabaseUserId);
+
+            try {
+                notificationService.sendEmail(email, "TechStore - Registration Completed",
+                        createRegistrationCompletedEmailBody(email));
+            } catch (Exception exception) {
+                logger.warn("Failed to send registration email to {}", email, exception);
+            }
+
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BusinessException("Failed to confirm email: " + ex.getMessage());
         }
-
-        String role = Role.CUSTOMER.toString();
-
-        if (userService.getUserBySupabaseId(supabaseUserId).isEmpty()) {
-            userService.registerUser(supabaseUserId, email, role);
-        }
-
-        userService.confirmUserEmail(supabaseUserId);
-    } catch (BusinessException ex) {
-        throw ex;
-    } catch (Exception ex) {
-        throw new BusinessException("Failed to confirm email: " + ex.getMessage());
-    }
 
     }
 
@@ -202,6 +223,14 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
                 userService.registerUser(supabaseUserId, email, role);
             }
             userService.confirmUserEmail(supabaseUserId);
+
+            try {
+                notificationService.sendEmail(email, "TechStore - Registration Completed",
+                        createRegistrationCompletedEmailBody(email));
+            } catch (Exception exception) {
+                logger.warn("Failed to send registration email to {}", email, exception);
+            }
+
             auditLogger.logConfirmInvite(email, true, null);
             return true;
 
@@ -310,15 +339,74 @@ public RegisterResponse register(RegisterRequest request, HttpServletRequest htt
     @Override
     public void updatePassword(String accessToken, String newPassword, HttpServletRequest httpRequest) {
         try {
-            if (!PasswordUtils.isValid(newPassword)) {
-                throw new BusinessException("Invalid password format");
-            }
+            String supabaseUserId = CookiesHelper.getCurrentUserId();
+
+            String email = userRepository
+                    .findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                    .map(user -> user.getEmail().getEmail())
+                    .orElse(null);
+
+            passwordUtils.validate(newPassword, email);
 
             supabaseClient.updatePassword(accessToken, newPassword);
+
+            if (email != null) {
+                try {
+                    notificationService.sendEmail(email, "TechStore - Password Updated Successfully",
+                            createPasswordUpdatedEmailBody());
+                } catch (Exception exception) {
+                    logger.warn("Failed to send password update email to {}", email, exception);
+                }
+            }
+
             auditLogger.logPasswordUpdate(true, httpRequest);
+
         } catch (Exception ex) {
             auditLogger.logPasswordUpdate(false, httpRequest);
             throw ex;
         }
+    }
+
+    private String createPasswordUpdatedEmailBody() {
+        return """
+            <h3>Password Updated Successfully 🔐</h3>
+
+            <p>Hello,</p>
+
+            <p>Your TechStore account password has been updated successfully.</p>
+
+            <p>If you made this change, no further action is required.</p>
+
+            <p>
+                If you did not update your password, please reset your password immediately
+                and contact TechStore support.
+            </p>
+
+            <br/>
+
+            <p>Thank you,<br/>TechStore Security Team</p>
+            """;
+    }
+
+    private String createRegistrationCompletedEmailBody(String email) {
+        String displayName = email != null && email.contains("@")
+                ? email.split("@")[0]
+                : "there";
+
+        return """
+            <h3>Welcome to TechStore 🎉</h3>
+
+            <p>Hi %s,</p>
+
+            <p>Your TechStore account registration has been completed successfully.</p>
+
+            <p>
+                If you did not create this account, please contact TechStore support immediately.
+            </p>
+
+            <br/>
+
+            <p>Thank you,<br/>TechStore Team</p>
+            """.formatted(displayName);
     }
 }
