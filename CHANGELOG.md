@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.1.0...v2.2.0) (2026-06-07)
+
+
+### Features
+
+* add logback to tests resources folder ([ce8f384](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ce8f3841271f56410983f22493a5bbec2e31c21b))
+
+
+### Bug Fixes
+
+* configure syslog-ng file permissions for Grafana Alloy log ingestion ([a1a17e1](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a1a17e16042721b895dab664df0d2ac158f30021))
+* frontend deployment problems ([7e20c12](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7e20c128595b3771e198b486c3e9ffb80d5e60ab))
+* logback problems ([7a53cca](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7a53cca8661d8338daa460af2e248f2bcc36c305))
+
 ## [2.1.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.0.0...v2.1.0) (2026-06-07)
 
 

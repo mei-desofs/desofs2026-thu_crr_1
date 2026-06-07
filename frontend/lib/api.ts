@@ -6,7 +6,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, isAxiosError  } from 'axios';
 import { validateResourceFetch } from './csrf';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * V3.4.2: Configure CORS and origin validation

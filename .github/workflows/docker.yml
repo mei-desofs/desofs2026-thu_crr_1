@@ -78,9 +78,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          file: ./frontend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://techstore.francecentral.cloudapp.azure.com/api
+            NEXT_PUBLIC_BASE_PATH=/app
+            NEXT_PUBLIC_CSRF_ENABLED=true
