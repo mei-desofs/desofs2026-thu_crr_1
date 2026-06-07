@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  basePath: '/app',
   reactStrictMode: true,
   // Security: Ensure API calls go through HTTPS in production
   redirects: async () => {
@@ -19,7 +21,7 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' http://localhost:8081; object-src 'none'; base-uri 'none'; frame-ancestors 'none';",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' http://localhost:8081 https://techstore.francecentral.cloudapp.azure.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none';",
           },
           // V3.4.4: X-Content-Type-Options
           {

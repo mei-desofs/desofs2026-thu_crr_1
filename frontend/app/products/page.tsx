@@ -29,7 +29,6 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [totalPages, setTotalPages] = useState(0);
-  const router = useRouter();
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -167,7 +166,7 @@ function ProductCard({ product }: { product: Product }) {
         const message = encodeURIComponent(
           "Please sign in to add items to your cart",
         );
-        const next = encodeURIComponent(`/products`);
+        const next = `/products`;
         router.push(`/auth/login?message=${message}&next=${next}`);
       } else {
         setMessage("Failed to add to cart. Try again.");

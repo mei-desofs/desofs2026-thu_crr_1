@@ -50,6 +50,7 @@ jobs:
               --network techstore-net \
               -p 8080:8081 \
               --env-file /opt/techstore/backend.env \
+              -e SYSLOG_HOST=tech-store-syslog \
               "$BACKEND_IMAGE"
 
             # ---- Frontend ----
@@ -59,7 +60,6 @@ jobs:
               --restart unless-stopped \
               --network techstore-net \
               -p 3002:3000 \
-              --env-file /opt/techstore/frontend.env \
               "$FRONTEND_IMAGE"
 
             # ---- Health Check ----

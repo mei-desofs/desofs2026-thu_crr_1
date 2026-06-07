@@ -1,5 +1,76 @@
 # Changelog
 
+## [2.2.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.1.0...v2.2.0) (2026-06-07)
+
+
+### Features
+
+* add logback to tests resources folder ([ce8f384](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ce8f3841271f56410983f22493a5bbec2e31c21b))
+
+
+### Bug Fixes
+
+* configure syslog-ng file permissions for Grafana Alloy log ingestion ([a1a17e1](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a1a17e16042721b895dab664df0d2ac158f30021))
+* frontend deployment problems ([7e20c12](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7e20c128595b3771e198b486c3e9ffb80d5e60ab))
+* logback problems ([7a53cca](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7a53cca8661d8338daa460af2e248f2bcc36c305))
+
+## [2.1.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.0.0...v2.1.0) (2026-06-07)
+
+
+### Features
+
+* feat:  ([ea56b1a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ea56b1a29ca9f04856b0056eecf53f673bddd1a6))
+* add .env.production for deployment ([a057d7a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a057d7ad2b6275454595accebfca708fd6482134))
+* add build frontend to build-test workflow, and make some minor changes to make frontend build pass ([6220c5b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6220c5be5787f90a9304750f19b48e8375240526))
+* add carrier pickup order functionality ([a4d60ae](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a4d60ae6e1f75af7785a1dbb206c33d427ab82a2))
+* add email notification for order confirmation and configure mail settings ([596c9ec](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/596c9ecdc291041f85a7752408554e8d8175629c))
+* add email notification for order pickup ([4e3cb4b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4e3cb4be5998ed220d691fcfcf80c058cdedb735))
+* add frontend initial setup, and add cart, product and auth pages ([8113cfd](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8113cfdfbaee4fdff60acbfc00c61007a2080e41))
+* add frontend to docker and deploy workflows ([ba5aa41](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ba5aa410054c3931e14bca6f7e953068c2f2a570))
+* add get order by customer functionality ([361b565](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/361b565b66598ed70017e2594cc0969765759f5b))
+* add invite users functionality in frontend and some fixes in login ([7b62dfb](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7b62dfb56a4d0abf3b95a6c0e183ed22ef854b11))
+* add invite users functionality in frontend and some fixes in login ([3a038c0](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/3a038c0843159cd852384273cb1c1c70cd5e71df))
+* add login page ([695960c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/695960c982cd0cd50035917fccdc6b5d01bd8c33))
+* add refresh token logic to API calls that come out forbidden ([b4cf99c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/b4cf99cffbe78b6d3b48bc373e540fa0a20a62bb))
+* add refresh token logic to requests which return 403 too ([93b0d76](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/93b0d763ee8b386e9503d3215427a88285c46b9a))
+* added delete product from cart [#15](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/15) also added more logger in ca… ([299e633](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/299e633751a15384564ae9e40a6484bcb8a76792))
+* added delete product from cart [#15](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/15) also added more logger in cart and cartitem service implementation ([427e1d9](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/427e1d9df29737d75076dea3938df201f920e9b1))
+* added frontend: logout button and register page ([72fb019](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/72fb019faa663d028778178d9301b30cbcb374e2))
+* added get cartitem by custumer and implemented frontend for cart page ([8533ed9](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8533ed9bdccf411253128fa3f25ba527780256da))
+* added tests logout ([430a51a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/430a51ad951fb3f36936623a23c478f657899ad4))
+* added update cart [#16](https://github.com/mei-desofs/desofs2026-thu_crr_1/issues/16) ([320bce8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/320bce868f5cee0b468f09cbd159de0623a3aa55))
+* create order frontend and improved logging and stock management ([5969740](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/596974014aeefde6f6875d712e84eba50ee0c5c3))
+* create order frontend and improved logging and stock management ([44af040](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/44af0401e6b55b3e99e20f1d829633fd6bbb1a3f))
+* get customer and carrier from user authenticated ([ef22b16](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ef22b161ed1b07faf20063169a91a7107bc88b55))
+* implement cart item addition and logging functionality ([6be6e94](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6be6e940ba5978e2b3e51acffd5f0beccf33f21a))
+* implement order creation functionality ([24737d8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/24737d8a123da2d1cee6cf3217b2b9ca713d620a))
+
+
+### Bug Fixes
+
+* a criação do Customer agora decide com base em user.getRole() e não no role recebido por parâmetro. ([810295f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/810295ffc5b0f8cba9e1c95d75659a084067c304))
+* add frontend env file to the deploy ([7e19289](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7e19289f0bdf18cbb7a711f5fbecee63b5eef309))
+* add missing dockerfile and dockerignore for frontend ([05eff24](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/05eff246f1fe2ce750b081f1a35e3bdf86df2f22))
+* added creation of Customer on Register User ([f822200](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f82220048a6824de618749aa5338f906b01f2f9c))
+* assert quantity is -1 or 1 ([7ef054a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7ef054a3081c6cf3d79cd4ae6029f527c552eab3))
+* cart and cartitem relationship ([f24f2b4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f24f2b47a2a5c0bd292fabab85640ace14bc4442))
+* change line coverage percentage to 50%, will be later reverted ([92e1f68](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/92e1f6808b0da81e6d9f0e643ec4403d37db166b))
+* clear both cookies ([c3d203d](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c3d203d9bc50ae87a3b60906f66626d739e65ad8))
+* fix cart and cartlist relationships ([dac9c1a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/dac9c1af5e3de210c0069c0535a60f3bf2b0e878))
+* fix logout where before would delete all cookis (access token and refresh token) now only access token ([38e58c0](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/38e58c09ac32fa133773a4eb2542e00c0f05dffc))
+* frontend base path ([768c260](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/768c260b5880729e29cb5f17f3611a65095a615b))
+* frontend Dockerfile ([6c0db31](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6c0db3157f7db0614138ff76ec560ea61dd61fe7))
+* frontend Dockerfile ([2921f8c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2921f8c6e4c29e083f11bde2970be261fc893f38))
+* frontend Dockerfile, and realy send the frontend build to the workflow :) ([35e5fcb](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/35e5fcbc0d8765438a31d0028c05bf658f2b3571))
+* get app url from .env file ([a5cedb4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a5cedb45588d63202a803e44c04dbe10988bd2da))
+* get app url from .env file ([9031d99](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9031d99b72a4abd4df113ca4c346592a43b24b80))
+* merge conflict ([2e3daae](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2e3daaec27ec1d92149187ce109690849010de5b))
+* problems from new frontend base path ([d706bd3](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d706bd37cf9e75f12b6050da724eb0eff298df14))
+* redirect login to the right page ([60db7a8](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/60db7a8bb22b1fdd865e434510e8fa806b4c08f3))
+* remove carrier ([e351122](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e3511225c3190d5162977dd4953f586b77d6cd06))
+* remove carrier entity to use User as carrier instead ([d9f1b9f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d9f1b9f2bcc090252b28557fc11a1f3f91a69b5e))
+* update dast to add new envs ([f6d0650](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/f6d0650abe56d5c70834d1979ce2493f3f310f2d))
+
 ## [2.0.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v1.3.0...v2.0.0) (2026-05-18)
 
 

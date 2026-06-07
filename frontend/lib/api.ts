@@ -4,9 +4,9 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, isAxiosError  } from 'axios';
-import { getSecureRequestHeaders, validateResourceFetch } from './csrf';
+import { validateResourceFetch } from './csrf';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * V3.4.2: Configure CORS and origin validation
@@ -54,7 +54,7 @@ let refreshPromise: Promise<void> | null = null;
 apiClient.interceptors.response.use(
   (response) => {
     // V3.2.1: Verify response headers indicate correct context
-    const contentType = response.headers['content-type'] || '';
+    // const contentType = response.headers['content-type'] || '';
 
     // V3.4.4: Verify X-Content-Type-Options header is present
     const xContentTypeOptions = response.headers['x-content-type-options'];
@@ -90,8 +90,10 @@ apiClient.interceptors.response.use(
       if (typeof window !== 'undefined') {
         try {
           const message = encodeURIComponent('Please sign in to continue');
-          const next = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = `/auth/login?message=${message}&next=${next}`;
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+          const pathname = window.location.pathname.replace(basePath, '') || '/';
+          const next = encodeURIComponent(pathname + window.location.search);
+          window.location.href = `${basePath}/auth/login?message=${message}&next=${next}`;
         } catch {
           window.location.href = '/auth/login';
         }
