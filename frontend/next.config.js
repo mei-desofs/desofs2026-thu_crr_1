@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  basePath: '/app',
   reactStrictMode: true,
   // Security: Ensure API calls go through HTTPS in production
   redirects: async () => {
