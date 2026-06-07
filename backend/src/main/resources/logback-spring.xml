@@ -34,7 +34,7 @@
 
     <!-- Syslog - External Dependency-->
     <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
-        <syslogHost>localhost</syslogHost>
+        <syslogHost>tech-store-syslog</syslogHost>
         <port>514</port>
         <facility>AUTH</facility>        <!-- facility AUTH para eventos de segurança -->
         <suffixPattern>techstore: %logger{20} - %msg</suffixPattern>

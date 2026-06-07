@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
  
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  
 type FormStatus = "idle" | "loading" | "success" | "error";
 type FlowType = "invite" | "recovery";
