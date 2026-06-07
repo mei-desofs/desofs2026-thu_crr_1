@@ -3,6 +3,9 @@ import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import NavBar from "./components/NavBar";
 
+import { ToastProvider } from "@/app/components/useToast";
+import ToastWrapper from "./components/ToastWrapper";
+
 export const metadata: Metadata = {
   title: "TechStore - Secure E-Commerce",
   description: "A secure e-commerce platform built with Next.js and Spring Boot",
@@ -43,19 +46,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })();
           `}
         </Script>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-          <NavBar />
+        <ToastProvider>
+          <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+           <NavBar />
 
-          <main className="flex-1">
-            {children}
-          </main>
+            <main className="flex-1">
+              {children}
+            </main>
 
-          <footer className="mt-auto bg-slate-950 border-t border-slate-700 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400">
-              <p>TechStore © 2026 - All rights reserved.</p>
-            </div>
-          </footer>
-        </div>
+            <footer className="mt-auto bg-slate-950 border-t border-slate-700 py-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-400">
+                <p>TechStore © 2026 - All rights reserved.</p>
+              </div>
+            </footer>
+          </div>
+        <ToastWrapper />
+        </ToastProvider>
       </body>
     </html>
   );
