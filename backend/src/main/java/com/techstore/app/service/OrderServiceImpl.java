@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.techstore.app.domain.cart.Cart;
-import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.domain.order.OrderId;
@@ -94,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
             String emailBody = createOrderEmailBody(customer, saved);
 
             try {
-                notificationService.sendOrderConfirmationEmail(customerEmail, "TechStore - Order Confirmation #"
+                notificationService.sendEmail(customerEmail, "TechStore - Order Confirmation #"
                                 + saved.getId().getId(), emailBody);
             } catch (Exception exception) {
                 LOGGER.warn("Failed to send confirmation email for order {}", saved.getId().getId(), exception);
@@ -228,7 +227,7 @@ public class OrderServiceImpl implements OrderService {
             String customerEmail = order.getCustomer().getUser().getEmail().getEmail();
             String subject = "TechStore - Your order #" + order.getId().getId() + " has been picked up";
             String body = createPickupEmailBody(order);
-            notificationService.sendOrderConfirmationEmail(customerEmail, subject, body);
+            notificationService.sendEmail(customerEmail, subject, body);
 
             orderAuditLogger.logPickupSuccess(orderId, userId);
 

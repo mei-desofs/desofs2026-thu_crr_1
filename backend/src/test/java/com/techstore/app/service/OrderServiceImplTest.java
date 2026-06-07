@@ -140,7 +140,7 @@ class OrderServiceImplTest {
         verify(cart).clearItems();
         verify(cartRepository).save(cart);
 
-        verify(notificationService).sendOrderConfirmationEmail(
+        verify(notificationService).sendEmail(
                 eq("john@example.com"),
                 contains("TechStore - Order Confirmation #"),
                 contains("Order Confirmed")
@@ -189,7 +189,7 @@ class OrderServiceImplTest {
         verify(customerRepository, never()).findBySupabaseUserId(any(SupabaseUserId.class));
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
-        verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService, never()).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger, never()).logOrderCreationAttempt(any(), any());
 
@@ -250,7 +250,7 @@ class OrderServiceImplTest {
         verify(cart, never()).calculateTotal();
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
-        verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService, never()).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger).logOrderCreationFailure(
                 eq(userUuid.toString()),
@@ -304,7 +304,7 @@ class OrderServiceImplTest {
 
         doThrow(new RuntimeException("Email failed"))
                 .when(notificationService)
-                .sendOrderConfirmationEmail(any(), any(), any());
+                .sendEmail(any(), any(), any());
 
         OrderResponseDTO response = orderService.createOrder(request, supabaseUserId);
 
@@ -316,7 +316,7 @@ class OrderServiceImplTest {
         verify(orderRepository).save(any(Order.class));
         verify(cart).clearItems();
         verify(cartRepository).save(cart);
-        verify(notificationService).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger).logOrderCreationAttempt(
                 userUuid.toString(),

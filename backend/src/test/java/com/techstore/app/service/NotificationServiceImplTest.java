@@ -34,12 +34,12 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    void shouldSendOrderConfirmationEmail() {
+    void shouldSendEmail() {
         MimeMessage mimeMessage = mock(MimeMessage.class);
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
 
-        assertDoesNotThrow(() -> notificationService.sendOrderConfirmationEmail(
+        assertDoesNotThrow(() -> notificationService.sendEmail(
                 "customer@example.com",
                 "TechStore - Order Confirmation #123",
                 "<p>Your order was created.</p>"
@@ -59,7 +59,7 @@ class NotificationServiceImplTest {
                 .send(mimeMessage);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                notificationService.sendOrderConfirmationEmail(
+                notificationService.sendEmail(
                         "customer@example.com",
                         "TechStore - Order Confirmation #123",
                         "<p>Your order was created.</p>"
@@ -77,7 +77,7 @@ class NotificationServiceImplTest {
         when(mailSender.createMimeMessage()).thenThrow(new RuntimeException("Could not create message"));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                notificationService.sendOrderConfirmationEmail(
+                notificationService.sendEmail(
                         "customer@example.com",
                         "TechStore - Order Confirmation #123",
                         "<p>Your order was created.</p>"
