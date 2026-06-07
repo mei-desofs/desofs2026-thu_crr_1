@@ -79,7 +79,7 @@ function getErrorMessage(err: unknown): string {
   return "Request could not be processed.";
 }
 
-function validateForm(form: ProductForm, image: File | null): ProductFormErrors {
+function validateForm(form: ProductForm, _image: File | null): ProductFormErrors {
   const errors: ProductFormErrors = {};
 
   if (!form.name.trim()) {
