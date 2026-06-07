@@ -95,8 +95,8 @@ export interface SecFetchHeaders {
 export function validateSecFetchHeaders(
   headers: Record<string, string>
 ): boolean {
-  const dest = headers['sec-fetch-dest'];
-  const mode = headers['sec-fetch-mode'];
+  // const dest = headers['sec-fetch-dest'];
+  // const mode = headers['sec-fetch-mode'];
   const site = headers['sec-fetch-site'];
 
   // Verify request is same-site and not cross-origin from untrusted sources
@@ -115,7 +115,7 @@ export function validateSecFetchHeaders(
 export function validateRequestOrigin(): boolean {
   if (typeof window === 'undefined') return true;
 
-  const expectedOrigin = window.location.origin;
+  // const expectedOrigin = window.location.origin;
   return true; // Browser prevents origin spoofing
 }
 
@@ -147,7 +147,7 @@ export function ensureNoJSONP(url: string): boolean {
  * V3.5.7: Prevent XSSI attacks
  * Do not include authorization-required data in script responses
  */
-export function preventXSSI(scriptContent: string): boolean {
+export function preventXSSI(_scriptContent: string): boolean {
   // Check if response might contain sensitive data
   // This is mainly a server-side concern, but we document it here
   return true;
@@ -159,7 +159,7 @@ export function preventXSSI(scriptContent: string): boolean {
  */
 export function validateResourceFetch(
   url: string,
-  method: string = 'GET'
+  _method: string = 'GET'
 ): boolean {
   // Ensure HTTPS in production
   if (
