@@ -37,7 +37,7 @@ const cards: DashboardCard[] = [
   {
     title: "Backups",
     description: "Create a backup of some system data",
-    href: "/backups",
+    href: "/manager/backups",
     available: true,
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
