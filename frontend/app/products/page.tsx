@@ -166,7 +166,7 @@ function ProductCard({ product }: { product: Product }) {
         const message = encodeURIComponent(
           "Please sign in to add items to your cart",
         );
-        const next = encodeURIComponent(`/products`);
+        const next = `/products`;
         router.push(`/auth/login?message=${message}&next=${next}`);
       } else {
         setMessage("Failed to add to cart. Try again.");

@@ -90,8 +90,10 @@ apiClient.interceptors.response.use(
       if (typeof window !== 'undefined') {
         try {
           const message = encodeURIComponent('Please sign in to continue');
-          const next = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = `/auth/login?message=${message}&next=${next}`;
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+          const pathname = window.location.pathname.replace(basePath, '') || '/';
+          const next = encodeURIComponent(pathname + window.location.search);
+          window.location.href = `${basePath}/auth/login?message=${message}&next=${next}`;
         } catch {
           window.location.href = '/auth/login';
         }
