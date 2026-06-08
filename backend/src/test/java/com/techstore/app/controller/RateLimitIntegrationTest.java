@@ -271,4 +271,19 @@ public class RateLimitIntegrationTest {
                         .cookie(carrierCookie))
                 .andExpect(status().isTooManyRequests());
     }
+    @Test
+    void ListPendingOrderRateLimit() throws Exception {
+
+        Cookie customerCookie = accessTokenCookie("carrier-user", "CARRIER");
+
+
+        for (int i = 1; i <= 30; i++) {
+            mvc.perform(get("/orders/pending", UUID.randomUUID())
+                            .cookie(customerCookie))
+                    .andExpect(status().isBadRequest());
+        }
+        mvc.perform(get("/orders/pending", UUID.randomUUID())
+                        .cookie(customerCookie))
+                .andExpect(status().isTooManyRequests());
+    }
 }
