@@ -133,4 +133,37 @@ public class OrderAuditLogger {
         appLog.warn("Failed to pickup carrier order: userId={}, reason={}",
                 sanitize(userId), sanitize(ex.getMessage()));
     }
+    public void logPendingOrdersListingAttempt(String userId) {
+        auditLog.info(
+                "event=PENDING_ORDER_LIST_ATTEMPT | userId={} | timestamp={}",
+                sanitize(userId),
+                System.currentTimeMillis()
+        );
+
+        appLog.info("Attempting to list pending orders: userId={}",
+                sanitize(userId));
+    }
+    public void logPendingOrdersListingSuccess(String userId, int totalOrders) {
+        auditLog.info(
+                "event=PENDING_ORDER_LIST_SUCCESS | userId={} | totalOrders={} | timestamp={}",
+                sanitize(userId),
+                totalOrders,
+                System.currentTimeMillis()
+        );
+
+        appLog.info("Pending orders listed successfully: userId={}, totalOrders={}",
+                sanitize(userId), totalOrders);
+    }
+
+    public void logPendingOrdersListingFailure(String userId, Exception exception) {
+        auditLog.warn(
+                "event=PENDING_ORDER_LIST_FAILURE | userId={} | reason={} | timestamp={}",
+                sanitize(userId),
+                sanitize(exception.getMessage()),
+                System.currentTimeMillis()
+        );
+
+        appLog.warn("Failed to list pending orders: userId={}, reason={}",
+                sanitize(userId), sanitize(exception.getMessage()));
+    }
 }
