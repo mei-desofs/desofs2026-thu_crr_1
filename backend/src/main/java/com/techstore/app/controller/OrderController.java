@@ -70,4 +70,15 @@ public class OrderController {
 
         return ResponseEntity.noContent().build();
     }
+    @RateLimit("carrier-list-pending-orders")
+    @GetMapping("/pending")
+    public ResponseEntity<List<OrderSummaryDTO>> getPendingOrders(
+            Authentication authentication) {
+
+        String supabaseUserId = authentication.getName();
+        List<OrderSummaryDTO> orders = orderService.getPendingOrders(supabaseUserId);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(orders);
+    }
 }

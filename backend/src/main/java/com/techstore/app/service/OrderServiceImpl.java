@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.customer.Customer;
+import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.user.SupabaseUserId;
@@ -259,5 +260,32 @@ public class OrderServiceImpl implements OrderService {
                 order.getAddress().getStreet(),
                 order.getAddress().getCity(),
                 order.getAddress().getCountry());
+    }
+    @Transactional
+    @Override
+    public List<OrderSummaryDTO> getPendingOrders(String supabaseUserId) {
+
+        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)).
+                orElseThrow(()-> new BusinessException("User not found")).getId().getId().toString();
+
+        orderAuditLogger.logPendingOrdersListingAttempt(userId);
+
+        try {
+            List<Order> orders = orderRepository.findByOrderStatus(OrderStatus.PENDING);
+
+            List<OrderSummaryDTO> response =
+                    orders.stream()
+                            .map(order -> OrderMapper.toSummary(order))
+                            .toList();
+
+            orderAuditLogger.logPendingOrdersListingSuccess(userId, response.size());
+
+            return response;
+
+        } catch (RuntimeException exception) {
+            orderAuditLogger.logPendingOrdersListingFailure(userId, exception);
+            throw exception;
+        }
+
     }
 }

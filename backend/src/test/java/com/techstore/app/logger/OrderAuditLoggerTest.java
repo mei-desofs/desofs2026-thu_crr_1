@@ -242,4 +242,48 @@ class OrderAuditLoggerTest {
         assertDoesNotThrow(() ->
                 orderAuditLogger.logPickupFailure("order-123", "carrier-456", ex));
     }
+    @Test
+    void shouldLogPendingOrdersListingAttempt() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPendingOrdersListingAttempt(
+                        "carrier-123"));
+    }
+    @Test
+    void shouldLogPendingOrdersListingAttempWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPendingOrdersListingAttempt(
+                        "carrier\n123"));
+    }
+    @Test
+    void shouldLogPendingOrdersListingSuccess() {
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPendingOrdersListingSuccess(
+                        "carrier-123",
+                        5));
+    }
+    @Test
+    void shouldLogPendingOrdersListingSuccessWithUnsafeCharacters() {
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPendingOrdersListingSuccess(
+                        "carrier\n123",
+                        10));
+    }
+    @Test
+    void shouldLogPendingOrdersListingFailure() {
+
+        Exception ex = new RuntimeException("Database error");
+
+        assertDoesNotThrow(() -> orderAuditLogger.logPendingOrdersListingFailure("carrier-123", ex));
+    }
+    @Test
+    void shouldLogPendingOrdersListingFailureWithUnsafeCharacters() {
+        Exception exception = new RuntimeException("Error\rwith\nunsafe\tchars");
+
+        assertDoesNotThrow(() ->
+                orderAuditLogger.logPendingOrdersListingFailure(
+                        "carrier\n123",
+                        exception));
+    }
 }
