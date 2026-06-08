@@ -12,7 +12,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-const MANAGER_ROUTES = ["/manager/dashboard", "/invite", "/backups", "/products/manage"];
+const MANAGER_ROUTES = ["/manager/dashboard", "/invite", "/manager/backups", "/products/manage"];
 
 function redirectToLogin(request: NextRequest, pathname: string) {
   const loginUrl = request.nextUrl.clone();
@@ -46,7 +46,7 @@ export const config = {
   matcher: [
     "/manager/dashboard/:path*",
     "/invite/:path*",
-    "/backups/:path*",
+    "/manager/backups/:path*",
     "/products/manage/:path*",
   ],
 };
