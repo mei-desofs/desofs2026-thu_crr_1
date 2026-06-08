@@ -36,7 +36,7 @@ export default function AuthPage() {
       if (me.role === "MANAGER") {
         router.push("/manager/dashboard");
       } else if (me.role === "CARRIER") {
-        router.push("/carrier/dashboard");
+        router.push("/carrier");
       } else {
         router.push(redirectTo);
       }
