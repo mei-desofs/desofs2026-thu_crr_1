@@ -31,14 +31,13 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    if (toast.duration !== 0) {
-      const timer = setTimeout(() => {
-        setIsClosing(true);
-      }, (toast.duration || 3000) - 300);
-
-      return () => clearTimeout(timer);
-    }
-  }, [toast.duration]);
+  if (toast.duration === 0) return;
+  
+  const timer = setTimeout(() => {
+    setIsClosing(true);
+  }, (toast.duration || 3000) - 300);
+  return () => clearTimeout(timer);
+}, [toast.duration]);
 
   const bgColor = {
     success: "bg-green-600 border-green-500",
