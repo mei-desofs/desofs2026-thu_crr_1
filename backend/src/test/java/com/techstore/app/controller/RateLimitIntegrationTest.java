@@ -88,7 +88,7 @@ public class RateLimitIntegrationTest {
                 .encodeToString(("{\"sub\":\"" + userId + "\",\"role\":\"" + role + "\"}")
                         .getBytes(StandardCharsets.UTF_8));
 
-        return new Cookie("access_token", "header." + payload + ".signature");
+        return new Cookie("__Secure-access_token", "header." + payload + ".signature");
     }
 
     private String extractUserIdFromAccessTokenCookie(HttpServletRequest request) {
@@ -145,7 +145,7 @@ public class RateLimitIntegrationTest {
         }
 
         for (Cookie cookie : request.getCookies()) {
-            if ("access_token".equals(cookie.getName())) {
+            if ("__Secure-access_token".equals(cookie.getName())) {
                 String[] parts = cookie.getValue().split("\\.");
 
                 if (parts.length < 2) {

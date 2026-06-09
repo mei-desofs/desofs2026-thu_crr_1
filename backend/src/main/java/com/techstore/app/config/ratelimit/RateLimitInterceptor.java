@@ -1,8 +1,8 @@
 package com.techstore.app.config.ratelimit;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import com.techstore.app.config.jwt.JWTAuthFilter;
 import com.techstore.app.exception.RateLimitException;
 import com.techstore.app.helpers.CookiesHelper;
 import org.springframework.stereotype.Component;
@@ -18,6 +18,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
+
+    private static final Pattern IP_PATTERN = Pattern.compile(
+            "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
 
     private final RateLimitProperties properties;
 
@@ -54,7 +57,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (rule == null) return true;
 
         String userId = getUserId(request);
-        String ip = request.getRemoteAddr();
+        String ip = resolveIp(request);
 
         String identityKey = resolver.resolve(rule.getType(), userId, ip);
         String key = ruleName + ":" + identityKey;
@@ -70,7 +73,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     private String getUserId(HttpServletRequest request) {
 
-        String token = CookiesHelper.getCookieValue(request, "access_token");
+        String token = CookiesHelper.getCookieValue(request, "__Secure-access_token");
         try {
             String[] parts = token.split("\\.");
             if (parts.length < 2) return null;
@@ -89,5 +92,24 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private String resolveIp(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        String ip;
+
+        if (xForwardedFor == null || xForwardedFor.isBlank()) {
+            ip = request.getRemoteAddr();
+        } else {
+            ip = xForwardedFor.split(",")[0].trim();
+        }
+
+        if (!IP_PATTERN.matcher(ip).matches()) {
+            throw new RateLimitException(
+                    "Security policy violation: Invalid IP address format."
+            );
+        }
+
+        return ip;
     }
 }

@@ -29,6 +29,8 @@
 
 - **SR12.** The system must validate the user-submitted data, rejecting any input that does not conform to expected formats.
 
+- **SR15.** The system must validate the logical and contextual consistency of combined data items (e.g., verifying that order totals match the sum of item prices and validating stock availability) before finalizing transactions.
+
 ### Logging and Monitoring
 
 - **SR13.** All logs of sensitive actions must be securely stored and protected against unauthorized access to ensure integrity and confidentiality.
