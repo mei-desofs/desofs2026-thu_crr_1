@@ -57,7 +57,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String token = getCookieValue(request, "access_token");
+        String token = getCookieValue(request, "__Secure-access_token");
 
         if (token == null) {
             String header = request.getHeader("Authorization");

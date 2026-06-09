@@ -24,7 +24,7 @@ function getRole(payload: Record<string, unknown>): string | null {
 
 export default async function NavBar() {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token")?.value;
+  const accessToken = cookieStore.get("__Secure-access_token")?.value;
 
   let isLoggedIn = false;
   let role: string | null = null;
