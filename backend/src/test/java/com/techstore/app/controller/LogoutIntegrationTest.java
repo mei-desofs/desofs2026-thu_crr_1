@@ -74,21 +74,21 @@ class LogoutIntegrationTest {
                 .encodeToString(("{\"sub\":\"" + userId + "\"}")
                         .getBytes(StandardCharsets.UTF_8));
 
-        return new Cookie("access_token", "header." + payload + ".signature");
+        return new Cookie("__Secure-access_token", "header." + payload + ".signature");
     }
 
     @Test
     void logoutClearsBothAuthCookies() throws Exception {
         Cookie accessToken = accessTokenCookie(currentUserId);
-        Cookie refreshToken = new Cookie("refresh_token", "refresh-token-value");
+        Cookie refreshToken = new Cookie("__Secure-refresh_token", "refresh-token-value");
 
         mvc.perform(post("/auth/logout")
                         .cookie(accessToken, refreshToken))
                 .andExpect(status().isOk())
-                .andExpect(cookie().value("access_token", ""))
-                .andExpect(cookie().maxAge("access_token", 0))
-                .andExpect(cookie().value("refresh_token", ""))
-                .andExpect(cookie().maxAge("refresh_token", 0));
+                .andExpect(cookie().value("__Secure-access_token", ""))
+                .andExpect(cookie().maxAge("__Secure-access_token", 0))
+                .andExpect(cookie().value("__Secure-refresh_token", ""))
+                .andExpect(cookie().maxAge("__Secure-refresh_token", 0));
 
         verify(authService).logout(eq(accessToken.getValue()), any(HttpServletRequest.class));
     }

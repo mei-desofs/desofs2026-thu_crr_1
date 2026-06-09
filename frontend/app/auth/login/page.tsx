@@ -16,8 +16,17 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams?.get("next") || "/products";
+  const rawRedirectTo = searchParams?.get("next");
   const infoMessage = searchParams?.get("message") || null;
+
+  const getSafeRedirect = (url: string | null): string => {
+    if (!url) return "/products";
+
+    const isSafe = url.startsWith("/") && !url.startsWith("//");
+    return isSafe ? url : "/products";
+  };
+
+  const redirectTo = getSafeRedirect(rawRedirectTo);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +37,7 @@ export default function AuthPage() {
     try {
       const payload: LoginRequest = { email, password };
 
-      // Calls backend directly — backend sets HttpOnly cookies (access_token, refresh_token)
+      // Calls backend directly — backend sets HttpOnly cookies (__Secure-access_token, __Secure-refresh_token)
       // withCredentials: true in apiClient ensures cookies are stored by the browser
       await apiPost("/auth/login", payload);
       const me = await apiGet<{ role: string }>("/auth/me");

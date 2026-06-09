@@ -69,7 +69,7 @@ public class AuthController {
     @RateLimit("logout")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
 
         if (accessToken != null && !accessToken.isBlank()) {
             authService.logout(accessToken, httpRequest);
@@ -115,7 +115,7 @@ public class AuthController {
 
         LoginResponse response = authService.login(request, httpRequest);
 
-        // Guarda os tokens em cookies HttpOnly
+        // Guarda os tokens em cookies HttpOnly com prefixo __Secure-
         CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
 
         return ResponseEntity.ok().build();
@@ -128,7 +128,7 @@ public class AuthController {
             HttpServletResponse httpResponse) {
 
         // Lê o refresh_token do cookie
-        String refreshToken = CookiesHelper.getCookieValue(httpRequest, "refresh_token");
+        String refreshToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-refresh_token");
         if (refreshToken == null) {
             throw new IllegalArgumentException("Refresh token not found");
         }
