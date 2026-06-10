@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiPost } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 type Role = "MANAGER" | "CARRIER";
@@ -21,6 +22,7 @@ function getErrorMessage(err: unknown): string {
 }
 
 export default function InvitePage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("CARRIER");
   const [status, setStatus] = useState<FormStatus>("idle");
@@ -63,6 +65,15 @@ export default function InvitePage() {
     <div className="py-8">
       <main className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
+          <button
+            onClick={() => router.push("/manager/dashboard")}
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition text-sm mb-4"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Back to Dashboard
+          </button>
           <h1 className="text-4xl font-bold text-white mb-2">Invite User</h1>
           <p className="text-slate-400">
             Send an invitation to a new team member. This action is restricted

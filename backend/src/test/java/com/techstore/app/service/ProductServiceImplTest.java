@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -45,11 +47,14 @@ class ProductServiceImplTest {
     @Mock
     private ProductAuditLogger productAuditLogger;
 
+    @Mock
+    private FileUploadConfig fileUploadConfig;
+
     @InjectMocks
     private ProductServiceImpl productService;
 
     @Test
-    void shouldSaveProductAndReturnResponse() {
+    void shouldSaveProductAndReturnResponse() throws IOException {
         UUID categoryId = UUID.randomUUID();
         ProductRequestDTO dto = mockProductRequest("Keyboard", "Mechanical keyboard", new BigDecimal("89.99"), 100, categoryId);
         Category category = new Category("Peripherals");
@@ -59,7 +64,7 @@ class ProductServiceImplTest {
         when(categoryRepository.findById(new CategoryId(categoryId))).thenReturn(Optional.of(category));
         when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
-        ProductResponseDTO response = productService.save(dto);
+        ProductResponseDTO response = productService.save(dto, null);
 
         assertEquals("Keyboard", response.name());
         assertEquals("Mechanical keyboard", response.description());
@@ -74,7 +79,7 @@ class ProductServiceImplTest {
 
         when(categoryRepository.findById(new CategoryId(uuid))).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> productService.save(dto));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> productService.save(dto, null));
 
         assertEquals("Category not found", exception.getMessage());
     }

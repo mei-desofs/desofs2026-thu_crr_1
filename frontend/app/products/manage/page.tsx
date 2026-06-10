@@ -228,15 +228,23 @@ export default function CreateProductPage() {
       setPageStatus("submitting");
       setSubmitError(null);
 
-      // Submit product data as JSON (image support to be added when backend is ready)
-      await apiPost("/products", {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        price: parseFloat(form.price),
-        stockQuantity: parseInt(form.stockQuantity),
-        categoryId: form.categoryId,
-      });
+      const formData = new FormData();
+      formData.append("name", form.name.trim());
+      formData.append("description", form.description.trim());
+      formData.append("price", form.price);
+      formData.append("stockQuantity", form.stockQuantity);
+      formData.append("categoryId", form.categoryId);
 
+      if (image) {
+        formData.append("image", image);
+      }
+
+      await apiPost("/products", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      
       setPageStatus("success");
     } catch (err) {
       setSubmitError(getErrorMessage(err));
@@ -258,7 +266,20 @@ export default function CreateProductPage() {
           <p className="text-slate-400 text-sm mb-8">The product has been added to the catalogue.</p>
           <div className="flex gap-3">
             <button
-              onClick={() => setPageStatus("idle")}
+              onClick={() => {
+                setPageStatus("idle");
+                setForm({
+                  name: "",
+                  description: "",
+                  price: "",
+                  stockQuantity: "",
+                  categoryId: "",
+                });
+                setImage(null);
+                setImagePreview(null);
+                setFormErrors({});
+                setSubmitError(null);
+              }}
               className="flex-1 px-4 py-2.5 bg-slate-700 text-white rounded hover:bg-slate-600 transition"
             >
               Add another
@@ -300,11 +321,11 @@ export default function CreateProductPage() {
           {/* Image upload */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Product Image <span className="text-slate-500 font-normal">(optional — backend support coming soon)</span>
+              Product Image <span className="text-slate-500 font-normal">(optional)</span>
             </label>
             {imagePreview ? (
               <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-600 bg-slate-900">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                 <button
                   onClick={handleRemoveImage}
                   className="absolute top-2 right-2 p-1.5 bg-slate-900/80 text-slate-300 rounded-full hover:text-white hover:bg-slate-900 transition"

@@ -11,8 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/products")
@@ -26,14 +27,15 @@ public class ProductController {
 
     @RateLimit("create-product")
     @PostMapping
-    public ProductResponseDTO save(@Valid @RequestBody ProductRequestDTO productRequestDTO) {
-        return productService.save(productRequestDTO);
+    public ProductResponseDTO save(@Valid @ModelAttribute ProductRequestDTO productRequestDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        return productService.save(productRequestDTO, image);
     }
 
     @RateLimit("search-products")
     @GetMapping("/search")
     public Page<ProductResponseDTO> search(@RequestParam String productName,
-                                           @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findByNameLike(new ProductName(productName), pageable);
     }
 

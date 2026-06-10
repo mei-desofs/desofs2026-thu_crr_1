@@ -9,5 +9,6 @@ public record ProductResponseDTO(
         String description,
         BigDecimal price,
         Integer stockQuantity,
-        String categoryName
-) {}
+        String categoryName,
+        String imageDataUrl) {
+}
