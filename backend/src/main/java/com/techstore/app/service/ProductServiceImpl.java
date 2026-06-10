@@ -6,6 +6,7 @@ import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.dto.ProductResponseDTO;
 import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.dto.ProductUpdateDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.ProductAuditLogger;
 import com.techstore.app.mapper.ProductMapper;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductAuditLogger productAuditLogger;
 
     @Override
-    public ProductResponseDTO save(ProductRequestDTO dto) {
+    public ProductResponseDTO save(ProductRequestDTO dto, String userId) {
         try {
             Category category = categoryRepository.findById(new CategoryId(dto.categoryId()))
                     .orElseThrow(() -> new BusinessException("Category not found"));
@@ -36,14 +38,12 @@ public class ProductServiceImpl implements ProductService {
             Product product = ProductMapper.toEntity(dto, category, dto.stockQuantity());
             ProductResponseDTO response = ProductMapper.toResponse(productRepository.save(product));
 
-            // TODO: Change the userId from system to the real user
             productAuditLogger.logProductCreation(dto.name(), dto.categoryId().toString(), dto.price().toString(),
-                    "system");
+                    userId);
 
             return response;
         } catch (BusinessException e) {
-            // TODO: Change the userId from system to the real user
-            productAuditLogger.logProductCreationFailure(dto.name(), e.getMessage(), "system");
+            productAuditLogger.logProductCreationFailure(dto.name(), e.getMessage(), userId);
             throw e;
         }
     }
@@ -68,5 +68,38 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> products = productRepository.findAll(pageable);
 
         return products.map(ProductMapper::toResponse);
+    }
+
+    @Override
+    public ProductResponseDTO update(UUID id, ProductUpdateDTO dto, String userId) {
+        try {
+            Product product = productRepository.findById_Id(id);
+            if (product == null) {
+                throw new BusinessException("Product not found");
+            }
+
+            if (dto.name() != null)
+                product.updateName(dto.name());
+            if (dto.description() != null)
+                product.updateDescription(dto.description());
+            if (dto.price() != null)
+                product.updatePrice(dto.price());
+            if (dto.stockQuantity() != null)
+                product.updateStockQuantity(dto.stockQuantity());
+            if (dto.categoryId() != null) {
+                Category category = categoryRepository.findById(new CategoryId(dto.categoryId()))
+                        .orElseThrow(() -> new BusinessException("Category not found"));
+                product.updateCategory(category);
+            }
+
+            ProductResponseDTO response = ProductMapper.toResponse(productRepository.save(product));
+
+            productAuditLogger.logProductUpdate(id.toString(), userId);
+
+            return response;
+        } catch (BusinessException e) {
+            productAuditLogger.logProductUpdateFailure(id.toString(), e.getMessage(), userId);
+            throw e;
+        }
     }
 }

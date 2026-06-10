@@ -42,9 +42,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/index.html","/reset-password.html", "/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
+                        .requestMatchers("/index.html", "/reset-password.html", "/auth/login", "/auth/refresh",
+                                "/auth/callback", "/auth/register",
                                 "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/swagger-ui.html","/actuator/health")
+                                "/swagger-ui.html", "/actuator/health")
                         .permitAll()
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")
@@ -55,6 +56,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("MANAGER")
 
                         .requestMatchers("/cart/items").hasRole("CUSTOMER")
@@ -63,8 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/carrier").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.PATCH, "/orders/*/pickup").hasRole("CARRIER")
 
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         return http.build();
     }
@@ -73,10 +74,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:8081",
-            "https://techstore.francecentral.cloudapp.azure.com"
-        ));
+                "http://localhost:3000",
+                "http://localhost:8081",
+                "https://techstore.francecentral.cloudapp.azure.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
