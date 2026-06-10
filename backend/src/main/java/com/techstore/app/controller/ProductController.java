@@ -14,8 +14,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/products")
@@ -29,22 +30,15 @@ public class ProductController {
 
     @RateLimit("create-product")
     @PostMapping
-    public ProductResponseDTO save(@Valid @RequestBody ProductRequestDTO productRequestDTO,
-            Authentication authentication) {
-        return productService.save(productRequestDTO, authentication.getName());
-    }
-
-    @RateLimit("update-product")
-    @PatchMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> update(@PathVariable UUID id,
-            @Valid @RequestBody ProductUpdateDTO productUpdateDTO,
-            Authentication authentication) {
-        return ResponseEntity.ok(productService.update(id, productUpdateDTO, authentication.getName()));
+    public ProductResponseDTO save(@Valid @ModelAttribute ProductRequestDTO productRequestDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        return productService.save(productRequestDTO, image);
     }
 
     @RateLimit("search-products")
     @GetMapping("/search")
     public Page<ProductResponseDTO> search(@RequestParam String productName,
+            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
             @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findByNameLike(new ProductName(productName), pageable);
     }

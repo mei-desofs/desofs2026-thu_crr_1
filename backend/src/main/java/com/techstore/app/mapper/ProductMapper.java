@@ -17,18 +17,17 @@ public class ProductMapper {
             dto.description(),
             new Money(dto.price()),
             category,
-            new Quantity(quantity)
-        );
+            new Quantity(quantity));
     }
 
-    public static ProductResponseDTO toResponse(Product product) {
+    public static ProductResponseDTO toResponse(Product product, String uploadBasePath) {
         return new ProductResponseDTO(
                 product.getId().getId(),
                 product.getName().getProductName(),
                 product.getDescription().getDescription(),
                 product.getPrice().getMoneyValue(),
                 product.getStockQuantity().getQuantity(),
-                product.getCategory().getName().getCategoryName()
-        );
+                product.getCategory().getName().getCategoryName(),
+                ProductImageDataUrlMapper.toDataUrl(product.getImagePath(), uploadBasePath));
     }
 }

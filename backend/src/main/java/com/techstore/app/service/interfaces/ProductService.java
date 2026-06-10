@@ -7,14 +7,14 @@ import com.techstore.app.dto.ProductUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
 
-    ProductResponseDTO save(ProductRequestDTO productRequestDTO, String userId);
-
-    ProductResponseDTO update(UUID id, ProductUpdateDTO productUpdateDTO, String userId);
+    ProductResponseDTO save(ProductRequestDTO productRequestDTO, org.springframework.web.multipart.MultipartFile image)
+            throws IOException;
 
     List<ProductResponseDTO> findByName(ProductName productName);
 

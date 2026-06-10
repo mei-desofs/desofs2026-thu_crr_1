@@ -11,6 +11,7 @@ interface CartItem {
   productDescription: string;
   quantity: number;
   price: number;
+  imageDataUrl?: string | null;
 }
 
 export default function CartPage() {
@@ -183,8 +184,22 @@ function CartItemRow({ item, onRemove, onUpdateQuantity }: CartItemRowProps) {
   };
 
   return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 p-6 flex gap-6">
-      <div className="flex-1">
+    <div className="bg-slate-800 rounded-lg border border-slate-700 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6">
+      <div className="w-24 h-24 rounded-lg bg-slate-900 border border-slate-700 overflow-hidden shrink-0">
+        {item.imageDataUrl ? (
+          <img
+            src={item.imageDataUrl}
+            alt={item.productName}
+            className="w-full h-full object-fill"
+          />
+        ) : (
+          <div className="text-slate-500 text-[10px] text-center px-2">
+            No image
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
         <div ref={nameRef} className="text-lg font-semibold text-white mb-2" />
         <div ref={descriptionRef} className="text-slate-400 text-sm mb-4" />
 
@@ -226,7 +241,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity }: CartItemRowProps) {
       <button
         onClick={handleRemove}
         disabled={updating}
-        className="px-6 py-2 bg-red-900 text-red-100 rounded hover:bg-red-800 transition h-fit disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-6 py-2 bg-red-900 text-red-100 rounded hover:bg-red-800 transition h-fit disabled:opacity-50 disabled:cursor-not-allowed self-start sm:self-auto"
       >
         {updating ? "..." : "Remove"}
       </button>

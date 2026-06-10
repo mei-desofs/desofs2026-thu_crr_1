@@ -36,6 +36,9 @@ public class Product {
     @Embedded
     private Quantity stockQuantity;
 
+    @Column(nullable = true)
+    private String imagePath;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -44,6 +47,9 @@ public class Product {
 
     @Version
     private Long version;
+
+    public Product() {
+    }
 
     public Product() {
     }
@@ -76,23 +82,7 @@ public class Product {
         this.stockQuantity = new Quantity(this.stockQuantity.getQuantity() - quantity.getQuantity());
     }
 
-    public void updateName(String name) {
-        this.name = new ProductName(name);
-    }
-
-    public void updateDescription(String description) {
-        this.description = new ProductDescription(description);
-    }
-
-    public void updatePrice(java.math.BigDecimal price) {
-        this.price = new Money(price);
-    }
-
-    public void updateCategory(Category category) {
-        this.category = category;
-    }
-
-    public void updateStockQuantity(Integer quantity) {
-        this.stockQuantity = new Quantity(quantity);
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

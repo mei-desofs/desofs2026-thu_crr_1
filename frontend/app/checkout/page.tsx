@@ -11,6 +11,7 @@ interface CartItem {
   productDescription: string;
   quantity: number;
   price: number;
+  imageDataUrl?: string | null;
 }
 
 interface AddressForm {
@@ -235,11 +236,33 @@ export default function CheckoutPage() {
 
               <div className="space-y-3 mb-4 max-h-56 overflow-y-auto pr-1">
                 {cartItems.map((item) => (
-                  <div key={item.productId} className="flex justify-between text-sm">
-                    <span className="text-slate-300 truncate mr-2">
-                      {item.productName}{" "}
-                      <span className="text-slate-500">×{item.quantity}</span>
-                    </span>
+                  <div
+                    key={item.productId}
+                    className="flex items-center gap-3 text-sm"
+                  >
+                    <div className="w-10 h-10 rounded bg-slate-900 border border-slate-700 overflow-hidden shrink-0">
+                      {item.imageDataUrl ? (
+                        <img
+                          src={item.imageDataUrl}
+                          alt={item.productName}
+                          className="w-full h-full object-fill"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 text-[8px]">
+                          No img
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-slate-300 truncate">
+                        {item.productName}
+                      </p>
+                      <p className="text-slate-500 text-xs">
+                        ×{item.quantity}
+                      </p>
+                    </div>
+
                     <span className="text-white font-medium shrink-0">
                       €{(item.price * item.quantity).toFixed(2)}
                     </span>

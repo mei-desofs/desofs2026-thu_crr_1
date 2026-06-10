@@ -35,6 +35,18 @@ spring:
           auth: false
           starttls:
             enable: false
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+file:
+  upload:
+    base-path: ${FILE_UPLOAD_BASE_PATH:./uploads/products}
+    max-file-size: ${FILE_UPLOAD_MAX_SIZE:5242880}
+    max-files-per-user: ${FILE_UPLOAD_MAX_FILES:20}
+    max-image-dimension: ${FILE_UPLOAD_MAX_DIMENSION:4096}
 server:
   forward-headers-strategy: framework
   servlet:
