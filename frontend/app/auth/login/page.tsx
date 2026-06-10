@@ -193,24 +193,6 @@ export default function AuthPage() {
                 )}
               </button>
             </form>
-
-            <p className="mt-4 text-sm text-slate-400">
-              Don&apos;t have an account?{" "}
-              <a
-                href="/auth/register"
-                className="text-blue-400 hover:underline"
-              >
-                Register
-              </a>
-            </p>
-            <p className="mt-2 text-sm text-slate-400">
-              <a
-                href="/auth/reset-password"
-                className="text-blue-400 hover:underline"
-              >
-                Forgot password?
-              </a>
-            </p>
           </>
         ) : (
           <>
