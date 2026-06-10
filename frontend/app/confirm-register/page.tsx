@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 export default function ConfirmPage() {
-  const searchParams = useSearchParams();
   const [title, setTitle] = useState('⏳ A verificar...');
   const [message, setMessage] = useState('Por favor aguarda.');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
