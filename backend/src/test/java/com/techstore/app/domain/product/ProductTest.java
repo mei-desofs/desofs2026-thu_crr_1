@@ -46,4 +46,96 @@ class ProductTest {
         assertNull(product.getPrice());
         assertNull(product.getCategory());
     }
+
+    @Test
+    void shouldUpdateProductName() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        product.updateName("Gaming Mouse");
+
+        assertEquals("Gaming Mouse", product.getName().getProductName());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingNameToInvalid() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        assertThrows(BusinessException.class, () -> product.updateName("A"));
+    }
+
+    @Test
+    void shouldUpdateProductDescription() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        product.updateDescription("High-precision wireless gaming mouse");
+
+        assertEquals("High-precision wireless gaming mouse", product.getDescription().getDescription());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingDescriptionToTooShort() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        assertThrows(BusinessException.class, () -> product.updateDescription("Too short"));
+    }
+
+    @Test
+    void shouldUpdateProductPrice() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        product.updatePrice(new BigDecimal("79.99"));
+
+        assertEquals(new BigDecimal("79.99"), product.getPrice().getMoneyValue());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingPriceToNegative() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        assertThrows(BusinessException.class, () -> product.updatePrice(new BigDecimal("-1.00")));
+    }
+
+    @Test
+    void shouldUpdateProductCategory() {
+        Category oldCategory = new Category("Accessories");
+        Category newCategory = new Category("Gaming");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), oldCategory,
+                new Quantity(10));
+
+        product.updateCategory(newCategory);
+
+        assertEquals("Gaming", product.getCategory().getName().getCategoryName());
+    }
+
+    @Test
+    void shouldUpdateProductStockQuantity() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        product.updateStockQuantity(250);
+
+        assertEquals(250, product.getStockQuantity().getQuantity());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingStockToNegative() {
+        Category category = new Category("Accessories");
+        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
+                new Quantity(10));
+
+        assertThrows(BusinessException.class, () -> product.updateStockQuantity(-5));
+    }
 }

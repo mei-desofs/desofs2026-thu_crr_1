@@ -277,4 +277,55 @@ class ProductAuditLoggerTest {
 
         assertNotNull(productAuditLogger);
     }
+
+    @Test
+    void shouldLogProductUpdate() {
+        productAuditLogger.logProductUpdate("product-id-123", "manager-001");
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldLogProductUpdateWithNullUserId() {
+        productAuditLogger.logProductUpdate("product-id-123", null);
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldLogProductUpdateWithNullProductId() {
+        productAuditLogger.logProductUpdate(null, "manager-001");
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldLogProductUpdateFailure() {
+        productAuditLogger.logProductUpdateFailure("product-id-456", "Product not found", "manager-002");
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldLogProductUpdateFailureWithNullReason() {
+        productAuditLogger.logProductUpdateFailure("product-id-456", null, "manager-002");
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldLogProductUpdateFailureWithNullUserId() {
+        productAuditLogger.logProductUpdateFailure("product-id-456", "Category not found", null);
+
+        assertNotNull(productAuditLogger);
+    }
+
+    @Test
+    void shouldHandleSequentialUpdateLogs() {
+        productAuditLogger.logProductUpdate("id-1", "manager-1");
+        productAuditLogger.logProductUpdateFailure("id-2", "Not found", "manager-2");
+        productAuditLogger.logProductUpdate("id-3", "manager-3");
+
+        assertNotNull(productAuditLogger);
+    }
 }

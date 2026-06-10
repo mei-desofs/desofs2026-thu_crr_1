@@ -45,7 +45,7 @@ public class Bootstrapper implements CommandLineRunner {
             categoryService.save(new Category("Technology"));
         }
 
-        if  (categoryService.findByName(new CategoryName("Electronics")) == null) {
+        if (categoryService.findByName(new CategoryName("Electronics")) == null) {
             categoryService.save(new Category("Electronics"));
         }
 
@@ -61,12 +61,15 @@ public class Bootstrapper implements CommandLineRunner {
     }
 
     private void createProducts() {
-        if  (productService.findByName(new ProductName("Smartphone")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features", new BigDecimal("599.99"), 100, categoryService.findByName(new CategoryName("Electronics")).getId().getId()));
+        if (productService.findByName(new ProductName("Smartphone")).isEmpty()) {
+            productService.save(new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features",
+                    new BigDecimal("599.99"), 100,
+                    categoryService.findByName(new CategoryName("Electronics")).getId().getId()), "system");
         }
 
-        if  (productService.findByName(new ProductName("Smartphone Case")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), 100, categoryService.findByName(new CategoryName("Accessories")).getId().getId()));
+        if (productService.findByName(new ProductName("Smartphone Case")).isEmpty()) {
+            productService.save(new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), 100,
+                    categoryService.findByName(new CategoryName("Accessories")).getId().getId()), "system");
         }
 
         LOGGER.info("Products created successfully.");
