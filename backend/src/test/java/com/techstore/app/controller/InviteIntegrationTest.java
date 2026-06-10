@@ -77,7 +77,7 @@ public class InviteIntegrationTest {
                 .encodeToString(("{\"sub\":\"" + userId + "\"}")
                         .getBytes(StandardCharsets.UTF_8));
 
-        return new Cookie("access_token", "header." + payload + ".signature");
+        return new Cookie("__Secure-access_token", "header." + payload + ".signature");
     }
 
     @Test

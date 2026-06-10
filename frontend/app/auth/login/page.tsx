@@ -6,13 +6,12 @@ import { apiGet, apiPost } from "@/lib/api";
 import { isAxiosError } from "axios"
 
 type Step = "credentials" | "mfa";
- 
+
 interface MfaFactor {
   id: string;
   factor_type: string;
   status: string;
 }
-
 
 export default function AuthPage() {
   const [step, setStep]         = useState<Step>("credentials");
@@ -25,14 +24,23 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams?.get("next") || "/products";
+  const rawRedirectTo = searchParams?.get("next");
   const infoMessage = searchParams?.get("message") || null;
+
+  const getSafeRedirect = (url: string | null): string => {
+    if (!url) return "/products";
+
+    const isSafe = url.startsWith("/") && !url.startsWith("//");
+    return isSafe ? url : "/products";
+  };
+
+  const redirectTo = getSafeRedirect(rawRedirectTo);
 
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
- 
+
      try {
       await apiPost("/auth/login", { email, password });
     } catch {
@@ -41,7 +49,7 @@ export default function AuthPage() {
       return;
     }
 
- 
+
     try {
       const status = await apiGet<{ factors: MfaFactor[] }>("/auth/mfa/status");
       const activeFactor = status.factors?.find(
@@ -69,7 +77,7 @@ export default function AuthPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
- 
+
     try {
       await apiPost("/auth/mfa/challenge/verify", {
         factorId,
@@ -88,40 +96,40 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
- 
+
   const redirectByRole = async () => {
     const me = await apiGet<{ role: string }>("/auth/me");
     router.refresh();
     if (me.role === "MANAGER"){
       router.push("/manager/dashboard");
       router.refresh();
-    }     
+    }
     else if (me.role === "CARRIER")
-      { 
+      {
         router.push("/carrier");
         router.refresh();
       }
     else  {
       router.push(redirectTo);
       router.refresh();
-    }                          
+    }
   };
 
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-md bg-slate-800 rounded-lg p-8 border border-slate-700">
- 
+
         {step === "credentials" ? (
           <>
             <h1 className="text-2xl font-bold text-white mb-6">Sign In</h1>
- 
+
             {infoMessage && (
               <div className="mb-4 p-3 bg-blue-900/60 border border-blue-700 rounded text-blue-200 text-sm">
                 {infoMessage}
               </div>
             )}
- 
+
             <form onSubmit={handleCredentials} className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-300 mb-1" htmlFor="email">
@@ -152,11 +160,11 @@ export default function AuthPage() {
                   className="w-full px-3 py-2 rounded bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
- 
+
               {error && (
                 <p role="alert" className="text-red-400 text-sm">{error}</p>
               )}
- 
+
               <button
                 type="submit"
                 disabled={loading}
@@ -167,7 +175,7 @@ export default function AuthPage() {
                 ) : "Sign In"}
               </button>
             </form>
- 
+
             <p className="mt-4 text-sm text-slate-400">
               Don&apos;t have an account?{" "}
               <a href="/auth/register" className="text-blue-400 hover:underline">Register</a>
@@ -182,7 +190,7 @@ export default function AuthPage() {
             <p className="text-slate-400 text-sm mb-6">
               Enter the 6-digit code from your authenticator app.
             </p>
- 
+
             <form onSubmit={handleMfa} className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-300 mb-1" htmlFor="otp">
@@ -202,11 +210,11 @@ export default function AuthPage() {
                   className="w-full px-3 py-2 rounded bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-widest text-center text-xl disabled:opacity-50"
                 />
               </div>
- 
+
               {error && (
                 <p role="alert" className="text-red-400 text-sm">{error}</p>
               )}
- 
+
               <button
                 type="submit"
                 disabled={loading || otpCode.length !== 6}
@@ -216,7 +224,7 @@ export default function AuthPage() {
                   <><span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Verifying…</>
                 ) : "Verify"}
               </button>
- 
+
               <button
                 type="button"
                 onClick={() => { setStep("credentials"); setError(null); setOtpCode(""); }}
@@ -231,4 +239,3 @@ export default function AuthPage() {
     </div>
   );
 }
- 

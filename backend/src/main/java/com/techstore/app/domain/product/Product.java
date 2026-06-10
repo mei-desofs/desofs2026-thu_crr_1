@@ -42,6 +42,9 @@ public class Product {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version;
+
     public Product() {}
 
     public Product(String name, String description, Money price, Category category, Quantity stockQuantity) {

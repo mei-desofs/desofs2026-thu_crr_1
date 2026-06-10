@@ -24,7 +24,7 @@ function redirectToLogin(request: NextRequest, pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const accessToken = request.cookies.get("access_token")?.value;
+  const accessToken = request.cookies.get("__Secure-access_token")?.value;
   if (!accessToken) return redirectToLogin(request, pathname);
 
   const payload = decodeJwtPayload(accessToken);

@@ -102,6 +102,8 @@ threat modelling, secure design, secure archtecture and security test plan.
 
 - **SR12.** The system must validate the user-submitted data, rejecting any input that does not conform to expected formats.
 
+- **SR15.** The system must validate the logical and contextual consistency of combined data items (e.g., verifying that order totals match the sum of item prices and validating stock availability) before finalizing transactions.
+
 ### Logging and Monitoring
 
 - **SR13.** All logs of sensitive actions must be securely stored and protected against unauthorized access to ensure integrity and confidentiality.
@@ -115,6 +117,16 @@ threat modelling, secure design, secure archtecture and security test plan.
 ## Domain Model
 
 ![Domain Model](./domain_model/domain_model/DomainModel.svg)
+
+## Browser Security Requirements
+
+To ensure a secure user experience and protect against common web-based attacks, all browsers used to access the TechStore application must support the following security features:
+
+1.  **Transport Layer Security (TLS)**: Browsers must support TLS 1.2 or higher to establish encrypted HTTPS connections.
+2.  **HTTP Strict Transport Security (HSTS)**: Browsers must respect HSTS headers to prevent SSL stripping attacks and ensure all communication is forced over HTTPS.
+3.  **Modern Cookie Attributes**: Browsers must support and correctly handle `HttpOnly`, `Secure`, and `SameSite` cookie attributes used for session management and CSRF protection.
+4.  **Content Security Policy (CSP)**: It is recommended that browsers support modern CSP directives to mitigate XSS and data injection risks.
+
 
 # Design
 
