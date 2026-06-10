@@ -74,7 +74,12 @@ export default async function NavBar() {
                     My Deliveries
                   </Link>
                 )}
-                
+                <Link
+                  href="/settings/mfa"
+                  className="px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-600 transition"
+                >
+                  Security
+                </Link>
                 <LogoutButton />
               </>
             ) : (
