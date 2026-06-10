@@ -12,6 +12,7 @@ interface Product {
   description: string;
   price: number;
   stockQuantity: number;
+  imageDataUrl?: string | null;
 }
 
 interface ProductResponse {
@@ -185,6 +186,21 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-blue-500 transition">
+      <div className="h-52 bg-slate-900 border-b border-slate-700">
+        {product.imageDataUrl ? (
+          <img
+            src={product.imageDataUrl}
+            alt={product.name}
+            className="h-full w-full object-fill"
+            loading="lazy"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-slate-500 text-sm">
+            No image available
+          </div>
+        )}
+      </div>
+
       <div className="p-6">
         <div
           ref={nameRef}

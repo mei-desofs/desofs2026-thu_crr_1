@@ -16,6 +16,7 @@ interface OrderItem {
   productName: string;
   quantity: number;
   price: number;
+  imageDataUrl?: string | null;
 }
  
 interface Order {

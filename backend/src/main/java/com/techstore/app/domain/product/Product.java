@@ -36,6 +36,9 @@ public class Product {
     @Embedded
     private Quantity stockQuantity;
 
+    @Column(nullable = true)
+    private String imagePath;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -45,7 +48,8 @@ public class Product {
     @Version
     private Long version;
 
-    public Product() {}
+    public Product() {
+    }
 
     public Product(String name, String description, Money price, Category category, Quantity stockQuantity) {
         this.id = ProductId.newId();
@@ -73,5 +77,9 @@ public class Product {
             throw new BusinessException("Not enough stock for product: " + this.name.getProductName());
         }
         this.stockQuantity = new Quantity(this.stockQuantity.getQuantity() - quantity.getQuantity());
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }

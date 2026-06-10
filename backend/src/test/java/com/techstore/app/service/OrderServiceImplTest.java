@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
@@ -63,6 +64,9 @@ class OrderServiceImplTest {
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private FileUploadConfig fileUploadConfig;
 
     @InjectMocks
     private OrderServiceImpl orderService;
