@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.user.Email;
@@ -15,11 +16,14 @@ import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
@@ -28,6 +32,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,7 +65,7 @@ class AuthServiceImplTest {
     @Mock
     private NotificationService notificationService;
 
-    @Mock
+    @Spy
     private ObjectMapper objectMapper;
 
     @InjectMocks
@@ -600,5 +605,289 @@ class AuthServiceImplTest {
         Field field = AuthServiceImpl.class.getDeclaredField("webhookSecret");
         field.setAccessible(true);
         field.set(authService, value);
+    }
+
+    @Test
+    @DisplayName("Should register user successfully")
+    void testRegisterUserSuccess() {
+        RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
+        SupabaseUserResponse user = new SupabaseUserResponse("supabase-id", request.email(), null);
+
+        Email email = new Email(request.email());
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(supabaseAuthClient.signUp(request.email(), request.password(), "customer"))
+                .thenReturn(new SupabaseLoginResponse(null, null, null, null, user, null, null));
+
+        RegisterResponse response = authService.register(request, httpRequest);
+
+        assertEquals(request.email(), response.email());
+        assertEquals("supabase-id", response.userId());
+        assertEquals("Check your email for confirmation link", response.message());
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient).signUp(request.email(), request.password(), "customer");
+        verify(auditLogger).logRegisterAttempt(request.email(), true, httpRequest);
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    @DisplayName("Should reject register when email already exists")
+    void testRegisterEmailAlreadyExists() {
+        RegisterRequest request = new RegisterRequest("existing@example.com", "Secret123!");
+        Email email = new Email(request.email());
+
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.register(request, httpRequest)
+        );
+
+        assertEquals("Email already registered", exception.getMessage());
+
+        verify(passwordUtils, never()).validate(anyString(), anyString());
+        verify(supabaseAuthClient, never()).signUp(anyString(), anyString(), anyString());
+        verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    @DisplayName("Should fail register when password validation fails")
+    void testRegisterPasswordValidationFails() {
+        RegisterRequest request = new RegisterRequest("user@example.com", "password123");
+        Email email = new Email(request.email());
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        doThrow(new BusinessException("Password is too common"))
+                .when(passwordUtils)
+                .validate(request.password(), request.email());
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.register(request, httpRequest)
+        );
+
+        assertEquals("Password is too common", exception.getMessage());
+
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient, never()).signUp(any(), any(), any());
+        verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    @DisplayName("Should fail register when Supabase signup fails")
+    void testRegisterSupabaseSignupFails() {
+        RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
+        Email email = new Email(request.email());
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        doThrow(new IllegalStateException("Supabase error"))
+                .when(supabaseAuthClient)
+                .signUp(request.email(), request.password(), "customer");
+
+        assertThrows(IllegalStateException.class, () -> authService.register(request, httpRequest));
+
+        verify(passwordUtils).validate(request.password(), request.email());
+        verify(supabaseAuthClient).signUp(request.email(), request.password(), "customer");
+        verify(auditLogger).logRegisterAttempt(request.email(), false, httpRequest);
+        verifyNoInteractions(notificationService);
+    }
+
+    @Test
+    @DisplayName("Should register with null Supabase user in response")
+    void testRegisterWithNullSupabaseUser() {
+        RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
+        Email email = new Email(request.email());
+
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(supabaseAuthClient.signUp(request.email(), request.password(), "customer"))
+                .thenReturn(new SupabaseLoginResponse(null, null, null, null, null, null, null));
+
+        RegisterResponse response = authService.register(request, httpRequest);
+
+        assertEquals(request.email(), response.email());
+        assertNull(response.userId());
+        verify(auditLogger).logRegisterAttempt(request.email(), true, httpRequest);
+    }
+
+    @Test
+    @DisplayName("Should logout successfully")
+    void testLogoutSuccess() {
+        authService.logout("access-token", httpRequest);
+
+        verify(supabaseAuthClient).revokeToken("access-token");
+        verify(auditLogger).logLogoutAttempt("unknown", true, httpRequest);
+    }
+
+    @Test
+    @DisplayName("Should log failed logout when revoke token fails")
+    void testLogoutRevokeFails() {
+        doThrow(new IllegalStateException("Revoke failed"))
+                .when(supabaseAuthClient)
+                .revokeToken("access-token");
+
+        authService.logout("access-token", httpRequest);
+
+        verify(supabaseAuthClient).revokeToken("access-token");
+        verify(auditLogger).logLogoutAttempt("unknown", false, httpRequest);
+    }
+
+    @Test
+    @DisplayName("Should attempt logout even with network error")
+    void testLogoutNetworkError() {
+        doThrow(new RuntimeException("Network error"))
+                .when(supabaseAuthClient)
+                .revokeToken("access-token");
+
+        authService.logout("access-token", httpRequest);
+
+        verify(auditLogger).logLogoutAttempt("unknown", false, httpRequest);
+    }
+
+    @Test
+    @DisplayName("Should confirm email from register token successfully")
+    void testConfirmEmailFromRegisterSuccess() {
+        String supabaseUserId = "supabase-user-id";
+        String email = "user@example.com";
+        String token = createMockJWT(supabaseUserId, email);
+
+        when(userService.getUserBySupabaseId(supabaseUserId)).thenReturn(Optional.empty());
+
+        authService.confirmEmailFromRegister(token);
+
+        verify(userService).registerUser(supabaseUserId, email, "CUSTOMER");
+        verify(userService).confirmUserEmail(supabaseUserId);
+        verify(notificationService).sendEmail(
+                eq(email),
+                eq("TechStore - Registration Completed"),
+                contains("Welcome to TechStore")
+        );
+    }
+
+    @Test
+    @DisplayName("Should confirm email when user already exists")
+    void testConfirmEmailFromRegisterUserAlreadyExists() {
+        String supabaseUserId = "supabase-user-id";
+        String email = "user@example.com";
+        String token = createMockJWT(supabaseUserId, email);
+
+        User existingUser = mock(User.class);
+        when(userService.getUserBySupabaseId(supabaseUserId))
+                .thenReturn(Optional.of(existingUser));
+
+        authService.confirmEmailFromRegister(token);
+
+        verify(userService, never()).registerUser(anyString(), anyString(), anyString());
+        verify(userService).confirmUserEmail(supabaseUserId);
+        verify(notificationService).sendEmail(
+                eq(email),
+                eq("TechStore - Registration Completed"),
+                contains("Welcome to TechStore")
+        );
+    }
+
+    @Test
+    @DisplayName("Should confirm email even if notification fails")
+    void testConfirmEmailFromRegisterNotificationFails() {
+        String supabaseUserId = "supabase-user-id";
+        String email = "user@example.com";
+        String token = createMockJWT(supabaseUserId, email);
+
+        when(userService.getUserBySupabaseId(supabaseUserId)).thenReturn(Optional.empty());
+        doThrow(new RuntimeException("SMTP failed"))
+                .when(notificationService)
+                .sendEmail(anyString(), anyString(), anyString());
+
+        assertDoesNotThrow(() -> authService.confirmEmailFromRegister(token));
+
+        verify(userService).registerUser(supabaseUserId, email, "CUSTOMER");
+        verify(userService).confirmUserEmail(supabaseUserId);
+        verify(notificationService).sendEmail(eq(email), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should reject token with invalid format")
+    void testConfirmEmailFromRegisterInvalidToken() {
+        String invalidToken = "invalid.token";
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.confirmEmailFromRegister(invalidToken)
+        );
+
+        assertTrue(exception.getMessage().contains("Failed to confirm email"));
+    }
+
+    @Test
+    @DisplayName("Should reject token with null supabase user id")
+    void testConfirmEmailFromRegisterNullSupabaseId() {
+        String email = "user@example.com";
+        String token = createMockJWT(null, email);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.confirmEmailFromRegister(token)
+        );
+
+        assertEquals("Invalid token", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should reject token with null email")
+    void testConfirmEmailFromRegisterNullEmail() {
+        String supabaseUserId = "supabase-user-id";
+        String token = createMockJWT(supabaseUserId, null);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.confirmEmailFromRegister(token)
+        );
+
+        assertEquals("Invalid token", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should reject token with blank supabase user id")
+    void testConfirmEmailFromRegisterBlankSupabaseId() {
+        String email = "user@example.com";
+        String token = createMockJWT("", email);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.confirmEmailFromRegister(token)
+        );
+
+        assertEquals("Invalid token", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should reject token with blank email")
+    void testConfirmEmailFromRegisterBlankEmail() {
+        String supabaseUserId = "supabase-user-id";
+        String token = createMockJWT(supabaseUserId, "");
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> authService.confirmEmailFromRegister(token)
+        );
+
+        assertEquals("Invalid token", exception.getMessage());
+    }
+
+    private String createMockJWT(String sub, String email) {
+        try {
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("sub", sub);
+            claims.put("email", email);
+
+            String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{}".getBytes());
+            String payload = Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(new ObjectMapper().writeValueAsString(claims).getBytes());
+            String signature = "mock-signature";
+
+            return header + "." + payload + "." + signature;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to create mock JWT", e);
+        }
     }
 }
