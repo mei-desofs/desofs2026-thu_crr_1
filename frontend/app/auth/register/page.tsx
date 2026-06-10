@@ -63,7 +63,7 @@ export default function RegisterPage() {
           </p>
           <p className="text-slate-400 text-sm">
             Didn&apos;t receive an email?{" "}
-            <a href="/auth/login" className="text-blue-400 hover:underline">
+            <a href="/app/auth/login" className="text-blue-400 hover:underline">
               Try signing in
             </a>
           </p>
@@ -240,7 +240,7 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-sm text-slate-400">
           Already have an account?{" "}
-          <a href="/auth/login" className="text-blue-400 hover:underline">
+          <a href="/app/auth/login" className="text-blue-400 hover:underline">
             Sign In
           </a>
         </p>
