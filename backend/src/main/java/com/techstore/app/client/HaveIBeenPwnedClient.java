@@ -2,6 +2,7 @@ package com.techstore.app.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,7 +20,7 @@ public class HaveIBeenPwnedClient {
 
     private final RestTemplate restTemplate;
 
-    public HaveIBeenPwnedClient(RestTemplate restTemplate) {
+    public HaveIBeenPwnedClient(@Qualifier("supabaseRestTemplate") RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
