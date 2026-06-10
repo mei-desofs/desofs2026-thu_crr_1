@@ -158,4 +158,153 @@ class AuthAuditLoggerTest {
         
         verify(mockRequest, times(2)).getRemoteAddr();
     }
+    @Test
+    void shouldLogMfaEnrollSuccess() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaEnrollAttempt("user-123", true));
+    }
+
+    @Test
+    void shouldLogMfaEnrollFailure() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaEnrollAttempt("user-123", false));
+    }
+
+    @Test
+    void shouldLogMfaVerifySuccess() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaVerifyAttempt("user-123", true));
+    }
+
+    @Test
+    void shouldLogMfaVerifyFailure() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaVerifyAttempt("user-123", false));
+    }
+
+    @Test
+    void shouldLogMfaChallengeSuccess() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeAttempt("user-123", true));
+    }
+
+    @Test
+    void shouldLogMfaChallengeFailure() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeAttempt("user-123", false));
+    }
+
+    @Test
+    void shouldLogMfaChallengeVerifySuccess() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeVerify("user-123", true));
+    }
+
+    @Test
+    void shouldLogMfaChallengeVerifyFailure() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeVerify("user-123", false));
+    }
+
+    @Test
+    void shouldLogMfaUnenrollSuccess() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaUnenroll("user-123", true));
+    }
+
+    @Test
+    void shouldLogMfaUnenrollFailure() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaUnenroll("user-123", false));
+    }
+    @Test
+    void shouldHandleNullUserIdForMfaEnroll() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaEnrollAttempt(null, true));
+    }
+
+    @Test
+    void shouldHandleNullUserIdForMfaVerify() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaVerifyAttempt(null, true));
+    }
+
+    @Test
+    void shouldHandleNullUserIdForMfaChallenge() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeAttempt(null, true));
+    }
+
+    @Test
+    void shouldHandleNullUserIdForMfaChallengeVerify() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeVerify(null, true));
+    }
+
+    @Test
+    void shouldHandleNullUserIdForMfaUnenroll() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaUnenroll(null, true));
+    }
+
+    @Test
+    void shouldHandleEmptyUserIdForMfaEnroll() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaEnrollAttempt("", true));
+    }
+
+    @Test
+    void shouldHandleEmptyUserIdForMfaVerify() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaVerifyAttempt("", true));
+    }
+
+    @Test
+    void shouldHandleEmptyUserIdForMfaChallenge() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeAttempt("", true));
+    }
+
+    @Test
+    void shouldHandleEmptyUserIdForMfaChallengeVerify() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeVerify("", true));
+    }
+
+    @Test
+    void shouldHandleEmptyUserIdForMfaUnenroll() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaUnenroll("", true));
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInMfaEnrollUserId() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaEnrollAttempt("user@domain-123_456", true));
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInMfaVerifyUserId() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaVerifyAttempt("user@domain-123_456", true));
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInMfaChallengeUserId() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeAttempt("user@domain-123_456", true));
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInMfaChallengeVerifyUserId() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaChallengeVerify("user@domain-123_456", true));
+    }
+
+    @Test
+    void shouldHandleSpecialCharactersInMfaUnenrollUserId() {
+        assertDoesNotThrow(() ->
+                authAuditLogger.logMfaUnenroll("user@domain-123_456", true));
+    }
+
 }
