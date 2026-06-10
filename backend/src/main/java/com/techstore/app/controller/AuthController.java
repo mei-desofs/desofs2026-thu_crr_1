@@ -170,7 +170,7 @@ public class AuthController {
     @RateLimit("mfa-enroll")
     @PostMapping("/mfa/enroll")
     public ResponseEntity<MfaEnrollResponse> enrollMfa(HttpServletRequest httpRequest) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
         }
@@ -185,7 +185,7 @@ public class AuthController {
             @RequestBody @Valid MfaVerifyRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
         }
@@ -197,7 +197,7 @@ public class AuthController {
     public ResponseEntity<MfaChallengeResponse> challengeMfa(
             @RequestBody @Valid MfaChallengeRequest request,
             HttpServletRequest httpRequest) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
         }
@@ -210,7 +210,7 @@ public class AuthController {
             @RequestBody @Valid MfaChallengeVerifyRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
         }
@@ -225,7 +225,7 @@ public class AuthController {
     public ResponseEntity<Void> unenrollMfa(
             @PathVariable String factorId,
             HttpServletRequest httpRequest) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
         }
@@ -235,7 +235,7 @@ public class AuthController {
 
     @GetMapping("/mfa/status")
     public ResponseEntity<MfaStatusResponse> mfaStatus(HttpServletRequest httpRequest) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
 
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.status(401).build();
