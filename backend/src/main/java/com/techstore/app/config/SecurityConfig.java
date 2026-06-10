@@ -88,6 +88,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/carrier").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.PATCH, "/orders/*/pickup").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.GET, "/orders/pending").hasRole("CARRIER")
+
+                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/enroll").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/verify").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/challenge").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/challenge/verify").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.DELETE, "/auth/mfa/*").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.GET,    "/auth/mfa/status").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+
                         .anyRequest().authenticated()
                 );
 

@@ -5,11 +5,7 @@ import com.techstore.app.client.SupabaseAuthClient;
 import com.techstore.app.domain.user.Email;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
-import com.techstore.app.dto.auth.InviteSignupRequest;
-import com.techstore.app.dto.auth.RegisterRequest;
-import com.techstore.app.dto.auth.RegisterResponse;
-import com.techstore.app.dto.auth.SupabaseLoginResponse;
-import com.techstore.app.dto.auth.SupabaseUserResponse;
+import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.helpers.CookiesHelper;
 import com.techstore.app.logger.AuthAuditLogger;
@@ -18,6 +14,7 @@ import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.UserService;
 import com.techstore.app.util.PasswordUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -442,6 +439,161 @@ class AuthServiceImplTest {
 
         verify(auditLogger).logPasswordUpdate(true, httpRequest);
         verify(auditLogger, never()).logPasswordUpdate(false, httpRequest);
+    }
+
+    @Test
+    void shouldLogFailedMfaEnroll() {
+        String accessToken = "access-token";
+
+        when(supabaseAuthClient.enrollTotp(accessToken))
+                .thenThrow(new RuntimeException("fail"));
+
+
+        assertThrows(RuntimeException.class,
+                () -> authService.enrollMfa(accessToken));
+
+
+        verify(auditLogger).logMfaEnrollAttempt("unknown", false);
+    }
+    @Test
+    void shouldEnrollMfaSuccessfullyAndLogAudit() {
+        String accessToken = "access-token";
+        MfaEnrollResponse response = mock(MfaEnrollResponse.class);
+
+        when(supabaseAuthClient.enrollTotp(accessToken)).thenReturn(response);
+
+
+        MfaEnrollResponse result = authService.enrollMfa(accessToken);
+
+        assertEquals(response, result);
+
+
+        verify(supabaseAuthClient).enrollTotp(accessToken);
+        verify(auditLogger).logMfaEnrollAttempt("unknown", true);
+    }
+    @Test
+    void shouldCreateMfaChallengeSuccessfully() {
+        String accessToken = "access-token";
+        MfaChallengeResponse response = mock(MfaChallengeResponse.class);
+
+        when(supabaseAuthClient.createChallenge(accessToken, "factor-1"))
+                .thenReturn(response);
+
+
+        MfaChallengeResponse result = authService.challengeMfa(accessToken, "factor-1");
+
+        assertEquals(response, result);
+
+
+        verify(auditLogger).logMfaChallengeAttempt("unknown", true);
+    }
+
+    @Test
+    void shouldLogFailedMfaChallenge() {
+        String accessToken = "access-token";
+
+        when(supabaseAuthClient.createChallenge(accessToken, "factor-1"))
+                .thenThrow(new RuntimeException("fail"));
+
+
+        assertThrows(RuntimeException.class,
+                () -> authService.challengeMfa(accessToken, "factor-1"));
+
+
+        verify(auditLogger).logMfaChallengeAttempt("unknown", false);
+    }
+
+
+    @Test
+    void shouldVerifyMfaSuccessfully() {
+        String accessToken = "access-token";
+
+
+        authService.verifyMfa(accessToken, "factor-1", "challenge-1", "123456");
+
+
+        verify(supabaseAuthClient).verifyTotpCode(accessToken, "factor-1", "challenge-1", "123456");
+        verify(auditLogger).logMfaVerifyAttempt("unknown", true);
+    }
+
+    @Test
+    void shouldLogFailedMfaVerify() {
+        String accessToken = "access-token";
+
+        doThrow(new RuntimeException("invalid"))
+                .when(supabaseAuthClient)
+                .verifyTotpCode(any(), any(), any(), any());
+
+        assertThrows(RuntimeException.class,
+                () -> authService.verifyMfa(accessToken, "factor-1", "challenge-1", "123456"));
+
+
+        verify(auditLogger).logMfaVerifyAttempt("unknown", false);
+    }
+    @Test
+    void shouldVerifyChallengeAndSetCookiesAndAuditSuccess() {
+        String accessToken = "access-token";
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        SupabaseLoginResponse upgraded = mock(SupabaseLoginResponse.class);
+        when(upgraded.accessToken()).thenReturn("new-token");
+        when(upgraded.refreshToken()).thenReturn("refresh-token");
+
+        when(supabaseAuthClient.verifyTotpCode(any(), any(), any(), any()))
+                .thenReturn(upgraded);
+
+        authService.verifyChallengeCode(
+                accessToken, "factor-1", "challenge-1", "123456", response);
+
+
+        verify(supabaseAuthClient)
+                .verifyTotpCode(accessToken, "factor-1", "challenge-1", "123456");
+
+        verify(auditLogger).logMfaChallengeVerify("unknown", true);
+    }
+
+    @Test
+    void shouldLogFailedChallengeVerify() {
+        String accessToken = "access-token";
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        when(supabaseAuthClient.verifyTotpCode(any(), any(), any(), any()))
+                .thenThrow(new RuntimeException("invalid"));
+
+
+        assertThrows(RuntimeException.class,
+                () -> authService.verifyChallengeCode(
+                        accessToken, "factor-1", "challenge-1", "123456", response));
+
+
+        verify(auditLogger).logMfaChallengeVerify("unknown", false);
+    }
+    @Test
+    void shouldUnenrollMfaSuccessfully() {
+        String accessToken = "access-token";
+
+
+        authService.unenrollMfa(accessToken, "factor-1");
+
+
+        verify(supabaseAuthClient).unenrollFactor(accessToken, "factor-1");
+        verify(auditLogger).logMfaUnenroll("unknown", true);
+    }
+
+    @Test
+    void shouldLogFailedMfaUnenroll() {
+        String accessToken = "access-token";
+
+        doThrow(new RuntimeException("fail"))
+                .when(supabaseAuthClient)
+                .unenrollFactor(any(), any());
+
+
+        assertThrows(RuntimeException.class,
+                () -> authService.unenrollMfa(accessToken, "factor-1"));
+
+
+        verify(auditLogger).logMfaUnenroll("unknown", false);
     }
 
     private void setWebhookSecret(String value) throws Exception {

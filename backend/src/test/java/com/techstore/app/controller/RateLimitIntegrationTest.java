@@ -35,6 +35,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -286,4 +287,119 @@ public class RateLimitIntegrationTest {
                         .cookie(customerCookie))
                 .andExpect(status().isTooManyRequests());
     }
+    @Test
+    void mfaEnrollRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        for (int i = 0; i < 5; i++) {
+            mvc.perform(post("/auth/mfa/enroll")
+                            .with(csrf())
+                            .cookie(userCookie))
+                    .andExpect(status().isOk());
+        }
+
+        mvc.perform(post("/auth/mfa/enroll")
+                        .with(csrf())
+                        .cookie(userCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void mfaVerifyRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        String body = """
+        {
+          "factorId":"factorId",
+          "challengeId":"1"
+          "code":"123456"
+        }
+        """;
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/auth/mfa/verify")
+                            .with(csrf())
+                            .cookie(userCookie)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().is5xxServerError());
+        }
+
+        mvc.perform(post("/auth/mfa/verify")
+                        .with(csrf())
+                        .cookie(userCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void mfaChallengeRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        String body = """
+        {
+          "factorId":"factor-id"
+        }
+        """;
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/auth/mfa/challenge")
+                            .with(csrf())
+                            .cookie(userCookie)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isOk());
+        }
+
+        mvc.perform(post("/auth/mfa/challenge")
+                        .with(csrf())
+                        .cookie(userCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void mfaChallengeVerifyRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        String body = """
+        {
+          "factorId":"factor-id",
+          "challengeId":"challenge-id",
+          "code":"123456"
+        }
+        """;
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/auth/mfa/challenge/verify")
+                            .with(csrf())
+                            .cookie(userCookie)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isOk());
+        }
+
+        mvc.perform(post("/auth/mfa/challenge/verify")
+                        .with(csrf())
+                        .cookie(userCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void mfaUnenrollRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        for (int i = 0; i < 5; i++) {
+            mvc.perform(delete("/auth/mfa/{factorId}", "factor-id")
+                            .with(csrf())
+                            .cookie(userCookie))
+                    .andExpect(status().isNoContent());
+        }
+
+        mvc.perform(delete("/auth/mfa/{factorId}", "factor-id")
+                        .with(csrf())
+                        .cookie(userCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+
 }
