@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.cart.CartItem;
@@ -68,6 +69,9 @@ class CartItemServiceImplTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private FileUploadConfig fileUploadConfig;
 
     @InjectMocks
     private CartItemServiceImpl cartItemService;
