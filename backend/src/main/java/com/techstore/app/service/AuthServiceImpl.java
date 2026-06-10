@@ -409,4 +409,80 @@ public class AuthServiceImpl implements AuthService {
             <p>Thank you,<br/>TechStore Team</p>
             """.formatted(displayName);
     }
+    @Override
+    public MfaEnrollResponse enrollMfa(String accessToken) {
+        try {
+            MfaEnrollResponse response = supabaseClient.enrollTotp(accessToken);
+            String userId = extractUserId(accessToken);
+            auditLogger.logMfaEnrollAttempt(userId, true);
+            return response;
+        } catch (Exception ex) {
+            auditLogger.logMfaEnrollAttempt(extractUserId(accessToken), false);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void verifyMfa(String accessToken, String factorId,String challengeId, String code) {
+        String userId = extractUserId(accessToken);
+        try {
+            supabaseClient.verifyTotpCode(accessToken, factorId, challengeId, code);
+            auditLogger.logMfaVerifyAttempt(userId, true);
+        } catch (Exception ex) {
+            auditLogger.logMfaVerifyAttempt(userId, false);
+            throw ex;
+        }
+    }
+
+    @Override
+    public MfaChallengeResponse challengeMfa(String accessToken, String factorId) {
+        String userId = extractUserId(accessToken);
+        try {
+            MfaChallengeResponse response = supabaseClient.createChallenge(accessToken, factorId);
+            auditLogger.logMfaChallengeAttempt(userId, true);
+            return response;
+        } catch (Exception ex) {
+            auditLogger.logMfaChallengeAttempt(userId, false);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void verifyChallengeCode(String accessToken, String factorId,
+                                    String challengeId, String code,
+                                    jakarta.servlet.http.HttpServletResponse httpResponse) {
+        String userId = extractUserId(accessToken);
+        try {
+            SupabaseLoginResponse upgraded = supabaseClient.verifyTotpCode(
+                    accessToken, factorId, challengeId, code);
+
+            if (upgraded.accessToken() != null) {
+                CookiesHelper.setAuthCookies(
+                        httpResponse, upgraded.accessToken(), upgraded.refreshToken());
+            }
+
+            auditLogger.logMfaChallengeVerify(userId, true);
+        } catch (Exception ex) {
+            auditLogger.logMfaChallengeVerify(userId, false);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void unenrollMfa(String accessToken, String factorId) {
+        String userId = extractUserId(accessToken);
+        try {
+
+            supabaseClient.unenrollFactor(accessToken, factorId);
+            auditLogger.logMfaUnenroll(userId, true);
+        } catch (Exception ex) {
+            auditLogger.logMfaUnenroll(userId, false);
+            throw ex;
+        }
+    }
+
+    @Override
+    public MfaStatusResponse getMfaStatus(String accessToken) {
+        return supabaseClient.getMfaStatus(accessToken);
+    }
 }

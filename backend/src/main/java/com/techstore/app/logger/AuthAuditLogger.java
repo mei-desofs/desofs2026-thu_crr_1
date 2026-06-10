@@ -97,6 +97,35 @@ public class AuthAuditLogger {
         if (local.length() <= 2) return "**@" + parts[1];
         return local.charAt(0) + "***" + local.charAt(local.length() - 1) + "@" + parts[1];
     }
+    public void logMfaEnrollAttempt(String userId, boolean success) {
+        auditLog.info("event=MFA_ENROLL_{} | userId={} | timestamp={}",
+                success ? "SUCCESS" : "FAILURE",
+                sanitize(userId), System.currentTimeMillis());
+    }
+
+    public void logMfaVerifyAttempt(String userId, boolean success) {
+        auditLog.info("event=MFA_VERIFY_{} | userId={} | timestamp={}",
+                success ? "SUCCESS" : "FAILURE",
+                sanitize(userId), System.currentTimeMillis());
+    }
+
+    public void logMfaChallengeAttempt(String userId, boolean success) {
+        auditLog.info("event=MFA_CHALLENGE_{} | userId={} | timestamp={}",
+                success ? "SUCCESS" : "FAILURE",
+                sanitize(userId), System.currentTimeMillis());
+    }
+
+    public void logMfaChallengeVerify(String userId, boolean success) {
+        auditLog.info("event=MFA_CHALLENGE_VERIFY_{} | userId={} | timestamp={}",
+                success ? "SUCCESS" : "FAILURE",
+                sanitize(userId), System.currentTimeMillis());
+    }
+
+    public void logMfaUnenroll(String userId, boolean success) {
+        auditLog.info("event=MFA_UNENROLL_{} | userId={} | timestamp={}",
+                success ? "SUCCESS" : "FAILURE",
+                sanitize(userId), System.currentTimeMillis());
+    }
 
     private String sanitize(String input) {
         if (input == null) return null;

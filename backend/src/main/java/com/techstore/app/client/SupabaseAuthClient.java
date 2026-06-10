@@ -2,9 +2,7 @@ package com.techstore.app.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techstore.app.dto.auth.RefreshResponse;
-import com.techstore.app.dto.auth.SupabaseLoginResponse;
-import com.techstore.app.dto.auth.SupabaseUserResponse;
+import com.techstore.app.dto.auth.*;
 import com.techstore.app.exception.SecurityException;
 import com.techstore.app.util.ErrorCodeConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,21 +26,27 @@ public class SupabaseAuthClient {
     private static final String AUTH_REVOKE = "/auth/v1/token";
     private static final String AUTH_USER = "/auth/v1/user";
     private static final String AUTH_RECOVER = "/auth/v1/recover";
+    private static final String AUTH_MFA_ENROLL   = "/auth/v1/factors";
+    private static final String AUTH_MFA_CHALLENGE = "/auth/v1/factors/%s/challenge";
+    private static final String AUTH_MFA_VERIFY    = "/auth/v1/factors/%s/verify";
     private final String supabaseUrl;
     private final String redirectUrl;
     private final String supabaseAnonKey;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final RestTemplate userRestTemplate;
 
     public SupabaseAuthClient(@Value("${supabase.url}") String supabaseUrl,
                               @Value("${supabase.anon-key}") String supabaseAnonKey,
                               @Value("${supabase.redirect-url}") String redirectUrl,
-                              @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper) {
+                              @Qualifier("supabaseRestTemplate") RestTemplate restTemplate, ObjectMapper objectMapper,
+                              @Qualifier("supabaseUserRestTemplate") RestTemplate userRestTemplate) {
         this.supabaseUrl = supabaseUrl;
         this.supabaseAnonKey = supabaseAnonKey;
         this.redirectUrl = redirectUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.userRestTemplate = userRestTemplate;
     }
 
     public boolean userExists(String supabaseUserId) {
@@ -319,4 +323,103 @@ public class SupabaseAuthClient {
             throw mapException(ex);
         }
     }
+
+    public MfaEnrollResponse enrollTotp(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.set("apikey", supabaseAnonKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(
+                Map.of("factor_type", "totp", "friendly_name", "TechStore Authenticator"),
+                headers
+        );
+
+        try {
+            ResponseEntity<MfaEnrollResponse> response = userRestTemplate.exchange(
+                    supabaseUrl + AUTH_MFA_ENROLL,
+                    HttpMethod.POST, entity, MfaEnrollResponse.class);
+            if (response.getBody() == null) throw new IllegalStateException("Empty response from Supabase.");
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public MfaChallengeResponse createChallenge(String accessToken, String factorId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.set("apikey", supabaseAnonKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of(), headers);
+
+        try {
+            ResponseEntity<MfaChallengeResponse> response = userRestTemplate.exchange(
+                    supabaseUrl + String.format(AUTH_MFA_CHALLENGE, factorId),
+                    HttpMethod.POST, entity, MfaChallengeResponse.class);
+            if (response.getBody() == null) throw new IllegalStateException("Empty response from Supabase.");
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public SupabaseLoginResponse verifyTotpCode(String accessToken, String factorId,
+                                                String challengeId, String code) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.set("apikey", supabaseAnonKey);
+
+        Map<String, Object> body = challengeId != null
+                ? Map.of("challenge_id", challengeId, "code", code)
+                : Map.of("code", code);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<SupabaseLoginResponse> response = userRestTemplate.exchange(
+                    supabaseUrl + String.format(AUTH_MFA_VERIFY, factorId),
+                    HttpMethod.POST, entity, SupabaseLoginResponse.class);
+            if (response.getBody() == null) throw new IllegalStateException("Empty response from Supabase.");
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public void unenrollFactor(String accessToken, String factorId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.set("apikey", supabaseAnonKey);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            userRestTemplate.exchange(
+                    supabaseUrl + AUTH_MFA_ENROLL + "/" + factorId,
+                    HttpMethod.DELETE, entity, Void.class);
+        } catch (HttpStatusCodeException ex) {
+            throw mapException(ex);
+        }
+    }
+
+    public MfaStatusResponse getMfaStatus(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.set("apikey", supabaseAnonKey);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<MfaStatusResponse> response = userRestTemplate.exchange(
+                    supabaseUrl + "/auth/v1/user",
+                    HttpMethod.GET, entity, MfaStatusResponse.class);
+            if (response.getBody() == null) throw new IllegalStateException("Empty response from Supabase.");
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            System.out.println("STATUS: " + ex.getStatusCode());
+            System.out.println("BODY: " + ex.getResponseBodyAsString());
+            throw mapException(ex);
+        }
+    }
+
 }

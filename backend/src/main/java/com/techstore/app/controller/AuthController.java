@@ -166,4 +166,81 @@ public class AuthController {
                 .orElse(null);
         return ResponseEntity.ok(new MeResponse(role));
     }
+
+    @RateLimit("mfa-enroll")
+    @PostMapping("/mfa/enroll")
+    public ResponseEntity<MfaEnrollResponse> enrollMfa(HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        MfaEnrollResponse response = (authService.enrollMfa(accessToken));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @RateLimit("mfa-verify")
+    @PostMapping("/mfa/verify")
+    public ResponseEntity<Void> verifyMfa(
+            @RequestBody @Valid MfaVerifyRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.verifyMfa(accessToken, request.factorId(),request.challengeId(), request.code());
+        return ResponseEntity.ok().build();
+    }
+    @RateLimit("mfa-challenge")
+    @PostMapping("/mfa/challenge")
+    public ResponseEntity<MfaChallengeResponse> challengeMfa(
+            @RequestBody @Valid MfaChallengeRequest request,
+            HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.challengeMfa(accessToken, request.factorId()));
+    }
+
+    @RateLimit("mfa-challenge-verify")
+    @PostMapping("/mfa/challenge/verify")
+    public ResponseEntity<Void> verifyChallengeCode(
+            @RequestBody @Valid MfaChallengeVerifyRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.verifyChallengeCode(
+                accessToken, request.factorId(), request.challengeId(), request.code(),
+                httpResponse);
+        return ResponseEntity.ok().build();
+    }
+
+    @RateLimit("mfa-unenroll")
+    @DeleteMapping("/mfa/{factorId}")
+    public ResponseEntity<Void> unenrollMfa(
+            @PathVariable String factorId,
+            HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.unenrollMfa(accessToken, factorId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/mfa/status")
+    public ResponseEntity<MfaStatusResponse> mfaStatus(HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.getMfaStatus(accessToken));
+    }
+
 }
