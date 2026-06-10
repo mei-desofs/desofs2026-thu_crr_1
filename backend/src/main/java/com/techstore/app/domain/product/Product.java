@@ -42,7 +42,8 @@ public class Product {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Product() {}
+    public Product() {
+    }
 
     public Product(String name, String description, Money price, Category category, Quantity stockQuantity) {
         this.id = ProductId.newId();
@@ -70,5 +71,25 @@ public class Product {
             throw new BusinessException("Not enough stock for product: " + this.name.getProductName());
         }
         this.stockQuantity = new Quantity(this.stockQuantity.getQuantity() - quantity.getQuantity());
+    }
+
+    public void updateName(String name) {
+        this.name = new ProductName(name);
+    }
+
+    public void updateDescription(String description) {
+        this.description = new ProductDescription(description);
+    }
+
+    public void updatePrice(java.math.BigDecimal price) {
+        this.price = new Money(price);
+    }
+
+    public void updateCategory(Category category) {
+        this.category = category;
+    }
+
+    public void updateStockQuantity(Integer quantity) {
+        this.stockQuantity = new Quantity(quantity);
     }
 }

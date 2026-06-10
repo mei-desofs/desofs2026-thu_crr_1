@@ -18,8 +18,7 @@ public class ProductAuditLogger {
                 categoryId,
                 price,
                 userId,
-                Instant.now()
-        );
+                Instant.now());
 
         appLog.info("Product created: name={}, category={}, price={}",
                 sanitize(productName),
@@ -32,12 +31,29 @@ public class ProductAuditLogger {
                 sanitize(productName),
                 reason,
                 userId,
-                Instant.now()
-        );
+                Instant.now());
+    }
+
+    public void logProductUpdate(String productId, String userId) {
+        auditLog.info("event=PRODUCT_UPDATE | productId={} | userId={} | timestamp={}",
+                productId,
+                userId,
+                Instant.now());
+
+        appLog.info("Product updated: id={}", productId);
+    }
+
+    public void logProductUpdateFailure(String productId, String reason, String userId) {
+        auditLog.warn("event=PRODUCT_UPDATE_FAILURE | productId={} | reason={} | userId={} | timestamp={}",
+                productId,
+                reason,
+                userId,
+                Instant.now());
     }
 
     private String sanitize(String input) {
-        if (input == null) return null;
+        if (input == null)
+            return null;
         return input.replaceAll("[\\r\\n\\t]", "_")
                 .replaceAll("\\p{Cntrl}", "");
     }

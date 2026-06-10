@@ -21,6 +21,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.techstore.app.dto.ProductUpdateDTO;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -28,9 +30,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,15 +55,17 @@ class ProductServiceImplTest {
     @Test
     void shouldSaveProductAndReturnResponse() {
         UUID categoryId = UUID.randomUUID();
-        ProductRequestDTO dto = mockProductRequest("Keyboard", "Mechanical keyboard", new BigDecimal("89.99"), 100, categoryId);
+        ProductRequestDTO dto = mockProductRequest("Keyboard", "Mechanical keyboard", new BigDecimal("89.99"), 100,
+                categoryId);
         Category category = new Category("Peripherals");
 
-        Product savedProduct = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), category, new Quantity(100));
+        Product savedProduct = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")),
+                category, new Quantity(100));
 
         when(categoryRepository.findById(new CategoryId(categoryId))).thenReturn(Optional.of(category));
         when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
-        ProductResponseDTO response = productService.save(dto);
+        ProductResponseDTO response = productService.save(dto, "manager-001");
 
         assertEquals("Keyboard", response.name());
         assertEquals("Mechanical keyboard", response.description());
@@ -74,7 +80,8 @@ class ProductServiceImplTest {
 
         when(categoryRepository.findById(new CategoryId(uuid))).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> productService.save(dto));
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> productService.save(dto, "manager-001"));
 
         assertEquals("Category not found", exception.getMessage());
     }
@@ -84,8 +91,10 @@ class ProductServiceImplTest {
         Category peripherals = new Category("Peripherals");
         Category audio = new Category("Audio");
 
-        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals, new Quantity(100));
-        Product headset = new Product("Keyboard", "Gaming headset", new Money(new BigDecimal("59.90")), audio, new Quantity(100));
+        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")),
+                peripherals, new Quantity(100));
+        Product headset = new Product("Keyboard", "Gaming headset", new Money(new BigDecimal("59.90")), audio,
+                new Quantity(100));
 
         when(productRepository.findByName(new ProductName("Keyboard"))).thenReturn(List.of(keyboard, headset));
 
@@ -108,8 +117,10 @@ class ProductServiceImplTest {
         Category peripherals = new Category("Peripherals");
         Category audio = new Category("Audio");
 
-        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals, new Quantity(100));
-        Product headset = new Product("Gaming Keyboard", "RGB keyboard", new Money(new BigDecimal("59.90")), audio, new Quantity(100));
+        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")),
+                peripherals, new Quantity(100));
+        Product headset = new Product("Gaming Keyboard", "RGB keyboard", new Money(new BigDecimal("59.90")), audio,
+                new Quantity(100));
 
         Pageable pageable = PageRequest.of(0, 5);
         Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
@@ -151,8 +162,10 @@ class ProductServiceImplTest {
         Category peripherals = new Category("Peripherals");
         Category audio = new Category("Audio");
 
-        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")), peripherals, new Quantity(100));
-        Product headset = new Product("Headset", "Gaming headset", new Money(new BigDecimal("59.90")), audio, new Quantity(100));
+        Product keyboard = new Product("Keyboard", "Mechanical keyboard", new Money(new BigDecimal("89.99")),
+                peripherals, new Quantity(100));
+        Product headset = new Product("Headset", "Gaming headset", new Money(new BigDecimal("59.90")), audio,
+                new Quantity(100));
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> productsPage = new PageImpl<>(List.of(keyboard, headset), pageable, 2);
@@ -189,7 +202,8 @@ class ProductServiceImplTest {
         assertEquals(0, response.getContent().size());
     }
 
-    private ProductRequestDTO mockProductRequest(String name, String description, BigDecimal price, Integer stockQuantity , UUID categoryId) {
+    private ProductRequestDTO mockProductRequest(String name, String description, BigDecimal price,
+            Integer stockQuantity, UUID categoryId) {
         ProductRequestDTO dto = mock(ProductRequestDTO.class);
         when(dto.name()).thenReturn(name);
         when(dto.description()).thenReturn(description);
@@ -203,5 +217,153 @@ class ProductServiceImplTest {
         ProductRequestDTO dto = mock(ProductRequestDTO.class);
         when(dto.categoryId()).thenReturn(categoryId);
         return dto;
+    }
+
+    @Test
+    void shouldUpdateProductNameAndReturnResponse() {
+        UUID productId = UUID.randomUUID();
+        Category category = new Category("Peripherals");
+        Product existing = new Product("OldName", "Some description here", new Money(new BigDecimal("50.00")), category,
+                new Quantity(10));
+
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+        when(dto.name()).thenReturn("NewName");
+        when(dto.description()).thenReturn(null);
+        when(dto.price()).thenReturn(null);
+        when(dto.stockQuantity()).thenReturn(null);
+        when(dto.categoryId()).thenReturn(null);
+
+        when(productRepository.findById_Id(productId)).thenReturn(existing);
+        when(productRepository.save(any(Product.class))).thenReturn(existing);
+
+        ProductResponseDTO response = productService.update(productId, dto, "manager-001");
+
+        assertNotNull(response);
+        assertEquals("NewName", response.name());
+    }
+
+    @Test
+    void shouldUpdateProductPriceAndReturnResponse() {
+        UUID productId = UUID.randomUUID();
+        Category category = new Category("Audio");
+        Product existing = new Product("Headset", "Gaming headset model", new Money(new BigDecimal("59.90")), category,
+                new Quantity(20));
+
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+        when(dto.name()).thenReturn(null);
+        when(dto.description()).thenReturn(null);
+        when(dto.price()).thenReturn(new BigDecimal("79.90"));
+        when(dto.stockQuantity()).thenReturn(null);
+        when(dto.categoryId()).thenReturn(null);
+
+        when(productRepository.findById_Id(productId)).thenReturn(existing);
+        when(productRepository.save(any(Product.class))).thenReturn(existing);
+
+        ProductResponseDTO response = productService.update(productId, dto, "manager-001");
+
+        assertNotNull(response);
+        assertEquals(new BigDecimal("79.90"), response.price());
+    }
+
+    @Test
+    void shouldUpdateProductCategoryAndReturnResponse() {
+        UUID productId = UUID.randomUUID();
+        UUID newCategoryId = UUID.randomUUID();
+        Category oldCategory = new Category("Peripherals");
+        Category newCategory = new Category("Gaming");
+        Product existing = new Product("Keyboard", "Mechanical keyboard model", new Money(new BigDecimal("89.99")),
+                oldCategory, new Quantity(50));
+
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+        when(dto.name()).thenReturn(null);
+        when(dto.description()).thenReturn(null);
+        when(dto.price()).thenReturn(null);
+        when(dto.stockQuantity()).thenReturn(null);
+        when(dto.categoryId()).thenReturn(newCategoryId);
+
+        when(productRepository.findById_Id(productId)).thenReturn(existing);
+        when(categoryRepository.findById(new CategoryId(newCategoryId))).thenReturn(Optional.of(newCategory));
+        when(productRepository.save(any(Product.class))).thenReturn(existing);
+
+        ProductResponseDTO response = productService.update(productId, dto, "manager-001");
+
+        assertNotNull(response);
+        assertEquals("Gaming", response.categoryName());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingNonExistentProduct() {
+        UUID productId = UUID.randomUUID();
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+
+        when(productRepository.findById_Id(productId)).thenReturn(null);
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> productService.update(productId, dto, "manager-001"));
+
+        assertEquals("Product not found", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingWithNonExistentCategory() {
+        UUID productId = UUID.randomUUID();
+        UUID badCategoryId = UUID.randomUUID();
+        Category category = new Category("Peripherals");
+        Product existing = new Product("Keyboard", "Mechanical keyboard model", new Money(new BigDecimal("89.99")),
+                category, new Quantity(50));
+
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+        when(dto.name()).thenReturn(null);
+        when(dto.description()).thenReturn(null);
+        when(dto.price()).thenReturn(null);
+        when(dto.stockQuantity()).thenReturn(null);
+        when(dto.categoryId()).thenReturn(badCategoryId);
+
+        when(productRepository.findById_Id(productId)).thenReturn(existing);
+        when(categoryRepository.findById(new CategoryId(badCategoryId))).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> productService.update(productId, dto, "manager-001"));
+
+        assertEquals("Category not found", exception.getMessage());
+    }
+
+    @Test
+    void shouldCallAuditLoggerOnSuccessfulUpdate() {
+        UUID productId = UUID.randomUUID();
+        Category category = new Category("Peripherals");
+        Product existing = new Product("Keyboard", "Mechanical keyboard model", new Money(new BigDecimal("89.99")),
+                category, new Quantity(50));
+
+        ProductUpdateDTO dto = mock(ProductUpdateDTO.class);
+        when(dto.name()).thenReturn("Updated Keyboard");
+        when(dto.description()).thenReturn(null);
+        when(dto.price()).thenReturn(null);
+        when(dto.stockQuantity()).thenReturn(null);
+        when(dto.categoryId()).thenReturn(null);
+
+        when(productRepository.findById_Id(productId)).thenReturn(existing);
+        when(productRepository.save(any(Product.class))).thenReturn(existing);
+
+        productService.update(productId, dto, "manager-001");
+
+        verify(productAuditLogger).logProductUpdate(productId.toString(), "manager-001");
+    }
+
+    @Test
+    void shouldCallAuditLoggerWithRealUserIdOnSave() {
+        UUID categoryId = UUID.randomUUID();
+        ProductRequestDTO dto = mockProductRequest("Monitor", "4K gaming monitor", new BigDecimal("399.99"), 5,
+                categoryId);
+        Category category = new Category("Displays");
+        Product saved = new Product("Monitor", "4K gaming monitor", new Money(new BigDecimal("399.99")), category,
+                new Quantity(5));
+
+        when(categoryRepository.findById(new CategoryId(categoryId))).thenReturn(Optional.of(category));
+        when(productRepository.save(any(Product.class))).thenReturn(saved);
+
+        productService.save(dto, "manager-007");
+
+        verify(productAuditLogger).logProductCreation("Monitor", categoryId.toString(), "399.99", "manager-007");
     }
 }

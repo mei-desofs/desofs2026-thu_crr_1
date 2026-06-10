@@ -6,7 +6,9 @@ spring:
     active: bootstrap
 
   config:
-    import: optional:classpath:ratelimit.yaml
+    import:
+      - optional:classpath:ratelimit.yaml
+      - optional:file:.env[.properties]
 
   datasource:
     url: ${DB_URL}
@@ -55,6 +57,7 @@ supabase:
   url: ${SUPABASE_URL}
   anon-key: ${SUPABASE_ANON_KEY}
   service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  webhook-secret: ${SUPABASE_WEBHOOK_SECRET}
   redirect-url: ${SUPABASE_REDIRECT_URL}
   jwt-secret: ${SUPABASE_JWT_SECRET}
   issuer: ${SUPABASE_ISSUER}
