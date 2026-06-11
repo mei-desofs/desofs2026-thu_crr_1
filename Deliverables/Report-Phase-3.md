@@ -92,7 +92,7 @@ The system architecture consists of a Next.js web frontend, a Spring Boot REST A
 | NFR11 | API must follow REST conventions with consistent error handling | <span style="color: green;">Done</span> |
 | NFR12 | OpenAPI documentation must be maintained for all endpoints | <span style="color: green;">Done</span> |
 | NFR13 | Dependency scanning must block critical vulnerabilities | <span style="color: green;">Done</span> |
-| NFR14 | Automated tests must ensure ≥80% coverage in core layers | <span style="color: orange;">Partially Done</span> |
+| NFR14 | Automated tests must ensure ≥80% coverage in core layers | <span style="color: green;">Done</span> |
 | NFR15 | Secrets must not be stored in source code; secret scanning enabled | <span style="color: green;">Done</span> |
 
 ---
