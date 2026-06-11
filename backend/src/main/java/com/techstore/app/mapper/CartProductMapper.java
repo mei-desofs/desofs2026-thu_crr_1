@@ -6,13 +6,13 @@ import com.techstore.app.dto.cart.CartProductResponseDto;
 
 public class CartProductMapper {
 
-    public static CartProductResponseDto toResponseDto(CartItem cartItem, Product product) {
+    public static CartProductResponseDto toResponseDto(CartItem cartItem, Product product, String uploadBasePath) {
         return new CartProductResponseDto(
                 product.getId().getId().toString(),
                 product.getName().getProductName(),
                 product.getDescription().getDescription(),
                 cartItem.getQuantity().getQuantity(),
-                product.getPrice().getMoneyValue()
-        );
+                product.getPrice().getMoneyValue(),
+                ProductImageDataUrlMapper.toDataUrl(product.getImagePath(), uploadBasePath));
     }
 }

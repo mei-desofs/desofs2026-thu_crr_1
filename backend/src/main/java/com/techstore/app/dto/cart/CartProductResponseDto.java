@@ -11,10 +11,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartProductResponseDto implements Serializable {
-    
+
     private String productId;
     private String productName;
     private String productDescription;
     private Integer quantity;
     private BigDecimal price;
+    private String imageDataUrl;
 }

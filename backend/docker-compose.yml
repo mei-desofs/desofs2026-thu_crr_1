@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     command: ["--no-caps"]
     volumes:
-      - ./docker/syslog/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf  # ← path correto
+      - ./docker/syslog/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf # ← path correto
       - syslog_data:/var/log/syslog-ng
     ports:
       - "514:514/udp"
@@ -42,6 +42,7 @@ services:
 volumes:
   tech_store_pg_data:
   syslog_data:
+  product_images:
 
 networks:
   tech_store_network:

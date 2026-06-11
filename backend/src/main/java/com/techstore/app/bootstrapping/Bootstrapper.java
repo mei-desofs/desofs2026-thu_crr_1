@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class Bootstrapper implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(final String... args) {
+    public void run(final String... args) throws IOException {
         LOGGER.info("Starting application bootstrap...");
 
         createCategories();
@@ -45,7 +46,7 @@ public class Bootstrapper implements CommandLineRunner {
             categoryService.save(new Category("Technology"));
         }
 
-        if  (categoryService.findByName(new CategoryName("Electronics")) == null) {
+        if (categoryService.findByName(new CategoryName("Electronics")) == null) {
             categoryService.save(new Category("Electronics"));
         }
 
@@ -60,13 +61,20 @@ public class Bootstrapper implements CommandLineRunner {
         LOGGER.info("Categories created successfully.");
     }
 
-    private void createProducts() {
-        if  (productService.findByName(new ProductName("Smartphone")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features", new BigDecimal("599.99"), 100, categoryService.findByName(new CategoryName("Electronics")).getId().getId()));
+    private void createProducts() throws IOException {
+        if (productService.findByName(new ProductName("Smartphone")).isEmpty()) {
+            productService.save(
+                new ProductRequestDTO("Smartphone", "Latest model smartphone with advanced features",
+                        new BigDecimal("599.99"), 100,
+                        categoryService.findByName(new CategoryName("Electronics")).getId().getId()),
+                null);
         }
 
-        if  (productService.findByName(new ProductName("Smartphone Case")).isEmpty()) {
-            productService.save(new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), 100, categoryService.findByName(new CategoryName("Accessories")).getId().getId()));
+        if (productService.findByName(new ProductName("Smartphone Case")).isEmpty()) {
+            productService.save(
+                new ProductRequestDTO("Smartphone Case", "Strong case", new BigDecimal("20.00"), 100,
+                        categoryService.findByName(new CategoryName("Accessories")).getId().getId()),
+                null);
         }
 
         LOGGER.info("Products created successfully.");

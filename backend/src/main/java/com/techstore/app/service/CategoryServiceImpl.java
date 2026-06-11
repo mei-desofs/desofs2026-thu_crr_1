@@ -2,12 +2,18 @@ package com.techstore.app.service;
 
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.category.CategoryName;
+import com.techstore.app.dto.category.CategoryResponseDTO;
 import com.techstore.app.repository.CategoryRepository;
 import com.techstore.app.service.interfaces.CategoryService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
@@ -25,5 +31,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category findByName(CategoryName name) {
         return categoryRepository.findByName(name);
+    }
+
+    @Override
+    public List<CategoryResponseDTO> findAll() {
+        var categories = categoryRepository.findAll();
+        return categories.stream()
+                .map(category -> new CategoryResponseDTO(category.getId().getId(), category.getName().getCategoryName()))
+                .toList();
     }
 }

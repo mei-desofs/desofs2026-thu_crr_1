@@ -84,3 +84,33 @@ ratelimit:
       type: USER
       capacity: 10
       duration: PT1M
+
+    carrier-list-pending-orders:
+      type: USER
+      capacity: 30
+      duration: PT1M
+
+    mfa-enroll:
+      type: USER
+      capacity: 5
+      duration: PT1H
+
+    mfa-verify:
+      type: USER
+      capacity: 10
+      duration: PT1M
+
+    mfa-challenge:
+      type: USER
+      capacity: 10
+      duration: PT1M
+
+    mfa-unenroll:
+      type: USER
+      capacity: 5
+      duration: PT1H
+
+    mfa-challenge-verify:
+      type: USER
+      capacity: 10
+      duration: PT1M

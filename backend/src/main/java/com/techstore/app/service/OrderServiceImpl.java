@@ -4,9 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.cart.Cart;
-import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
+import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.user.SupabaseUserId;
@@ -42,17 +43,20 @@ public class OrderServiceImpl implements OrderService {
 
     private final NotificationService notificationService;
 
+    private final FileUploadConfig fileUploadConfig;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     public OrderServiceImpl(OrderRepository orderRepository, CartRepository cartRepository,
             CustomerRepository customerRepository, UserRepository userRepository, OrderAuditLogger orderAuditLogger,
-            NotificationService notificationService) {
+            NotificationService notificationService, FileUploadConfig fileUploadConfig) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.orderAuditLogger = orderAuditLogger;
         this.notificationService = notificationService;
+        this.fileUploadConfig = fileUploadConfig;
     }
 
     @Transactional
@@ -60,27 +64,26 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDTO createOrder(CreateOrderRequestDTO request, String supabaseUserId) {
 
         String userId = userRepository.findBySupabaseUserId(
-                        SupabaseUserId.fromString(supabaseUserId))
+                SupabaseUserId.fromString(supabaseUserId))
                 .orElseThrow(() -> new BusinessException("User not found")).getId().getId().toString();
 
         try {
-            Cart cart = cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId)).orElseThrow(() ->
-                    new BusinessException("Cart not found"));
+            Cart cart = cartRepository.findBySupabaseUserId(UUID.fromString(supabaseUserId))
+                    .orElseThrow(() -> new BusinessException("Cart not found"));
 
             String cartId = cart.getId().getId().toString();
 
             orderAuditLogger.logOrderCreationAttempt(userId, cartId);
 
             Customer customer = customerRepository.findBySupabaseUserId(
-                            SupabaseUserId.fromString(supabaseUserId))
+                    SupabaseUserId.fromString(supabaseUserId))
                     .orElseThrow(() -> new BusinessException("Customer not found"));
 
             List<OrderItem> orderItems = cart.toOrderItems();
             BigDecimal total = cart.calculateTotal();
 
             // Stock validation + decrease
-            orderItems.forEach(item ->
-                    item.getProduct().decreaseStock(item.getQuantity()));
+            orderItems.forEach(item -> item.getProduct().decreaseStock(item.getQuantity()));
 
             Order order = OrderMapper.toEntity(request, orderItems, total);
             order.setCustomer(customer);
@@ -94,8 +97,8 @@ public class OrderServiceImpl implements OrderService {
             String emailBody = createOrderEmailBody(customer, saved);
 
             try {
-                notificationService.sendOrderConfirmationEmail(customerEmail, "TechStore - Order Confirmation #"
-                                + saved.getId().getId(), emailBody);
+                notificationService.sendEmail(customerEmail, "TechStore - Order Confirmation #"
+                        + saved.getId().getId(), emailBody);
             } catch (Exception exception) {
                 LOGGER.warn("Failed to send confirmation email for order {}", saved.getId().getId(), exception);
             }
@@ -146,8 +149,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderSummaryDTO> getOrdersByCustomer(String supabaseUserId) {
 
-        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)).
-                orElseThrow(()-> new BusinessException("User not found")).getId().getId().toString();
+        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                .orElseThrow(() -> new BusinessException("User not found")).getId().getId().toString();
 
         orderAuditLogger.logCustomerOrdersListingAttempt(userId);
 
@@ -158,10 +161,9 @@ public class OrderServiceImpl implements OrderService {
 
             List<Order> orders = orderRepository.findByCustomer(customer);
 
-            List<OrderSummaryDTO> response =
-                    orders.stream()
-                            .map(order -> OrderMapper.toSummary(order))
-                            .toList();
+            List<OrderSummaryDTO> response = orders.stream()
+                    .map(order -> OrderMapper.toSummary(order, fileUploadConfig.getBasePath()))
+                    .toList();
 
             orderAuditLogger.logCustomerOrdersListingSuccess(userId, response.size());
 
@@ -173,12 +175,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
     @Transactional
     @Override
     public List<OrderSummaryDTO> getOrdersByCarrier(String supabaseUserId) {
 
-        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)).
-                orElseThrow(()-> new BusinessException("User not found")).getId().getId().toString();
+        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                .orElseThrow(() -> new BusinessException("User not found")).getId().getId().toString();
 
         orderAuditLogger.logCarrierOrdersListingAttempt(userId);
 
@@ -189,10 +192,9 @@ public class OrderServiceImpl implements OrderService {
 
             List<Order> orders = orderRepository.findByCarrier(carrier);
 
-            List<OrderSummaryDTO> response =
-                    orders.stream()
-                            .map(order -> OrderMapper.toSummary(order))
-                            .toList();
+            List<OrderSummaryDTO> response = orders.stream()
+                    .map(order -> OrderMapper.toSummary(order, fileUploadConfig.getBasePath()))
+                    .toList();
 
             orderAuditLogger.logCarrierOrdersListingSuccess(userId, response.size());
 
@@ -228,7 +230,7 @@ public class OrderServiceImpl implements OrderService {
             String customerEmail = order.getCustomer().getUser().getEmail().getEmail();
             String subject = "TechStore - Your order #" + order.getId().getId() + " has been picked up";
             String body = createPickupEmailBody(order);
-            notificationService.sendOrderConfirmationEmail(customerEmail, subject, body);
+            notificationService.sendEmail(customerEmail, subject, body);
 
             orderAuditLogger.logPickupSuccess(orderId, userId);
 
@@ -237,28 +239,56 @@ public class OrderServiceImpl implements OrderService {
             throw ex;
         }
     }
+
     private static String createPickupEmailBody(Order order) {
         return """
-                <h3>Your order is on the way! 🚚</h3>
+                    <h3>Your order is on the way! 🚚</h3>
 
-                <p>Good news! Your order has been picked up by a carrier and is now on its way to you.</p>
+                    <p>Good news! Your order has been picked up by a carrier and is now on its way to you.</p>
 
-                <p>
-                    <b>Order ID:</b> %s<br/>
-                    <b>Total:</b> %s€<br/>
-                    <b>Delivery address:</b> %s, %s, %s
-                </p>
+                    <p>
+                        <b>Order ID:</b> %s<br/>
+                        <b>Total:</b> %s€<br/>
+                        <b>Delivery address:</b> %s, %s, %s
+                    </p>
 
-                <p>You will be notified once your order has been delivered.</p>
+                    <p>You will be notified once your order has been delivered.</p>
 
-                <br/>
+                    <br/>
 
-                <p>Thank you for shopping with TechStore.</p>
-            """.formatted(
+                    <p>Thank you for shopping with TechStore.</p>
+                """.formatted(
                 order.getId().getId(),
                 order.getTotalPrice().getMoneyValue(),
                 order.getAddress().getStreet(),
                 order.getAddress().getCity(),
                 order.getAddress().getCountry());
+    }
+
+    @Transactional
+    @Override
+    public List<OrderSummaryDTO> getPendingOrders(String supabaseUserId) {
+
+        String userId = userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId))
+                .orElseThrow(() -> new BusinessException("User not found")).getId().getId().toString();
+
+        orderAuditLogger.logPendingOrdersListingAttempt(userId);
+
+        try {
+            List<Order> orders = orderRepository.findByOrderStatus(OrderStatus.PENDING);
+
+            List<OrderSummaryDTO> response = orders.stream()
+                    .map(order -> OrderMapper.toSummary(order, fileUploadConfig.getBasePath()))
+                    .toList();
+
+            orderAuditLogger.logPendingOrdersListingSuccess(userId, response.size());
+
+            return response;
+
+        } catch (RuntimeException exception) {
+            orderAuditLogger.logPendingOrdersListingFailure(userId, exception);
+            throw exception;
+        }
+
     }
 }

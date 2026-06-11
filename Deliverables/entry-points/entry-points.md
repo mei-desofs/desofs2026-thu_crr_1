@@ -23,3 +23,5 @@
 |19| GET /api/carrier/orders | The carrier orders endpoint allows carriers to view the orders assigned to them for delivery. | Carrier |
 |20| PATCH /api/carrier/{orderId}/pickup | The carrier orders endpoint allows carriers to update the status of an order to "picked up". | Carrier |
 |21| POST /api/manager/backup | The manager backup endpoint allows managers to create a backup of the products, categories, and orders data. | Manager |
+|22| GET /api/auth/me | The auth endpoint allows authenticated users to retrieve their own user information. | Customer, Carrier, Manager |
+|23| GET /api/categories | The categories endpoint allows users to retrieve a list of product categories. | Customer |

@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -68,7 +69,7 @@ public class AuthController {
     @RateLimit("logout")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "access_token");
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
 
         if (accessToken != null && !accessToken.isBlank()) {
             authService.logout(accessToken, httpRequest);
@@ -114,7 +115,7 @@ public class AuthController {
 
         LoginResponse response = authService.login(request, httpRequest);
 
-        // Guarda os tokens em cookies HttpOnly
+        // Guarda os tokens em cookies HttpOnly com prefixo __Secure-
         CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
 
         return ResponseEntity.ok().build();
@@ -127,7 +128,7 @@ public class AuthController {
             HttpServletResponse httpResponse) {
 
         // Lê o refresh_token do cookie
-        String refreshToken = CookiesHelper.getCookieValue(httpRequest, "refresh_token");
+        String refreshToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-refresh_token");
         if (refreshToken == null) {
             throw new IllegalArgumentException("Refresh token not found");
         }
@@ -156,4 +157,90 @@ public class AuthController {
         authService.updatePassword(accessToken, request.newPassword(), httpRequest);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me(Authentication authentication) {
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse(null);
+        return ResponseEntity.ok(new MeResponse(role));
+    }
+
+    @RateLimit("mfa-enroll")
+    @PostMapping("/mfa/enroll")
+    public ResponseEntity<MfaEnrollResponse> enrollMfa(HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        MfaEnrollResponse response = (authService.enrollMfa(accessToken));
+
+        return ResponseEntity.ok(response);
+    }
+
+    @RateLimit("mfa-verify")
+    @PostMapping("/mfa/verify")
+    public ResponseEntity<Void> verifyMfa(
+            @RequestBody @Valid MfaVerifyRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.verifyMfa(accessToken, request.factorId(),request.challengeId(), request.code());
+        return ResponseEntity.ok().build();
+    }
+    @RateLimit("mfa-challenge")
+    @PostMapping("/mfa/challenge")
+    public ResponseEntity<MfaChallengeResponse> challengeMfa(
+            @RequestBody @Valid MfaChallengeRequest request,
+            HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.challengeMfa(accessToken, request.factorId()));
+    }
+
+    @RateLimit("mfa-challenge-verify")
+    @PostMapping("/mfa/challenge/verify")
+    public ResponseEntity<Void> verifyChallengeCode(
+            @RequestBody @Valid MfaChallengeVerifyRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.verifyChallengeCode(
+                accessToken, request.factorId(), request.challengeId(), request.code(),
+                httpResponse);
+        return ResponseEntity.ok().build();
+    }
+
+    @RateLimit("mfa-unenroll")
+    @DeleteMapping("/mfa/{factorId}")
+    public ResponseEntity<Void> unenrollMfa(
+            @PathVariable String factorId,
+            HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        authService.unenrollMfa(accessToken, factorId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/mfa/status")
+    public ResponseEntity<MfaStatusResponse> mfaStatus(HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.getMfaStatus(accessToken));
+    }
+
 }

@@ -33,4 +33,6 @@ public interface OrderService {
     List<OrderSummaryDTO> getOrdersByCarrier(String carrierId);
 
     void pickupOrder(String orderId, String carrierId);
+
+    public List<OrderSummaryDTO> getPendingOrders(String supabaseUserId);
 }

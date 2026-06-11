@@ -1,5 +1,6 @@
 package com.techstore.app.service;
 
+import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.cart.Cart;
 import com.techstore.app.domain.cart.CartId;
 import com.techstore.app.domain.customer.Customer;
@@ -7,6 +8,7 @@ import com.techstore.app.domain.customer.CustomerId;
 import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.order.OrderItem;
+import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.shared.Address;
 import com.techstore.app.domain.shared.Money;
@@ -62,6 +64,9 @@ class OrderServiceImplTest {
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private FileUploadConfig fileUploadConfig;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -140,7 +145,7 @@ class OrderServiceImplTest {
         verify(cart).clearItems();
         verify(cartRepository).save(cart);
 
-        verify(notificationService).sendOrderConfirmationEmail(
+        verify(notificationService).sendEmail(
                 eq("john@example.com"),
                 contains("TechStore - Order Confirmation #"),
                 contains("Order Confirmed")
@@ -189,7 +194,7 @@ class OrderServiceImplTest {
         verify(customerRepository, never()).findBySupabaseUserId(any(SupabaseUserId.class));
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
-        verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService, never()).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger, never()).logOrderCreationAttempt(any(), any());
 
@@ -250,7 +255,7 @@ class OrderServiceImplTest {
         verify(cart, never()).calculateTotal();
         verify(orderRepository, never()).save(any(Order.class));
         verify(cartRepository, never()).save(any(Cart.class));
-        verify(notificationService, never()).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService, never()).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger).logOrderCreationFailure(
                 eq(userUuid.toString()),
@@ -304,7 +309,7 @@ class OrderServiceImplTest {
 
         doThrow(new RuntimeException("Email failed"))
                 .when(notificationService)
-                .sendOrderConfirmationEmail(any(), any(), any());
+                .sendEmail(any(), any(), any());
 
         OrderResponseDTO response = orderService.createOrder(request, supabaseUserId);
 
@@ -316,7 +321,7 @@ class OrderServiceImplTest {
         verify(orderRepository).save(any(Order.class));
         verify(cart).clearItems();
         verify(cartRepository).save(cart);
-        verify(notificationService).sendOrderConfirmationEmail(any(), any(), any());
+        verify(notificationService).sendEmail(any(), any(), any());
 
         verify(orderAuditLogger).logOrderCreationAttempt(
                 userUuid.toString(),
@@ -668,4 +673,68 @@ class OrderServiceImplTest {
         verify(orderAuditLogger).logPickupFailure(eq(orderIdUUID), eq(userUuid.toString()), any());
         verify(orderRepository, never()).save(any());
     }
+    @Test
+    void shouldReturnPendingOrders() {
+
+        String supabaseUserId = UUID.randomUUID().toString();
+        UUID userUuid = UUID.randomUUID();
+
+        User user = mock(User.class);
+
+        UserId userId = mock(UserId.class);
+
+        when(userId.getId()).thenReturn(userUuid);
+        when(user.getId()).thenReturn(userId);
+
+        Customer customer = mock(Customer.class);
+
+        CustomerId customerId = mock(CustomerId.class);
+
+        when(customerId.getId()).thenReturn(UUID.randomUUID());
+
+        when(customer.getId()).thenReturn(customerId);
+
+
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
+
+        when(order1.getCustomer()).thenReturn(customer);
+        when(order2.getCustomer()).thenReturn(customer);
+
+        when(order1.getCarrier()).thenReturn(null);
+        when(order2.getCarrier()).thenReturn(null);
+
+        OrderId orderId = mock(OrderId.class);
+
+        when(orderId.getId()).thenReturn(UUID.randomUUID());
+
+        when(order1.getId()).thenReturn(orderId);
+        when(order2.getId()).thenReturn(orderId);
+
+        Address address = mock(Address.class);
+
+        when(order1.getAddress()).thenReturn(address);
+        when(order2.getAddress()).thenReturn(address);
+
+        when(address.getPostalCode()).thenReturn("4000-001");
+        when(address.getCity()).thenReturn("Porto");
+        when(address.getCountry()).thenReturn("Portugal");
+        when(address.getStreet()).thenReturn("Rua Teste");
+
+        when(userRepository.findBySupabaseUserId(SupabaseUserId.fromString(supabaseUserId)))
+                .thenReturn(Optional.of(user));
+        when(user.getId()).thenReturn(userId);
+
+        when(orderRepository.findByOrderStatus(OrderStatus.PENDING))
+                .thenReturn(List.of(order1, order2));
+
+        List<OrderSummaryDTO> response = orderService.getPendingOrders(supabaseUserId);
+
+        assertEquals(2, response.size());
+
+        verify(orderAuditLogger).logPendingOrdersListingAttempt(userUuid.toString());
+
+        verify(orderAuditLogger).logPendingOrdersListingSuccess(userUuid.toString(), 2);
+    }
+
 }

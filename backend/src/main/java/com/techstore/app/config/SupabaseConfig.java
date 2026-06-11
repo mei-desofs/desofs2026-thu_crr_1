@@ -24,4 +24,9 @@ public class SupabaseConfig {
 
         return restTemplate;
     }
+    @Bean
+    public RestTemplate supabaseUserRestTemplate() {
+        // Sem interceptors — headers são definidos por cada chamada
+        return new RestTemplate();
+    }
 }

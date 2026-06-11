@@ -83,7 +83,7 @@ apiClient.interceptors.response.use(
       }
       await refreshPromise;
 
-      // New access_token cookie is now set by the backend, retry.
+      // New __Secure-access_token cookie is now set by the backend, retry.
       return apiClient(originalRequest);
     } catch {
       // Refresh token expired or revoked — force re-login.

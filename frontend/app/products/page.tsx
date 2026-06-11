@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { useSafeTextContent } from "@/lib/hooks";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/components/useToast";
 
 interface Product {
   id: string;
@@ -11,6 +12,7 @@ interface Product {
   description: string;
   price: number;
   stockQuantity: number;
+  imageDataUrl?: string | null;
 }
 
 interface ProductResponse {
@@ -24,17 +26,16 @@ interface ProductResponse {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const { error } = useToast();
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        setError(null);
 
         const endpoint = searchQuery
           ? `/products/search?productName=${encodeURIComponent(searchQuery)}&page=${currentPage}`
@@ -44,7 +45,7 @@ export default function ProductsPage() {
         setProducts(response.content);
         setTotalPages(response.totalPages);
       } catch (err) {
-        setError("Failed to load products. Please try again later.");
+        error("Failed to load products. Please try again later.");
         console.error("Error loading products:", err);
       } finally {
         setLoading(false);
@@ -52,7 +53,7 @@ export default function ProductsPage() {
     };
 
     loadProducts();
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, error]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,12 +83,6 @@ export default function ProductsPage() {
             </button>
           </form>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded text-red-100">
-            {error}
-          </div>
-        )}
 
         {loading && (
           <div className="text-center py-12">
@@ -132,7 +127,7 @@ export default function ProductsPage() {
           </>
         )}
 
-        {!loading && products.length === 0 && !error && (
+        {!loading && products.length === 0 && (
           <div className="text-center py-12">
             <p className="text-slate-400 text-lg">No products found.</p>
           </div>
@@ -148,7 +143,7 @@ function ProductCard({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const { success, error } = useToast();
 
   const handleAddToCart = async () => {
     try {
@@ -157,6 +152,7 @@ function ProductCard({ product }: { product: Product }) {
         productId: product.id,
         quantity,
       });
+      success(`Added ${quantity} item(s) to cart`);
       setQuantity(1);
     } catch (err: any) {
       console.error("Add to cart failed:", err);
@@ -169,11 +165,10 @@ function ProductCard({ product }: { product: Product }) {
         const next = `/products`;
         router.push(`/auth/login?message=${message}&next=${next}`);
       } else {
-        setMessage("Failed to add to cart. Try again.");
+        error("Failed to add to cart. Try again.");
       }
     } finally {
       setAdding(false);
-      window.setTimeout(() => setMessage(null), 3000);
     }
   };
 
@@ -191,6 +186,21 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden hover:border-blue-500 transition">
+      <div className="h-52 bg-slate-900 border-b border-slate-700">
+        {product.imageDataUrl ? (
+          <img
+            src={product.imageDataUrl}
+            alt={product.name}
+            className="h-full w-full object-fill"
+            loading="lazy"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-slate-500 text-sm">
+            No image available
+          </div>
+        )}
+      </div>
+
       <div className="p-6">
         <div
           ref={nameRef}
@@ -289,9 +299,6 @@ function ProductCard({ product }: { product: Product }) {
                 ? `Add ${quantity} to Cart`
                 : "Out of Stock"}
           </button>
-          {message && (
-              <div className="mt-2 text-sm text-slate-300">{message}</div>
-            )}
         </div>
       </div>
     </div>

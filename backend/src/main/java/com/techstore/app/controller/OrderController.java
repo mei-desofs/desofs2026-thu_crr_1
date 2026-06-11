@@ -41,8 +41,10 @@ public class OrderController {
             Authentication authentication) {
 
         String supabaseUserId = authentication.getName();
-
-        return ResponseEntity.ok(orderService.getOrdersByCustomer(supabaseUserId));
+        List<OrderSummaryDTO> orders = orderService.getOrdersByCustomer(supabaseUserId);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(orders);
     }
     @RateLimit("carrier-list-orders")
     @GetMapping("/carrier")
@@ -50,8 +52,10 @@ public class OrderController {
             Authentication authentication) {
 
         String supabaseUserId = authentication.getName();
-
-        return ResponseEntity.ok(orderService.getOrdersByCarrier(supabaseUserId));
+        List<OrderSummaryDTO> orders = orderService.getOrdersByCarrier(supabaseUserId);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(orders);
     }
 
     @RateLimit("carrier-pickup-order")
@@ -65,5 +69,16 @@ public class OrderController {
         orderService.pickupOrder(orderId, supabaseUserId);
 
         return ResponseEntity.noContent().build();
+    }
+    @RateLimit("carrier-list-pending-orders")
+    @GetMapping("/pending")
+    public ResponseEntity<List<OrderSummaryDTO>> getPendingOrders(
+            Authentication authentication) {
+
+        String supabaseUserId = authentication.getName();
+        List<OrderSummaryDTO> orders = orderService.getPendingOrders(supabaseUserId);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(orders);
     }
 }

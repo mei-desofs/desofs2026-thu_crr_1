@@ -47,4 +47,17 @@ public interface AuthService {
 
     void updatePassword(String accessToken, String newPassword, HttpServletRequest httpRequest);
 
+    MfaEnrollResponse enrollMfa(String accessToken);
+
+    void verifyMfa(String accessToken, String factorId,String challengeId, String code);
+
+    MfaChallengeResponse challengeMfa(String accessToken, String factorId);
+
+    void verifyChallengeCode(String accessToken, String factorId,
+                             String challengeId, String code,
+                             jakarta.servlet.http.HttpServletResponse httpResponse);
+
+    void unenrollMfa(String accessToken, String factorId);
+
+    MfaStatusResponse getMfaStatus(String accessToken);
 }

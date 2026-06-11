@@ -31,6 +31,17 @@ jobs:
             sudo docker pull "$BACKEND_IMAGE"
             sudo docker pull "$FRONTEND_IMAGE"
 
+            # ---- Mailpit ----
+            sudo docker rm -f mailpit || true
+            sudo docker run -d \
+              --name mailpit \
+              --restart unless-stopped \
+              --network techstore-net \
+              -p 1025:1025 \
+              -p 8025:8025 \
+              -e MP_WEBROOT=/mails \
+              axllent/mailpit:v1.27.8
+
             # ---- Backend ----
             sudo docker rm -f techstore || true
             sudo docker run -d \
@@ -40,6 +51,7 @@ jobs:
               -p 8080:8081 \
               --env-file /opt/techstore/backend.env \
               -e SYSLOG_HOST=tech-store-syslog \
+              -v product_images:/app/uploads/products \
               "$BACKEND_IMAGE"
 
             # ---- Frontend ----
