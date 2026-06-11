@@ -51,6 +51,7 @@ jobs:
               -p 8080:8081 \
               --env-file /opt/techstore/backend.env \
               -e SYSLOG_HOST=tech-store-syslog \
+              -v product_images:/app/uploads/products \
               "$BACKEND_IMAGE"
 
             # ---- Frontend ----
