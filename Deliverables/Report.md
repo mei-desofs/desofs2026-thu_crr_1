@@ -78,7 +78,7 @@ threat modelling, secure design, secure archtecture and security test plan.
 
 - **SR2.** The system must lock user accounts after 5 consecutive failed login attempts to prevent brute-force attacks, requiring the user to wait a defined cooldown period before attempting to log in again.
 
-- **SR3.** The password must contain at least 12 characters, including uppercase letters, lowercase letters, numbers, and special characters.
+- **SR3.** The password must contain at least 12 characters.
 
 - **SR4.** The system must send a confirmation email after a successful registration to verify the user identity.
 
@@ -102,13 +102,13 @@ threat modelling, secure design, secure archtecture and security test plan.
 
 - **SR12.** The system must validate the user-submitted data, rejecting any input that does not conform to expected formats.
 
-- **SR15.** The system must validate the logical and contextual consistency of combined data items (e.g., verifying that order totals match the sum of item prices and validating stock availability) before finalizing transactions.
+- **SR13.** The system must validate the logical and contextual consistency of combined data items (e.g., verifying that order totals match the sum of item prices and validating stock availability) before finalizing transactions.
 
 ### Logging and Monitoring
 
-- **SR13.** All logs of sensitive actions must be securely stored and protected against unauthorized access to ensure integrity and confidentiality.
+- **SR14.** All logs of sensitive actions must be securely stored and protected against unauthorized access to ensure integrity and confidentiality.
 
-- **SR14.** All logs must perform three backup copies, one stored locally and another two stored in a secure cloud storage service, to ensure data durability and availability in case of local failures.
+- **SR15.** All logs must perform three backup copies, one stored locally and another two stored in a secure cloud storage service, to ensure data durability and availability in case of local failures.
 
 ## Use Cases
 
