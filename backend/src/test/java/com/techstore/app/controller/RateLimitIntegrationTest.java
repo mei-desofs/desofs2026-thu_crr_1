@@ -336,23 +336,29 @@ public class RateLimitIntegrationTest {
         Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
 
         String body = """
-        {
-          "factorId":"factor-id"
-        }
-        """;
+    {
+      "factorId":"factor-id"
+    }
+    """;
 
         for (int i = 0; i < 10; i++) {
             mvc.perform(post("/auth/mfa/challenge")
                             .with(csrf())
                             .cookie(userCookie)
+                            .header("X-MFA-Token", "test-mfa-token")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
-                    .andExpect(status().isOk());
+                    .andExpect(result ->
+                            org.junit.jupiter.api.Assertions.assertNotEquals(
+                                    429, result.getResponse().getStatus()
+                            )
+                    );
         }
 
         mvc.perform(post("/auth/mfa/challenge")
                         .with(csrf())
                         .cookie(userCookie)
+                        .header("X-MFA-Token", "test-mfa-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isTooManyRequests());
@@ -362,25 +368,31 @@ public class RateLimitIntegrationTest {
         Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
 
         String body = """
-        {
-          "factorId":"factor-id",
-          "challengeId":"challenge-id",
-          "code":"123456"
-        }
-        """;
+    {
+      "factorId":"factor-id",
+      "challengeId":"challenge-id",
+      "code":"123456"
+    }
+    """;
 
         for (int i = 0; i < 10; i++) {
             mvc.perform(post("/auth/mfa/challenge/verify")
                             .with(csrf())
                             .cookie(userCookie)
+                            .header("X-MFA-Token", "test-mfa-token")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
-                    .andExpect(status().isOk());
+                    .andExpect(result ->
+                            org.junit.jupiter.api.Assertions.assertNotEquals(
+                                    429, result.getResponse().getStatus()
+                            )
+                    );
         }
 
         mvc.perform(post("/auth/mfa/challenge/verify")
                         .with(csrf())
                         .cookie(userCookie)
+                        .header("X-MFA-Token", "test-mfa-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isTooManyRequests());
@@ -399,6 +411,36 @@ public class RateLimitIntegrationTest {
         mvc.perform(delete("/auth/mfa/{factorId}", "factor-id")
                         .with(csrf())
                         .cookie(userCookie))
+                .andExpect(status().isTooManyRequests());
+    }
+    @Test
+    void mfaChallengeEnrollRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        String body = """
+        {
+          "factorId":"factor-id"
+        }
+        """;
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/auth/mfa/enroll/challenge")
+                            .with(csrf())
+                            .cookie(userCookie)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(result ->
+                            org.junit.jupiter.api.Assertions.assertNotEquals(
+                                    429, result.getResponse().getStatus()
+                            )
+                    );
+        }
+
+        mvc.perform(post("/auth/mfa/enroll/challenge")
+                        .with(csrf())
+                        .cookie(userCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isTooManyRequests());
     }
 

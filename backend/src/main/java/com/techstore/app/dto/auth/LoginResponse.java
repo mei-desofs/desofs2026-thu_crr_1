@@ -4,6 +4,9 @@ public record LoginResponse(
         String accessToken,
         String refreshToken,
         String tokenType,
-        Long expiresIn
+        Long expiresIn,
+        boolean mfaRequired,
+        String factorId,
+        String mfaToken
 ) {
 }

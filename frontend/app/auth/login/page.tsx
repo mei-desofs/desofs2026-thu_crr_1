@@ -1,24 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter,useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
-import { isAxiosError } from "axios"
+import { isAxiosError } from "axios";
 
 type Step = "credentials" | "mfa";
 
-interface MfaFactor {
-  id: string;
-  factor_type: string;
-  status: string;
-}
-
 export default function AuthPage() {
-  const [step, setStep]         = useState<Step>("credentials");
+  const [step, setStep] = useState<Step>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otpCode, setOtpCode]   = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [factorId, setFactorId] = useState<string | null>(null);
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,89 +32,77 @@ export default function AuthPage() {
   const redirectTo = getSafeRedirect(rawRedirectTo);
 
   const handleCredentials = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+      e.preventDefault();
+      setError(null);
+      setLoading(true);
 
-     try {
-      await apiPost("/auth/login", { email, password });
-    } catch {
-      setError("Invalid credentials. Please try again.");
-      setLoading(false);
-      return;
-    }
+      try {
+          const loginResponse = await apiPost<{
+              mfaRequired: boolean;
+              factorId: string;
+              mfaToken: string;  // <-- token limitado
+          }>("/auth/login", { email, password });
 
-
-    try {
-      const status = await apiGet<{ factors: MfaFactor[] }>("/auth/mfa/status");
-      const activeFactor = status.factors?.find(
-        (f) => f.factor_type === "totp" && f.status === "verified"
-      );
-      console.log("Active factor:", activeFactor);
-      if (activeFactor) {
-        const challenge = await apiPost<{ id: string }>(
-          "/auth/mfa/challenge",
-          { factorId: activeFactor.id }
-        );
-        setFactorId(activeFactor.id);
-        setChallengeId(challenge.id);
-        setStep("mfa");
-      } else {
-        await redirectByRole();
+          if (loginResponse.mfaRequired && loginResponse.factorId) {
+              const challenge = await apiPost<{ id: string }>(
+                  "/auth/mfa/challenge",
+                  { factorId: loginResponse.factorId },
+                  { headers: { "X-MFA-Token": loginResponse.mfaToken } }  // <-- header dedicado
+              );
+              setFactorId(loginResponse.factorId);
+              setChallengeId(challenge.id);
+              setMfaToken(loginResponse.mfaToken);  // <-- guarda só o mfaToken
+              setStep("mfa");
+          } else {
+              await redirectByRole();
+          }
+      } catch {
+          setError("Invalid credentials. Please try again.");
+      } finally {
+          setLoading(false);
       }
-    } catch {
-      setError("Could not verify account security. Please try again.");
-    } finally {
-      setLoading(false);
-    }
   };
-  const handleMfa = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
 
-    try {
-      await apiPost("/auth/mfa/challenge/verify", {
-        factorId,
-        challengeId,
-        code: otpCode,
-      });
-      await redirectByRole();
-    } catch (err) {
-      if (isAxiosError(err) && err.response?.status === 429) {
-        setError("Too many attempts. Please wait before trying again.");
-      } else {
-        setError("Verification failed. Please try again.");
+  const handleMfa = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
+      setLoading(true);
+
+      try {
+          await apiPost(
+              "/auth/mfa/challenge/verify",
+              { factorId, challengeId, code: otpCode },
+              { headers: { "X-MFA-Token": mfaToken } }  // <-- header dedicado
+          );
+          await redirectByRole();
+      } catch (err) {
+          if (isAxiosError(err) && err.response?.status === 429) {
+              setError("Too many attempts. Please wait before trying again.");
+          } else {
+              setError("Verification failed. Please try again.");
+          }
+          setOtpCode("");
+      } finally {
+          setLoading(false);
       }
-      setOtpCode("");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const redirectByRole = async () => {
     const me = await apiGet<{ role: string }>("/auth/me");
     router.refresh();
-    if (me.role === "MANAGER"){
+    if (me.role === "MANAGER") {
       router.push("/manager/dashboard");
-      router.refresh();
-    }
-    else if (me.role === "CARRIER")
-      {
-        router.push("/carrier");
-        router.refresh();
-      }
-    else  {
+    } else if (me.role === "CARRIER") {
+      router.push("/carrier");
+    } else {
       router.push(redirectTo);
-      router.refresh();
     }
+    router.refresh();
   };
-
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-full max-w-md bg-slate-800 rounded-lg p-8 border border-slate-700">
-
         {step === "credentials" ? (
           <>
             <h1 className="text-2xl font-bold text-white mb-6">Sign In</h1>
@@ -132,7 +115,10 @@ export default function AuthPage() {
 
             <form onSubmit={handleCredentials} className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-300 mb-1" htmlFor="email">
+                <label
+                  className="block text-sm text-slate-300 mb-1"
+                  htmlFor="email"
+                >
                   Email
                 </label>
                 <input
@@ -162,7 +148,9 @@ export default function AuthPage() {
               </div>
 
               {error && (
-                <p role="alert" className="text-red-400 text-sm">{error}</p>
+                <p role="alert" className="text-red-400 text-sm">
+                  {error}
+                </p>
               )}
 
               <button
@@ -171,21 +159,31 @@ export default function AuthPage() {
                 className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <><span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Signing in…</>
-                ) : "Sign In"}
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in…
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </button>
             </form>
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-white mb-2">Two-Factor Authentication</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">
+              Two-Factor Authentication
+            </h1>
             <p className="text-slate-400 text-sm mb-6">
               Enter the 6-digit code from your authenticator app.
             </p>
 
             <form onSubmit={handleMfa} className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-300 mb-1" htmlFor="otp">
+                <label
+                  className="block text-sm text-slate-300 mb-1"
+                  htmlFor="otp"
+                >
                   Authentication Code
                 </label>
                 <input
@@ -195,7 +193,9 @@ export default function AuthPage() {
                   autoComplete="one-time-code"
                   maxLength={6}
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) =>
+                    setOtpCode(e.target.value.replace(/\D/g, ""))
+                  }
                   required
                   disabled={loading}
                   placeholder="000000"
@@ -204,7 +204,9 @@ export default function AuthPage() {
               </div>
 
               {error && (
-                <p role="alert" className="text-red-400 text-sm">{error}</p>
+                <p role="alert" className="text-red-400 text-sm">
+                  {error}
+                </p>
               )}
 
               <button
@@ -213,13 +215,22 @@ export default function AuthPage() {
                 className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <><span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Verifying…</>
-                ) : "Verify"}
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Verifying…
+                  </>
+                ) : (
+                  "Verify"
+                )}
               </button>
 
               <button
                 type="button"
-                onClick={() => { setStep("credentials"); setError(null); setOtpCode(""); }}
+                onClick={() => {
+                  setStep("credentials");
+                  setError(null);
+                  setOtpCode("");
+                }}
                 className="w-full text-sm text-slate-400 hover:text-white transition"
               >
                 ← Back to sign in

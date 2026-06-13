@@ -19,9 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private static final Pattern IP_PATTERN = Pattern.compile(
-            "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
-
     private final RateLimitProperties properties;
 
     private final BucketManager bucketManager;
@@ -74,6 +71,14 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private String getUserId(HttpServletRequest request) {
 
         String token = CookiesHelper.getCookieValue(request, "__Secure-access_token");
+
+        if (token == null || token.isBlank()) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.replace("Bearer ", "");
+            }
+        }
+
         try {
             String[] parts = token.split("\\.");
             if (parts.length < 2) return null;
@@ -95,7 +100,9 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private String resolveIp(HttpServletRequest request) {
+
         String xForwardedFor = request.getHeader("X-Forwarded-For");
+
         String ip;
 
         if (xForwardedFor == null || xForwardedFor.isBlank()) {
@@ -104,10 +111,27 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             ip = xForwardedFor.split(",")[0].trim();
         }
 
-        if (!IP_PATTERN.matcher(ip).matches()) {
-            throw new RateLimitException(
-                    "Security policy violation: Invalid IP address format."
-            );
+        // Normalize IPv6-mapped IPv4 (::ffff:192.168.0.1)
+        if (ip != null && ip.startsWith("::ffff:")) {
+            ip = ip.substring(7);
+        }
+
+        return normalizeIpKey(ip);
+    }
+
+    private String normalizeIpKey(String ip) {
+        if (ip == null) {
+            return "unknown-ip";
+        }
+
+        ip = ip.trim();
+
+        if (ip.isEmpty() || ip.equalsIgnoreCase("unknown")) {
+            return "unknown-ip";
+        }
+
+        if (ip.length() > 45) {
+            return "unknown-ip";
         }
 
         return ip;
