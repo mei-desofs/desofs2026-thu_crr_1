@@ -56,7 +56,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Email confirmed and user created"));
     }
 
-    
+
 
     @RateLimit("register")
     @PostMapping("/register")
@@ -222,6 +222,17 @@ public class AuthController {
                 mfaToken, request.factorId(), request.challengeId(), request.code(),
                 httpResponse);
         return ResponseEntity.ok().build();
+    }
+    @RateLimit("mfa-challenge-enroll")
+    @PostMapping("/mfa/enroll/challenge")
+    public ResponseEntity<MfaChallengeResponse> enrollChallenge(
+            @RequestBody @Valid MfaChallengeRequest request,
+            HttpServletRequest httpRequest) {
+        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(authService.challengeForEnroll(accessToken, request.factorId()));
     }
 
     @RateLimit("mfa-unenroll")

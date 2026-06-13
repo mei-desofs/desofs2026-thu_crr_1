@@ -527,4 +527,17 @@ public class AuthServiceImpl implements AuthService {
     public MfaStatusResponse getMfaStatus(String accessToken) {
         return supabaseClient.getMfaStatus(accessToken);
     }
+
+    @Override
+    public MfaChallengeResponse challengeForEnroll(String accessToken, String factorId) {
+        String userId = extractUserId(accessToken);
+        try {
+            MfaChallengeResponse response = supabaseClient.createChallenge(accessToken, factorId);
+            auditLogger.logMfaChallengeAttempt(userId, true);
+            return response;
+        } catch (Exception ex) {
+            auditLogger.logMfaChallengeAttempt(userId, false);
+            throw ex;
+        }
+    }
 }

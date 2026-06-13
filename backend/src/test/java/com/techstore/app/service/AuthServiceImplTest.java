@@ -905,4 +905,44 @@ class AuthServiceImplTest {
             throw new RuntimeException("Failed to create mock JWT", e);
         }
     }
+    @Test
+    void shouldCreateEnrollChallengeSuccessfully() {
+        String accessToken = "access-token";
+        String factorId = "factor-1";
+
+        MfaChallengeResponse response = mock(MfaChallengeResponse.class);
+
+        when(supabaseAuthClient.createChallenge(accessToken, factorId))
+                .thenReturn(response);
+
+        MfaChallengeResponse result =
+                authService.challengeForEnroll(accessToken, factorId);
+
+        assertEquals(response, result);
+
+        verify(supabaseAuthClient)
+                .createChallenge(accessToken, factorId);
+
+        verify(auditLogger)
+                .logMfaChallengeAttempt("unknown", true);
+    }
+    @Test
+    void shouldLogFailedEnrollChallenge() {
+        String accessToken = "access-token";
+        String factorId = "factor-1";
+
+        when(supabaseAuthClient.createChallenge(accessToken, factorId))
+                .thenThrow(new RuntimeException("fail"));
+
+        assertThrows(
+                RuntimeException.class,
+                () -> authService.challengeForEnroll(accessToken, factorId)
+        );
+
+        verify(supabaseAuthClient)
+                .createChallenge(accessToken, factorId);
+
+        verify(auditLogger)
+                .logMfaChallengeAttempt("unknown", false);
+    }
 }

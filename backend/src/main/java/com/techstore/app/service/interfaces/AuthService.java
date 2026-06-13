@@ -60,4 +60,6 @@ public interface AuthService {
     void unenrollMfa(String accessToken, String factorId);
 
     MfaStatusResponse getMfaStatus(String accessToken);
+
+    MfaChallengeResponse challengeForEnroll(String accessToken, String factorId);
 }

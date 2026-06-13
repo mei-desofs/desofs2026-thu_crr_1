@@ -413,5 +413,35 @@ public class RateLimitIntegrationTest {
                         .cookie(userCookie))
                 .andExpect(status().isTooManyRequests());
     }
+    @Test
+    void mfaChallengeEnrollRateLimit() throws Exception {
+        Cookie userCookie = accessTokenCookie("customer-user", "CUSTOMER");
+
+        String body = """
+        {
+          "factorId":"factor-id"
+        }
+        """;
+
+        for (int i = 0; i < 10; i++) {
+            mvc.perform(post("/auth/mfa/enroll/challenge")
+                            .with(csrf())
+                            .cookie(userCookie)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(result ->
+                            org.junit.jupiter.api.Assertions.assertNotEquals(
+                                    429, result.getResponse().getStatus()
+                            )
+                    );
+        }
+
+        mvc.perform(post("/auth/mfa/enroll/challenge")
+                        .with(csrf())
+                        .cookie(userCookie)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isTooManyRequests());
+    }
 
 }
