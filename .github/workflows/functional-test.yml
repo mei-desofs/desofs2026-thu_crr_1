@@ -31,7 +31,7 @@ jobs:
           name: newman-results
           path: results/
 
-      - name: Publish JUnit Results
+      - name: Publish Newman Results
         if: always()
         uses: mikepenz/action-junit-report@v4
         with:

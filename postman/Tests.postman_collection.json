@@ -935,7 +935,7 @@
       "name": "SR2 Lockout",
       "item": [
         {
-          "name": "Reset Counter Copy",
+          "name": "Reset Counter",
           "event": [
             {
               "listen": "test",
@@ -992,7 +992,7 @@
           "response": []
         },
         {
-          "name": "Attempt_1 Copy",
+          "name": "Attempt_1",
           "event": [
             {
               "listen": "test",
@@ -1043,7 +1043,7 @@
           "response": []
         },
         {
-          "name": "Attempt_2 Copy",
+          "name": "Attempt_2",
           "event": [
             {
               "listen": "test",
@@ -1094,7 +1094,7 @@
           "response": []
         },
         {
-          "name": "Attempt_3 Copy",
+          "name": "Attempt_3",
           "event": [
             {
               "listen": "test",
@@ -1145,7 +1145,7 @@
           "response": []
         },
         {
-          "name": "Attempt_4 Copy",
+          "name": "Attempt_4",
           "event": [
             {
               "listen": "test",
@@ -1196,7 +1196,7 @@
           "response": []
         },
         {
-          "name": "Attempt_5 Copy",
+          "name": "Attempt_5",
           "event": [
             {
               "listen": "test",
@@ -1247,7 +1247,7 @@
           "response": []
         },
         {
-          "name": "Attempt_6 - Rate Limit (expect 429) Copy",
+          "name": "Attempt_6 - Lockout (expect 429)",
           "event": [
             {
               "listen": "test",
