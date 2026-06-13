@@ -14,6 +14,11 @@ public record MfaStatusResponse(
         return factors != null ? factors : List.of();
     }
 
+    public boolean hasVerifiedFactor() {
+        return factors().stream()
+                .anyMatch(f -> "totp".equals(f.type()) && "verified".equals(f.status()));
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Factor(
             String id,

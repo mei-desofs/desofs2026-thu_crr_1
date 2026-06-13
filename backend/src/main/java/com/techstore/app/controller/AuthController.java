@@ -110,15 +110,22 @@ public class AuthController {
 
     @RateLimit("login")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest,
-            HttpServletResponse httpResponse) {
-
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request,
+                                               HttpServletRequest httpRequest,
+                                               HttpServletResponse httpResponse) {
         LoginResponse response = authService.login(request, httpRequest);
 
-        // Guarda os tokens em cookies HttpOnly com prefixo __Secure-
-        CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
+        if (response.mfaRequired()) {
+            return ResponseEntity.ok(new LoginResponse(
+                    null, null, null, null,
+                    true,
+                    response.factorId(),
+                    response.mfaToken()
+            ));
+        }
 
-        return ResponseEntity.ok().build();
+        CookiesHelper.setAuthCookies(httpResponse, response.accessToken(), response.refreshToken());
+        return ResponseEntity.ok(new LoginResponse(response.accessToken(), response.refreshToken(), response.tokenType(), response.expiresIn(), false, response.factorId(), response.mfaToken()));
     }
 
     @RateLimit("refresh-token")
@@ -192,30 +199,27 @@ public class AuthController {
         authService.verifyMfa(accessToken, request.factorId(),request.challengeId(), request.code());
         return ResponseEntity.ok().build();
     }
+
     @RateLimit("mfa-challenge")
     @PostMapping("/mfa/challenge")
     public ResponseEntity<MfaChallengeResponse> challengeMfa(
             @RequestBody @Valid MfaChallengeRequest request,
+            @RequestHeader("X-MFA-Token") String mfaToken,
             HttpServletRequest httpRequest) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
-        if (accessToken == null || accessToken.isBlank()) {
-            return ResponseEntity.status(401).build();
-        }
-        return ResponseEntity.ok(authService.challengeMfa(accessToken, request.factorId()));
+
+        return ResponseEntity.ok(authService.challengeMfa(mfaToken, request.factorId()));
     }
 
     @RateLimit("mfa-challenge-verify")
     @PostMapping("/mfa/challenge/verify")
     public ResponseEntity<Void> verifyChallengeCode(
             @RequestBody @Valid MfaChallengeVerifyRequest request,
+            @RequestHeader("X-MFA-Token") String mfaToken,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String accessToken = CookiesHelper.getCookieValue(httpRequest, "__Secure-access_token");
-        if (accessToken == null || accessToken.isBlank()) {
-            return ResponseEntity.status(401).build();
-        }
+
         authService.verifyChallengeCode(
-                accessToken, request.factorId(), request.challengeId(), request.code(),
+                mfaToken, request.factorId(), request.challengeId(), request.code(),
                 httpResponse);
         return ResponseEntity.ok().build();
     }

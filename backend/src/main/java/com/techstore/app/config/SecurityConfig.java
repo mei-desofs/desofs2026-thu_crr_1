@@ -43,24 +43,20 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                            "default-src 'self'; " +
-                            "script-src 'self'; " +
-                            "style-src 'self'; " +
-                            "img-src 'self' data:; " +
-                            "font-src 'self'; " +
-                            "object-src 'none'; " +
-                            "base-uri 'none'; " +
-                            "frame-ancestors 'none';"
-                        ))
+                                "default-src 'self'; " +
+                                        "script-src 'self'; " +
+                                        "style-src 'self'; " +
+                                        "img-src 'self' data:; " +
+                                        "font-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'none'; " +
+                                        "frame-ancestors 'none';"))
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .preload(true)
-                                .maxAgeInSeconds(31536000)
-                        )
+                                .maxAgeInSeconds(31536000))
                         .referrerPolicy(referrer -> referrer
-                            .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-                        )
-                )
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
@@ -95,10 +91,8 @@ public class SecurityConfig {
                         .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.POST, "/auth/mfa/verify")
                         .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge")
-                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge/verify")
-                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge/verify").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/auth/mfa/*").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.GET, "/auth/mfa/status")
                         .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
@@ -117,10 +111,10 @@ public class SecurityConfig {
                 "https://techstore.francecentral.cloudapp.azure.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With"
-        ));
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "X-MFA-Token"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
