@@ -91,8 +91,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST,   "/auth/mfa/enroll").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.POST,   "/auth/mfa/verify").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/challenge").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/challenge/verify").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge/verify").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/auth/mfa/*").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.GET,    "/auth/mfa/status").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
 
@@ -114,7 +114,8 @@ public class SecurityConfig {
         config.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type",
-            "X-Requested-With"
+            "X-Requested-With",
+            "X-MFA-Token"
         ));
         config.setAllowCredentials(true);
 

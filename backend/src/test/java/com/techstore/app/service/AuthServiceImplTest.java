@@ -71,6 +71,9 @@ class AuthServiceImplTest {
     @InjectMocks
     private AuthServiceImpl authService;
 
+    @Mock
+    private MfaTokenService mfaTokenService;
+
     @Test
     void shouldRegisterUserAndReturnConfirmationMessage() {
         RegisterRequest request = new RegisterRequest("user@example.com", "Secret123!");
@@ -478,32 +481,39 @@ class AuthServiceImplTest {
     }
     @Test
     void shouldCreateMfaChallengeSuccessfully() {
+        String mfaToken = "mfa-token";
         String accessToken = "access-token";
+        String factorId = "factor-1";
+
+        MfaTokenService.MfaSession session = new MfaTokenService.MfaSession(
+                accessToken, "refresh-token", factorId, java.time.Instant.now().plusSeconds(300));
+
+        when(mfaTokenService.peekSession(mfaToken)).thenReturn(session);
+
         MfaChallengeResponse response = mock(MfaChallengeResponse.class);
+        when(supabaseAuthClient.createChallenge(accessToken, factorId)).thenReturn(response);
 
-        when(supabaseAuthClient.createChallenge(accessToken, "factor-1"))
-                .thenReturn(response);
-
-
-        MfaChallengeResponse result = authService.challengeMfa(accessToken, "factor-1");
+        MfaChallengeResponse result = authService.challengeMfa(mfaToken, factorId);
 
         assertEquals(response, result);
-
-
         verify(auditLogger).logMfaChallengeAttempt("unknown", true);
     }
 
     @Test
     void shouldLogFailedMfaChallenge() {
+        String mfaToken = "mfa-token";
         String accessToken = "access-token";
+        String factorId = "factor-1";
 
-        when(supabaseAuthClient.createChallenge(accessToken, "factor-1"))
+        MfaTokenService.MfaSession session = new MfaTokenService.MfaSession(
+                accessToken, "refresh-token", factorId, java.time.Instant.now().plusSeconds(300));
+
+        when(mfaTokenService.peekSession(mfaToken)).thenReturn(session);
+        when(supabaseAuthClient.createChallenge(accessToken, factorId))
                 .thenThrow(new RuntimeException("fail"));
 
-
         assertThrows(RuntimeException.class,
-                () -> authService.challengeMfa(accessToken, "factor-1"));
-
+                () -> authService.challengeMfa(mfaToken, factorId));
 
         verify(auditLogger).logMfaChallengeAttempt("unknown", false);
     }
@@ -537,39 +547,44 @@ class AuthServiceImplTest {
     }
     @Test
     void shouldVerifyChallengeAndSetCookiesAndAuditSuccess() {
+        String mfaToken = "mfa-token";
         String accessToken = "access-token";
+        String factorId = "factor-1";
         HttpServletResponse response = mock(HttpServletResponse.class);
+
+        MfaTokenService.MfaSession session = new MfaTokenService.MfaSession(
+                accessToken, "refresh-token", factorId, java.time.Instant.now().plusSeconds(300));
+
+        when(mfaTokenService.consumeSession(mfaToken)).thenReturn(session);
 
         SupabaseLoginResponse upgraded = mock(SupabaseLoginResponse.class);
         when(upgraded.accessToken()).thenReturn("new-token");
         when(upgraded.refreshToken()).thenReturn("refresh-token");
-
-        when(supabaseAuthClient.verifyTotpCode(any(), any(), any(), any()))
+        when(supabaseAuthClient.verifyTotpCode(accessToken, factorId, "challenge-1", "123456"))
                 .thenReturn(upgraded);
 
-        authService.verifyChallengeCode(
-                accessToken, "factor-1", "challenge-1", "123456", response);
+        authService.verifyChallengeCode(mfaToken, factorId, "challenge-1", "123456", response);
 
-
-        verify(supabaseAuthClient)
-                .verifyTotpCode(accessToken, "factor-1", "challenge-1", "123456");
-
+        verify(supabaseAuthClient).verifyTotpCode(accessToken, factorId, "challenge-1", "123456");
         verify(auditLogger).logMfaChallengeVerify("unknown", true);
     }
 
     @Test
     void shouldLogFailedChallengeVerify() {
+        String mfaToken = "mfa-token";
         String accessToken = "access-token";
+        String factorId = "factor-1";
         HttpServletResponse response = mock(HttpServletResponse.class);
 
+        MfaTokenService.MfaSession session = new MfaTokenService.MfaSession(
+                accessToken, "refresh-token", factorId, java.time.Instant.now().plusSeconds(300));
+
+        when(mfaTokenService.consumeSession(mfaToken)).thenReturn(session);
         when(supabaseAuthClient.verifyTotpCode(any(), any(), any(), any()))
                 .thenThrow(new RuntimeException("invalid"));
 
-
         assertThrows(RuntimeException.class,
-                () -> authService.verifyChallengeCode(
-                        accessToken, "factor-1", "challenge-1", "123456", response));
-
+                () -> authService.verifyChallengeCode(mfaToken, factorId, "challenge-1", "123456", response));
 
         verify(auditLogger).logMfaChallengeVerify("unknown", false);
     }
