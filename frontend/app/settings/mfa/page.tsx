@@ -45,6 +45,19 @@ export default function MfaSettingsPage() {
           setActiveFactor(verified);
           setPageState("enabled");
         } else {
+          if (status.factors?.some((f) => f.factor_type === "totp" && f.status === "unverified")) {
+            try {
+              await apiClient.delete(`/auth/mfa/${status.factors.find((f) => f.factor_type === "totp" && f.status === "unverified")?.id}`);
+            } catch (err) {
+              console.error("Failed to delete unverified factor", err);
+            } finally {
+              setEnrollData(null);
+              setOtpCode("");
+              setError(null);
+              setPageState("disabled");
+              setLoading(false);
+            }
+          }
           setPageState("disabled");
         }
       } catch {
@@ -84,7 +97,7 @@ export default function MfaSettingsPage() {
     setLoading(true);
     try {
       
-      const challenge = await apiPost<{ id: string }>("/auth/mfa/challenge", {
+      const challenge = await apiPost<{ id: string }>("/auth/mfa/enroll/challenge", {
       factorId: enrollData!.id,
       });
       await apiPost("/auth/mfa/verify", {
@@ -124,6 +137,25 @@ export default function MfaSettingsPage() {
       setLoading(false);
     }
   };
+
+  const handleCancelEnroll = async () => {
+  if (!enrollData) return;
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    await apiClient.delete(`/auth/mfa/${enrollData.id}`);
+  } catch (err) {
+    console.error("Failed to delete unverified factor", err);
+  } finally {
+    setEnrollData(null);
+    setOtpCode("");
+    setError(null);
+    setPageState("disabled");
+    setLoading(false);
+  }
+};
 
   return (
     <div className="py-8">
@@ -214,7 +246,7 @@ export default function MfaSettingsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setPageState("disabled"); setEnrollData(null); setOtpCode(""); setError(null); }}
+                    onClick={handleCancelEnroll}
                     disabled={loading}
                     className="px-5 py-2 bg-slate-700 text-white rounded hover:bg-slate-600 disabled:opacity-50 transition"
                   >

@@ -114,3 +114,8 @@ ratelimit:
       type: IP
       capacity: 10
       duration: PT1M
+
+    mfa-challenge-enroll:
+      type: USER
+      capacity: 10
+      duration: PT1M

@@ -96,6 +96,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/auth/mfa/*").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.GET, "/auth/mfa/status")
                         .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/enroll/challenge")
+                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
 
                         .anyRequest().authenticated());
 
