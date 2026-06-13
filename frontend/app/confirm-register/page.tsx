@@ -1,51 +1,64 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { apiPost } from '@/lib/api';
+import { useToast } from '@/app/components/useToast';
+
+interface ConfirmResponse {
+  message: string;
+}
 
 export default function ConfirmPage() {
   const [title, setTitle] = useState('⏳ A verificar...');
   const [message, setMessage] = useState('Por favor aguarda.');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const { success, error } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+
     const confirmEmail = async () => {
+      if (!mounted) return;
+
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
       const type = params.get('type');
 
       if (!accessToken || type !== 'signup') {
+        if (!mounted) return;
         setTitle('❌ Link inválido');
         setMessage('Este link não é válido ou já foi usado.');
         setStatus('error');
+        error('Link inválido');
         return;
       }
 
       try {
-        const res = await fetch('/api/auth/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken })
-        });
-
-        if (res.ok) {
-          setTitle('✓ Email confirmado!');
-          setMessage('A tua conta foi criada e verificada. Podes fechar esta página.');
-          setStatus('success');
-        } else {
-          const err = await res.json().catch(() => ({}));
-          setTitle('❌ Erro na confirmação');
-          setMessage(err.error || 'Ocorreu um erro. Tenta novamente.');
-          setStatus('error');
-        }
-      } catch (e) {
-        setTitle('❌ Erro de ligação');
-        setMessage('Não foi possível contactar o servidor.');
+        await apiPost<ConfirmResponse>('/auth/confirm', { accessToken });
+        
+        if (!mounted) return;
+        setTitle('✓ Email confirmado!');
+        setMessage('A tua conta foi criada e verificada. Podes fechar esta página.');
+        setStatus('success');
+        success('Email confirmado com sucesso!');
+      } catch (err: any) {
+        if (!mounted) return;
+        
+        console.error('Confirm email failed:', err);
+        const errorMsg = err?.response?.data?.error || 'Ocorreu um erro. Tenta novamente.';
+        setTitle('❌ Erro na confirmação');
+        setMessage(errorMsg);
         setStatus('error');
+        error(errorMsg);
       }
     };
 
     confirmEmail();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const statusColors = {
