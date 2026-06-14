@@ -7,7 +7,7 @@ import { useToast } from "@/app/components/useToast";
 interface Product {
   id: string;
   name: string;
-  stock: number;
+  stockQuantity: number;
   price: number;
 }
 
@@ -18,7 +18,7 @@ interface UpdateStockRequest {
 interface ProductResponse {
   id: string;
   name: string;
-  stock: number;
+  stockQuantity: number;
   price: number;
 }
 
@@ -35,19 +35,19 @@ export default function StockManagement() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await apiGet<Product[]>("/products");
-        if (mounted) {
-          setProducts(data);
-        }
+
+        const res = await apiGet<any>("/products");
+
+        const productsArray = res?.content ?? [];
+
+        setProducts(productsArray);
       } catch (err: any) {
         const errorMsg =
           err?.response?.data?.error || "Falha ao carregar produtos";
 
         showError(errorMsg);
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -81,13 +81,13 @@ export default function StockManagement() {
         request,
       );
 
-      success(`Stock atualizado! Novo stock: ${response.stock}`);
+      success(`Stock atualizado! Novo stock: ${response.stockQuantity}`);
       setNewStock("");
 
       // Atualiza a lista local
       setProducts((prev) =>
         prev.map((p) =>
-          p.id === selectedProductId ? { ...p, stock: response.stock } : p,
+          p.id === selectedProductId ? { ...p, stockQuantity: response.stockQuantity } : p,
         ),
       );
     } catch (err: any) {
@@ -135,7 +135,7 @@ export default function StockManagement() {
                 <option value="">Choose a product...</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} (Current stock: {product.stock})
+                    {product.name} 
                   </option>
                 ))}
               </select>
@@ -154,7 +154,7 @@ export default function StockManagement() {
                   <div>
                     <p className="text-slate-400 text-sm">Current Stock</p>
                     <p className="text-white font-semibold mt-1">
-                      {selectedProduct.stock} units
+                      {selectedProduct.stockQuantity} units
                     </p>
                   </div>
                   <div>
