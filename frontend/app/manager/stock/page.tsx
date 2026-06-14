@@ -28,9 +28,7 @@ export default function StockManagement() {
   const [newStock, setNewStock] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { success, error: showError } = useToast();
-  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    let mounted = true;
 
     const fetchProducts = async () => {
       try {
@@ -53,9 +51,6 @@ export default function StockManagement() {
 
     fetchProducts();
 
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   const selectedProduct = products.find((p) => p.id === selectedProductId);
@@ -127,8 +122,7 @@ export default function StockManagement() {
                 onChange={(e) => {
                   setSelectedProductId(e.target.value);
                   setNewStock("");
-                  setError(null);
-                }}
+                                }}
                 disabled={loading}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
               >
@@ -180,7 +174,6 @@ export default function StockManagement() {
                     value={newStock}
                     onChange={(e) => {
                       setNewStock(e.target.value);
-                      setError(null);
                     }}
                     disabled={loading}
                     placeholder="Enter new stock quantity"
