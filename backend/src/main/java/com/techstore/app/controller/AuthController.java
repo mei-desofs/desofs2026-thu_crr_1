@@ -81,33 +81,6 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/confirm")
-    public ResponseEntity<String> confirm(
-            @RequestParam("token_hash") String tokenHash,
-            @RequestParam("type") String type) {
-
-        authService.confirmAndSetupAccount(tokenHash, type);
-        return ResponseEntity
-                .ok("Email confirmed. Please set your password using POST /auth/set-password with your access token.");
-    }
-
-    @GetMapping("/callback")
-    public ResponseEntity<String> callback(@RequestParam(required = false) String accessToken,
-            @RequestParam(required = false) String error, @RequestParam(required = false) String errorDescription) {
-
-        if (error != null) {
-            logger.warn("Callback error received: {} - {}", error, errorDescription);
-            throw new IllegalArgumentException("Invalid callback");
-        }
-
-        if (accessToken == null || accessToken.isBlank()) {
-            logger.warn("Access token is missing in the callback");
-            throw new IllegalArgumentException("Invalid callback");
-        }
-
-        return ResponseEntity.ok("Account created successfully. You can now close this page.");
-    }
-
     @RateLimit("login")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request,
