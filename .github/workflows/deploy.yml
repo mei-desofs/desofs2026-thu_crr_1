@@ -70,5 +70,22 @@ jobs:
             sudo docker inspect -f '{{.State.Running}}' techstore-frontend | grep -q true \
               || (echo "Frontend failed to start" && exit 1)
 
+            # ---- Health Check (Actuator) ----
+            HEALTH_URL="https://techstore.francecentral.cloudapp.azure.com/api/actuator/health"
+            for i in $(seq 1 10); do
+              STATUS=$(curl -s -o /tmp/health.json -w "%{http_code}" "$HEALTH_URL" || echo "000")
+              if [ "$STATUS" = "200" ] && grep -q '"status":"UP"' /tmp/health.json; then
+                echo "Health check OK"
+                break
+              fi
+              echo "Attempt $i: health check not OK yet (HTTP $STATUS)"
+              cat /tmp/health.json 2>/dev/null || true
+              if [ "$i" -eq 10 ]; then
+                echo "Backend health check failed after 10 attempts"
+                exit 1
+              fi
+              sleep 5
+            done
+
             # ---- Cleanup (only after everything is up) ----
             sudo docker image prune -f
