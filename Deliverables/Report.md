@@ -187,7 +187,7 @@ External dependencies are items external to the code of the application that may
 |5| POST /api/auth/refresh| The refresh endpoint allows authenticated users to obtain a new JWT token before the current one expires. | Customer, Carrier, Manager |
 |6| POST /api/auth/invite| The invite endpoint allows managers to invite new users (managers or carriers) to the system. | Manager |
 |7| POST /api/auth/confirm-invite| The confirm invite endpoint allows invited users to complete their registration process. | Invited User |
-|8| POST /api/auth/reset-password| The reset password endpoint allows users to request a password reset link via email. | Anonymous User |
+|8| POST /api/auth/password-reset/request | Allows users to request a password reset link via email. | Anonymous User |
 |9| GET /api/products| The products endpoint allows users to retrieve a list of available products. | Anonymous User, Customer, Carrier, Manager, Invited User |
 |10| GET /api/products/search?productName={name}| The products endpoint allows users to search for products by name. | Anonymous User, Customer, Carrier, Manager, Invited User |
 |11| POST /api/products| The products endpoint allows managers to create new products. | Manager |
@@ -203,6 +203,15 @@ External dependencies are items external to the code of the application that may
 |21| POST /api/manager/backup | The manager backup endpoint allows managers to create a backup of the products, categories, and orders data. | Manager |
 |22| GET /api/auth/me | The auth endpoint allows authenticated users to retrieve their own user information. | Customer, Carrier, Manager |
 |23| GET /api/categories | The categories endpoint allows users to retrieve a list of product categories. | Customer |
+|24| POST /api/auth/mfa/enroll | Allows authenticated users to enroll an MFA factor. | Customer, Carrier, Manager |
+|25| POST /api/auth/mfa/verify | Allows authenticated users to verify MFA enrollment. | Customer, Carrier, Manager |
+|26| POST /api/auth/mfa/challenge | Allows users in the MFA login flow to request an MFA challenge. | Anonymous User |
+|27| POST /api/auth/mfa/challenge/verify | Allows users in the MFA login flow to verify an MFA challenge. | Anonymous User |
+|28| POST /api/auth/mfa/enroll/challenge | Allows authenticated users to create an MFA enrollment challenge. | Customer, Carrier, Manager |
+|29| DELETE /api/auth/mfa/{factorId} | Allows authenticated users to unenroll an MFA factor. | Customer, Carrier, Manager |
+|30| GET /api/auth/mfa/status | Allows authenticated users to retrieve their MFA enrollment status. | Customer, Carrier, Manager |
+|31| POST /api/auth/set-password | Allows users with a valid authorization token to set or update their password. | Invited User, Customer, Carrier, Manager |
+|32| POST /api/auth/confirm | Confirms a registered user's email using an access token. | Anonymous User |
 
 ## Exit Points
 
@@ -217,7 +226,7 @@ External dependencies are items external to the code of the application that may
 | 7 | Refresh Token Endpoint Response | Returns refreshed session tokens or token-related errors. | Auth Data, Session Data, Validation/Error Data | Refresh token theft, weak rotation, unlimited refresh cycles |
 | 8 | Invite Endpoint Response | Returns invite creation output or invite validation/error feedback. | User Data, Invitation Data, Validation/Error Data | Invitation forgery, privilege escalation, token misuse |
 | 9 | Confirm Invite Endpoint Response | Returns invite confirmation output or confirmation errors. | User Data, Auth Data, Validation/Error Data | Token reuse, role manipulation, weak token validation |
-| 10 | Reset Password Endpoint Response | Returns reset initiation/completion output or validation/errors. | User Data, Recovery Data, Validation/Error Data | Reset abuse, token interception, weak reset policy |
+| 10 | Password Reset Request Response | Returns password reset request confirmation or validation/error feedback. | User Data, Recovery Data, Validation/Error Data | User enumeration, reset abuse, email flooding, weak rate limiting |
 | 11 | Product Catalog Read Responses | Returns product listing/search data and related errors. | Product Data, Pagination Data, Validation/Error Data | Data overexposure, enumeration, query abuse |
 | 12 | Create Product Endpoint Response | Returns create result or create validation/error feedback. | Product Data, Validation/Error Data | Broken access control, mass assignment, business logic abuse |
 | 13 | Update Product Endpoint Response | Returns update result or update validation/error feedback. | Product Data, Validation/Error Data | IDOR, broken access control, weak change auditing |
@@ -232,7 +241,15 @@ External dependencies are items external to the code of the application that may
 | 22 | Backup Completion Notification | Returns backup-ready notifications through async channels. | Backup Data, Notification Data, Operational Metadata | URL tampering, weak signature checks, link expiration bypass |
 | 23 | Me Endpoint Response | Returns authenticated user information or auth errors. | User Data, Auth Data, Validation/Error Data | PII exposure, token misuse, weak access control |
 | 24 | Get Category Endpoint Response | Returns category listing or retrieval errors. | Category Data, Validation/Error Data | Data overexposure, enumeration, query abuse |
-
+| 25 | MFA Enrollment Response | Returns MFA enrollment data or enrollment errors. | MFA Data, Auth Data, Validation/Error Data | MFA secret exposure, unauthorized enrollment, weak rate limiting |
+| 26 | MFA Verification Response | Returns MFA verification success or verification errors. | MFA Data, Auth Data, Validation/Error Data | MFA code brute force, weak challenge validation |
+| 27 | MFA Challenge Response | Returns MFA challenge information or challenge errors. | MFA Data, Challenge Data, Validation/Error Data | MFA challenge abuse, MFA token misuse, weak rate limiting |
+| 28 | MFA Challenge Verification Response | Returns MFA challenge verification success, session completion, or errors. | MFA Data, Auth Data, Session Data, Validation/Error Data | MFA code brute force, token leakage, second-factor bypass |
+| 29 | MFA Enrollment Challenge Response | Returns MFA enrollment challenge data or challenge errors. | MFA Data, Challenge Data, Validation/Error Data | Enrollment abuse, challenge replay, weak authorization |
+| 30 | MFA Unenrollment Response | Returns MFA unenrollment confirmation or errors. | MFA Data, Auth Data, Validation/Error Data | Unauthorized MFA removal, account takeover risk |
+| 31 | MFA Status Response | Returns the authenticated user's MFA enrollment status. | MFA Data, User Data, Auth Data | MFA state disclosure, authorization bypass |
+| 32 | Set Password Response | Returns password update confirmation or validation/error feedback. | Auth Data, Recovery Data, Validation/Error Data | Weak password acceptance, token misuse, reset token replay |
+| 33 | Email Confirmation Response | Returns email confirmation success or confirmation-related errors. | Auth Data, User Data, Validation/Error Data | Token misuse, confirmation token replay, user enumeration |
 ## Assets
 
 | ID | Name | Description | Trust Levels |
