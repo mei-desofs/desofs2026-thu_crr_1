@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
+import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
 import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
@@ -20,6 +21,7 @@ import com.techstore.app.service.interfaces.OrderService;
 
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Sort;
@@ -95,10 +97,10 @@ public class OrderController {
     @GetMapping("/manager")
     @RateLimit("list-all-orders")
     public Page<ManagerOrderResponseDTO> getAllOrders(
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String customerEmail,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,            
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,            
             @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
         Authentication authentication) {
         String managerId = authentication.getName();

@@ -7,6 +7,6 @@ import java.util.UUID;
 import com.techstore.app.domain.shared.Money;
 
 public record ManagerOrderResponseDTO(
-   UUID id2, UUID id3, String email, Money totalPrice2, String string,
-            LocalDateTime createdAt2, int size
+   UUID id, UUID id2, String email, Money totalPrice, String string,
+            LocalDateTime createdAt, int size
 ) {}

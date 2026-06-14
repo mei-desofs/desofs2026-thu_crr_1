@@ -4,33 +4,37 @@ import { useState, useEffect, useCallback } from "react";
 import { apiGet } from "@/lib/api";
 import { useToast } from "@/app/components/useToast";
 
-interface OrderItem {
-  productId: string;
-  productName: string;
-  quantity: number;
-  price: number;
-}
-
 interface ManagerOrder {
   id: string;
-  customerEmail: string;
-  status: string;
-  totalAmount: number;
-  items: OrderItem[];
+  id2: string;
+  email: string;
+  totalPrice: {
+    moneyValue: number;
+  };
+  string: string;
   createdAt: string;
+  size: number;
 }
 
 interface OrdersPage {
   content: ManagerOrder[];
   totalElements: number;
   totalPages: number;
-  currentPage: number;
-  pageSize: number;
+  number: number;
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+  };
 }
 
 type OrderStatus =
   | "PENDING"
-  | "PROCESSING"
+  | "PICKED_UP"
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED"
@@ -40,14 +44,13 @@ export default function OrdersManager() {
   const [orders, setOrders] = useState<ManagerOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
-    currentPage: 0,
-    pageSize: 10,
+    number: 0,
+    size: 10,
     totalPages: 0,
     totalElements: 0,
   });
   const { error: showError } = useToast();
 
-  // Filters
   const [filters, setFilters] = useState({
     status: "" as OrderStatus,
     customerEmail: "",
@@ -72,29 +75,25 @@ export default function OrdersManager() {
           params.append("customerEmail", filters.customerEmail);
         }
         if (filters.startDate) {
-          params.append("startDate", new Date(filters.startDate).toISOString());
+          params.append("startDate", filters.startDate); 
         }
         if (filters.endDate) {
-          const endDate = new Date(filters.endDate);
-          endDate.setHours(23, 59, 59, 999);
-          params.append("endDate", endDate.toISOString());
+          params.append("endDate", filters.endDate); 
         }
 
         const data = await apiGet<OrdersPage>(
           `/orders/manager?${params.toString()}`,
         );
 
-        setOrders(data.content);
+        setOrders(data.content || []);
         setPagination({
-          currentPage: data.currentPage,
-          pageSize: data.pageSize,
+          number: data.number,
+          size: data.size,
           totalPages: data.totalPages,
           totalElements: data.totalElements,
         });
       } catch (err: any) {
-        const errorMsg =
-          err?.response?.data?.error || "Falha ao carregar produtos";
-
+        const errorMsg = err?.response?.data?.error || "Failed to load orders";
         showError(errorMsg);
       } finally {
         setLoading(false);
@@ -105,7 +104,7 @@ export default function OrdersManager() {
 
   useEffect(() => {
     fetchOrders(0);
-  }, []);
+  }, [fetchOrders]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({
@@ -128,7 +127,11 @@ export default function OrdersManager() {
   };
 
   const handlePageChange = (page: number) => {
-    if (page >= 0 && page < pagination.totalPages) {
+    if (
+      page >= 0 &&
+      page < pagination.totalPages &&
+      page !== pagination.number
+    ) {
       fetchOrders(page);
     }
   };
@@ -137,7 +140,7 @@ export default function OrdersManager() {
     switch (status) {
       case "PENDING":
         return "bg-yellow-900/20 text-yellow-200 border-yellow-700";
-      case "PROCESSING":
+      case "PICKED_UP":
         return "bg-blue-900/20 text-blue-200 border-blue-700";
       case "SHIPPED":
         return "bg-purple-900/20 text-purple-200 border-purple-700";
@@ -147,6 +150,29 @@ export default function OrdersManager() {
         return "bg-red-900/20 text-red-200 border-red-700";
       default:
         return "bg-slate-900/20 text-slate-200 border-slate-700";
+    }
+  };
+
+  const getStatusTranslation = (status: string): string => {
+    if (!status) return "Unknown";
+    const translations: Record<string, string> = {
+      PENDING: "Pending",
+      PICKED_UP: "Picked Up",
+      SHIPPED: "Shipped",
+      DELIVERED: "Delivered",
+      CANCELLED: "Cancelled",
+    };
+    return translations[status.toUpperCase()] || status;
+  };
+
+  const formatDate = (dateString: string): string => {
+    try {
+      if (!dateString) return "N/A";
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-US");
+    } catch {
+      return "N/A";
     }
   };
 
@@ -172,26 +198,26 @@ export default function OrdersManager() {
             {/* Status Filter */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Estado
+                Status
               </label>
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
               >
-                <option value="">Todos os Estados</option>
-                <option value="PENDING">Pendente</option>
-                <option value="PROCESSING">A Processar</option>
-                <option value="SHIPPED">Enviado</option>
-                <option value="DELIVERED">Entregue</option>
-                <option value="CANCELLED">Cancelado</option>
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="PICKED_UP">Picked Up</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
 
             {/* Email Filter */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Email do Cliente
+                Customer Email
               </label>
               <input
                 type="email"
@@ -199,7 +225,7 @@ export default function OrdersManager() {
                 onChange={(e) =>
                   handleFilterChange("customerEmail", e.target.value)
                 }
-                placeholder="Procura por email..."
+                placeholder="Search by email..."
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -207,10 +233,10 @@ export default function OrdersManager() {
             {/* Start Date Filter */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Data de Início
+                Start Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 value={filters.startDate}
                 onChange={(e) =>
                   handleFilterChange("startDate", e.target.value)
@@ -222,10 +248,10 @@ export default function OrdersManager() {
             {/* End Date Filter */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Data de Fim
+                End Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange("endDate", e.target.value)}
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
@@ -240,13 +266,13 @@ export default function OrdersManager() {
               disabled={loading}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-medium rounded-lg text-sm transition-colors"
             >
-              Aplicar Filtros
+              Apply Filters
             </button>
             <button
               onClick={handleClearFilters}
               className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg text-sm transition-colors"
             >
-              Limpar
+              Clear
             </button>
           </div>
         </div>
@@ -255,13 +281,13 @@ export default function OrdersManager() {
         <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
           {loading && (
             <div className="p-8 text-center text-slate-400">
-              A carregar encomendas...
+              Loading orders...
             </div>
           )}
 
           {!loading && orders.length === 0 && (
             <div className="p-8 text-center text-slate-400">
-              Nenhuma encomenda encontrada
+              No orders found
             </div>
           )}
 
@@ -272,57 +298,55 @@ export default function OrdersManager() {
                   <thead className="bg-slate-700 border-b border-slate-600">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase">
-                        ID da Encomenda
+                        Order ID
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase">
-                        Cliente
+                        Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase">
-                        Estado
+                        Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase">
-                        Artigos
+                        Items
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-slate-300 uppercase">
                         Total
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase">
-                        Data
+                        Date
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-700">
                     {orders.map((order) => (
                       <tr
-                        key={order.id}
+                        key={order.id2}
                         className="hover:bg-slate-700/50 transition"
                       >
-                        <td className="px-6 py-4 text-sm text-slate-300">
-                          {order.id.slice(0, 8)}...
+                        <td className="px-6 py-4 text-sm text-slate-300 font-mono">
+                          {order.id2?.slice(0, 8)}...
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-300">
-                          {order.customerEmail}
+                          {order.email || "N/A"}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                              order.status,
+                              order.string,
                             )}`}
                           >
-                            {order.status}
+                            {getStatusTranslation(order.string || "")}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-300">
-                          {order.items.length} item
-                          {order.items.length > 1 ? "s" : ""}
+                          {order.size || 0} item
+                          {(order.size || 0) !== 1 ? "s" : ""}
                         </td>
                         <td className="px-6 py-4 text-sm font-semibold text-white text-right">
-                          €{order.totalAmount.toFixed(2)}
+                          €{(order.totalPrice?.moneyValue || 0).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-400">
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "pt-PT",
-                          )}
+                          {formatDate(order.createdAt)}
                         </td>
                       </tr>
                     ))}
@@ -331,33 +355,37 @@ export default function OrdersManager() {
               </div>
 
               {/* Pagination */}
-              <div className="border-t border-slate-700 px-6 py-4 flex items-center justify-between">
+              <div className="border-t border-slate-700 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-slate-400">
-                  Showing {pagination.currentPage * pagination.pageSize + 1} to{" "}
+                  Showing{" "}
+                  {pagination.totalElements === 0
+                    ? 0
+                    : pagination.number * pagination.size + 1}{" "}
+                  to{" "}
                   {Math.min(
-                    (pagination.currentPage + 1) * pagination.pageSize,
+                    (pagination.number + 1) * pagination.size,
                     pagination.totalElements,
                   )}{" "}
                   of {pagination.totalElements} orders
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    disabled={pagination.currentPage === 0 || loading}
+                    onClick={() => handlePageChange(pagination.number - 1)}
+                    disabled={pagination.number === 0 || loading}
                     className="px-3 py-1 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700 disabled:opacity-50 text-white rounded transition-colors"
                   >
                     ← Previous
                   </button>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {Array.from({ length: pagination.totalPages }).map(
                       (_, i) => (
                         <button
                           key={i}
                           onClick={() => handlePageChange(i)}
                           className={`px-2 py-1 text-sm rounded transition-colors ${
-                            pagination.currentPage === i
+                            pagination.number === i
                               ? "bg-blue-600 text-white"
                               : "bg-slate-700 hover:bg-slate-600 text-white"
                           }`}
@@ -369,10 +397,9 @@ export default function OrdersManager() {
                   </div>
 
                   <button
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                    onClick={() => handlePageChange(pagination.number + 1)}
                     disabled={
-                      pagination.currentPage >= pagination.totalPages - 1 ||
-                      loading
+                      pagination.number >= pagination.totalPages - 1 || loading
                     }
                     className="px-3 py-1 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700 disabled:opacity-50 text-white rounded transition-colors"
                   >
