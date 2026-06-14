@@ -134,10 +134,19 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-1">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm text-slate-300" htmlFor="password">
+                    Password
+                  </label>
+                  <a
+                    href="/app/auth/forgot-password"
+                    className="text-sm text-blue-400 hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
                 <input
+                  id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
