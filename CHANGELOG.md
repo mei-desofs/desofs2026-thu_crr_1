@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.4.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.3.0...v2.4.0) (2026-06-14)
+
+
+### Features
+
+* add warmup before run functional tests ([ad46225](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ad462251c4e5bad3a3a8ff7cdc08a402a04b124f))
+* create wrokflow functional tests step & improve MFA ([684fc20](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/684fc20a421707c91b700ae859d6fb31a3878f35))
+
+
+### Bug Fixes
+
+* fix:  ([84cd6f7](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/84cd6f77efdd93444e08ed322e5cd281f2069b47))
+* functional tests workflow ([d442192](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d44219265486c39a711c9cdf306688418f443eb3))
+* functional tests workflow ([551c57a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/551c57a8c2f8555e365749f1398a0525ae2c3974))
+* MFA integration tests ([13fe82c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/13fe82c063b2a3f69a5e80f658ae5e6f4485b5fa))
+* minor changes ([a9820b4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a9820b4a71e5e9481ded0f6fd8c0f01906647e4d))
+* Update API URL in Postman environment ([6b98384](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6b9838428f7488219c6b622a14b037227b738020))
+* wait 60 seconds before run functional tests ([ec99bb6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ec99bb678af050cdcfb24b900ef7fdac3341b050))
+* warmup before run functional tests ([8620d05](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8620d05439fe27dbd1d9d19abd70cd353b93c51f))
+* warmup before run functional tests ([2f76378](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2f76378a7e33d1e6f4be84f7781c2c2bb79dba00))
+
 ## [2.3.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.2.0...v2.3.0) (2026-06-11)
 
 
