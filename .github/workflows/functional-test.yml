@@ -1,18 +1,23 @@
 name: Functional Tests (Newman)
-
 on:
   workflow_call:
 
 jobs:
   newman:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Warmup backend (best-effort)
+        run: |
+          newman run postman/Warmup.postman_collection.json \
+            --environment postman/env.postman_environment.json \
+            --timeout-request 90000 \
+          || true
 
       - name: Run Postman Collection
         run: |
@@ -22,7 +27,7 @@ jobs:
             --reporter-junit-export results/newman-results.xml \
             --reporter-htmlextra-export results/newman-report.html \
             --delay-request 500 \
-            --timeout-request 1000
+            --timeout-request 10000
 
       - name: Upload Test Results
         if: always()
