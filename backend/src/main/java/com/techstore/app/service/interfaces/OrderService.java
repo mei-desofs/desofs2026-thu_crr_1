@@ -1,10 +1,15 @@
 package com.techstore.app.service.interfaces;
 
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
+import com.techstore.app.dto.product.OrderFilterDTO;
 
 import java.util.List;
+
+import org.springframework.data.domain.Pageable; 
+import org.springframework.data.domain.Page;
 
 public interface OrderService {
 
@@ -35,4 +40,7 @@ public interface OrderService {
     void pickupOrder(String orderId, String carrierId);
 
     public List<OrderSummaryDTO> getPendingOrders(String supabaseUserId);
+
+    Page<ManagerOrderResponseDTO> findAllOrders(OrderFilterDTO filter, Pageable pageable,String managerId);
+
 }

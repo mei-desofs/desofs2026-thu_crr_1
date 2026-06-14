@@ -36,6 +36,35 @@ public class ProductAuditLogger {
         );
     }
 
+    public void logStockUpdate(String productName, Integer oldQuantity, Integer newQuantity, String managerId) {
+        auditLog.info("event=STOCK_UPDATE | productName={} | oldQuantity={} | newQuantity={} | change={} | managerId={} | timestamp={}",
+                sanitize(productName),
+                oldQuantity,
+                newQuantity,
+                (newQuantity - oldQuantity),
+                sanitize(managerId),
+                Instant.now()
+        );
+
+        appLog.info("Stock updated: productName={}, oldQuantity={}, newQuantity={}",
+                sanitize(productName),
+                oldQuantity,
+                newQuantity);
+    }
+
+    public void logStockUpdateFailure(String productName, String reason, String managerId) {
+        auditLog.warn("event=STOCK_UPDATE_FAILURE | productName={} | reason={} | managerId={} | timestamp={}",
+                sanitize(productName),
+                sanitize(reason),
+                sanitize(managerId),
+                Instant.now()
+        );
+
+        appLog.warn("Stock update failed: productName={}, reason={}",
+                sanitize(productName),
+                sanitize(reason));
+    }
+
     private String sanitize(String input) {
         if (input == null) return null;
         return input.replaceAll("[\\r\\n\\t]", "_")
