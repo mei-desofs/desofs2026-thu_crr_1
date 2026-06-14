@@ -4,10 +4,11 @@ import com.techstore.app.config.FileUploadConfig;
 import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.category.CategoryId;
 import com.techstore.app.domain.product.Product;
+import com.techstore.app.domain.product.ProductId;
 import com.techstore.app.domain.product.ProductName;
-import com.techstore.app.dto.ProductResponseDTO;
-import com.techstore.app.dto.ProductRequestDTO;
-import com.techstore.app.dto.ProductUpdateDTO;
+import com.techstore.app.domain.shared.Quantity;
+import com.techstore.app.dto.product.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductResponseDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.ProductAuditLogger;
 import com.techstore.app.mapper.ProductMapper;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
@@ -169,4 +171,38 @@ public class ProductServiceImpl implements ProductService {
         }
         return filename.substring(dotIndex).toLowerCase();
     }
+
+    @Override
+    public ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId) {
+        try {
+            if (newQuantity < 0) {
+                throw new BusinessException("Stock quantity cannot be negative");
+            }
+
+            Product product = productRepository.findById(new ProductId(productId))
+                    .orElseThrow(() -> new BusinessException("Product not found"));
+
+            Integer oldQuantity = product.getStockQuantity().getQuantity();
+            product.updateStock(new Quantity(newQuantity));
+            Product saved = productRepository.save(product);
+
+            productAuditLogger.logStockUpdate(product.getName().getProductName(),
+                    oldQuantity, newQuantity, managerId);
+
+            return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
+        } catch (BusinessException ex) {
+            productAuditLogger.logStockUpdateFailure(
+                    "unknown",
+                    ex.getMessage(),
+                    managerId);
+            throw ex;
+        } catch (Exception ex) {
+            productAuditLogger.logStockUpdateFailure(
+                    "unknown",
+                    ex.getMessage(),
+                    managerId);
+            throw new BusinessException("Failed to update stock: " + ex.getMessage());
+        }
+    }
+
 }

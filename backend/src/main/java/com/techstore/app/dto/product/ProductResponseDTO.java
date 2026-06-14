@@ -1,4 +1,4 @@
-package com.techstore.app.dto;
+package com.techstore.app.dto.product;
 
 import java.math.BigDecimal;
 import java.util.UUID;

@@ -85,4 +85,8 @@ public class Product {
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
     }
+
+    public void updateStock(Quantity newQuantity) {
+        this.stockQuantity = newQuantity;
+    }
 }

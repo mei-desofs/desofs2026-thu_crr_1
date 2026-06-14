@@ -86,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/carrier").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.PATCH, "/orders/*/pickup").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.GET, "/orders/pending").hasRole("CARRIER")
+                        .requestMatchers(HttpMethod.GET, "/orders/manager").hasRole("MANAGER")
 
                         .requestMatchers(HttpMethod.POST, "/auth/mfa/enroll")
                         .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
