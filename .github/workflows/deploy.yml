@@ -87,7 +87,7 @@ jobs:
               sleep 5
             done
 
-            sleep 10
+            sleep 60
 
             # ---- Cleanup (only after everything is up) ----
             sudo docker image prune -f
