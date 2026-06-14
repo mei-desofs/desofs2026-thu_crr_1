@@ -12,7 +12,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-const MANAGER_ROUTES = ["/manager/dashboard", "/invite", "/manager/backups", "/products/manage"];
+const MANAGER_ROUTES = ["/manager/dashboard", "/invite", "/manager/backups", "/products/manage","/manager/order", "/manager/stock"];
 
 function redirectToLogin(request: NextRequest, pathname: string) {
   const loginUrl = request.nextUrl.clone();
@@ -48,5 +48,7 @@ export const config = {
     "/invite/:path*",
     "/manager/backups/:path*",
     "/products/manage/:path*",
+    "/manager/order/:path*",
+    "/manager/stock/:path*",
   ],
 };
