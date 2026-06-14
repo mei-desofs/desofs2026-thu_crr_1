@@ -101,7 +101,7 @@ ratelimit:
       duration: PT1M
 
     mfa-challenge:
-      type: USER
+      type: IP
       capacity: 10
       duration: PT1M
 
@@ -111,6 +111,11 @@ ratelimit:
       duration: PT1H
 
     mfa-challenge-verify:
+      type: IP
+      capacity: 10
+      duration: PT1M
+
+    mfa-challenge-enroll:
       type: USER
       capacity: 10
       duration: PT1M

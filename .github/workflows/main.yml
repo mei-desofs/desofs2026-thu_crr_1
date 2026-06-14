@@ -82,6 +82,16 @@ jobs:
       - container-security
     secrets: inherit
 
+  newman-functional-tests:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/functional-test.yml
+    needs:
+      - deploy
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
   release-please:
     if: github.event_name == 'push'
     uses: ./.github/workflows/release.yml

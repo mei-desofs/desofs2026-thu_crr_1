@@ -18,6 +18,7 @@ import com.techstore.app.util.PasswordUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,8 @@ public class AuthServiceImpl implements AuthService {
     @Value("${supabase.jwt-secret}")
     private String jwtSecret;
 
+    private final MfaTokenService mfaTokenService;
+
     private final UserService userService;
     private final UserRepository userRepository;
 
@@ -54,10 +57,11 @@ public class AuthServiceImpl implements AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
-    public AuthServiceImpl(UserService userService, UserRepository userRepository,
+    public AuthServiceImpl(MfaTokenService mfaTokenService, UserService userService, UserRepository userRepository,
                            AuthAuditLogger auditLogger, ObjectMapper objectMapper,
                            SupabaseAuthClient supabaseClient, PasswordUtils passwordUtils,
                            NotificationService notificationService) {
+        this.mfaTokenService = mfaTokenService;
         this.userService = userService;
         this.userRepository = userRepository;
         this.auditLogger = auditLogger;
@@ -264,13 +268,35 @@ public class AuthServiceImpl implements AuthService {
         try {
             SupabaseLoginResponse supabaseResponse = supabaseClient.login(request.email(), request.password());
 
+            MfaStatusResponse mfaStatus = supabaseClient.getMfaStatus(supabaseResponse.accessToken());
+            boolean mfaRequired = mfaStatus != null && mfaStatus.hasVerifiedFactor();
+
+            if (mfaRequired) {
+                String factorId = mfaStatus.factors().stream()
+                        .filter(f -> "totp".equals(f.type()) && "verified".equals(f.status()))
+                        .map(MfaStatusResponse.Factor::id)
+                        .findFirst()
+                        .orElse(null);
+
+                String mfaToken = mfaTokenService.createMfaToken(
+                        supabaseResponse.accessToken(),
+                        supabaseResponse.refreshToken(),
+                        factorId
+                );
+
+                auditLogger.logLoginAttempt(request.email(), true, httpRequest);
+
+                return new LoginResponse(null, null, null, null, true, factorId, mfaToken);
+            }
+
             auditLogger.logLoginAttempt(request.email(), true, httpRequest);
 
             return new LoginResponse(
                     supabaseResponse.accessToken(),
                     supabaseResponse.refreshToken(),
                     supabaseResponse.tokenType(),
-                    supabaseResponse.expiresIn());
+                    supabaseResponse.expiresIn(),
+                    false, null, null);
 
         } catch (Exception ex) {
             auditLogger.logLoginAttempt(request.email(), false, httpRequest);
@@ -437,10 +463,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public MfaChallengeResponse challengeMfa(String accessToken, String factorId) {
-        String userId = extractUserId(accessToken);
+    public MfaChallengeResponse challengeMfa(String mfaToken, String factorId) {
+        MfaTokenService.MfaSession session = mfaTokenService.peekSession(mfaToken);
+
+        if (!session.factorId().equals(factorId)) {
+            throw new BusinessException("Factor mismatch");
+        }
+
+        String userId = extractUserId(session.supabaseAccessToken());
         try {
-            MfaChallengeResponse response = supabaseClient.createChallenge(accessToken, factorId);
+            MfaChallengeResponse response = supabaseClient.createChallenge(
+                    session.supabaseAccessToken(), factorId
+            );
             auditLogger.logMfaChallengeAttempt(userId, true);
             return response;
         } catch (Exception ex) {
@@ -450,13 +484,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void verifyChallengeCode(String accessToken, String factorId,
+    public void verifyChallengeCode(String mfaToken, String factorId,
                                     String challengeId, String code,
-                                    jakarta.servlet.http.HttpServletResponse httpResponse) {
-        String userId = extractUserId(accessToken);
+                                    HttpServletResponse httpResponse) {
+        MfaTokenService.MfaSession session = mfaTokenService.consumeSession(mfaToken);
+
+        if (!session.factorId().equals(factorId)) {
+            throw new BusinessException("Factor mismatch");
+        }
+
+        String userId = extractUserId(session.supabaseAccessToken());
         try {
             SupabaseLoginResponse upgraded = supabaseClient.verifyTotpCode(
-                    accessToken, factorId, challengeId, code);
+                    session.supabaseAccessToken(), factorId, challengeId, code);
 
             if (upgraded.accessToken() != null) {
                 CookiesHelper.setAuthCookies(
@@ -486,5 +526,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public MfaStatusResponse getMfaStatus(String accessToken) {
         return supabaseClient.getMfaStatus(accessToken);
+    }
+
+    @Override
+    public MfaChallengeResponse challengeForEnroll(String accessToken, String factorId) {
+        String userId = extractUserId(accessToken);
+        try {
+            MfaChallengeResponse response = supabaseClient.createChallenge(accessToken, factorId);
+            auditLogger.logMfaChallengeAttempt(userId, true);
+            return response;
+        } catch (Exception ex) {
+            auditLogger.logMfaChallengeAttempt(userId, false);
+            throw ex;
+        }
     }
 }
