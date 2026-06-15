@@ -1,5 +1,68 @@
 # Changelog
 
+## [2.5.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.4.0...v2.5.0) (2026-06-15)
+
+
+### Features
+
+* add forgot-password page ([c6eff07](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c6eff0748f001e19a21323384f6a7aa7a8a56375))
+
+## [2.4.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.3.0...v2.4.0) (2026-06-14)
+
+
+### Features
+
+* add warmup before run functional tests ([ad46225](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ad462251c4e5bad3a3a8ff7cdc08a402a04b124f))
+* create wrokflow functional tests step & improve MFA ([684fc20](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/684fc20a421707c91b700ae859d6fb31a3878f35))
+
+
+### Bug Fixes
+
+* fix:  ([84cd6f7](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/84cd6f77efdd93444e08ed322e5cd281f2069b47))
+* functional tests workflow ([d442192](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d44219265486c39a711c9cdf306688418f443eb3))
+* functional tests workflow ([551c57a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/551c57a8c2f8555e365749f1398a0525ae2c3974))
+* MFA integration tests ([13fe82c](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/13fe82c063b2a3f69a5e80f658ae5e6f4485b5fa))
+* minor changes ([a9820b4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a9820b4a71e5e9481ded0f6fd8c0f01906647e4d))
+* Update API URL in Postman environment ([6b98384](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6b9838428f7488219c6b622a14b037227b738020))
+* wait 60 seconds before run functional tests ([ec99bb6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ec99bb678af050cdcfb24b900ef7fdac3341b050))
+* warmup before run functional tests ([8620d05](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/8620d05439fe27dbd1d9d19abd70cd353b93c51f))
+* warmup before run functional tests ([2f76378](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2f76378a7e33d1e6f4be84f7781c2c2bb79dba00))
+
+## [2.3.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.2.0...v2.3.0) (2026-06-11)
+
+
+### Features
+
+* add endpoints to enroll, verify, challenge, unenroll MFA and get mfa status ([80889d6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/80889d61300587d51989645e91655fe478d97fa6))
+* add get carrier order for delivery page and add navbar role based buttons to get orders ([7d51ae2](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7d51ae215801e1040f2ebed744bb4e3cc3f11f35))
+* add get order by customer page in frontend ([38548aa](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/38548aa99d61c8ad034b4573d6f600ee10587aa0))
+* add get pending order endpoint to carrier choose what order to pick up ([0a8dce0](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/0a8dce07fcee291c8450e84f7b5ba9e7ccadcd49))
+* add images volume to deploy workflow ([47b149e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/47b149ec55776b46d5be2d7bf64f341cad0ab8e0))
+* add listing pending orders page with pick up option for carrier and redirect carrier login endpoint to that page ([ca3d1d5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ca3d1d58c2af04efb09d6a664c4546feedeebf81))
+* add mailpit to the deploy workflow ([6cb8a8b](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/6cb8a8bada45d8e58c3b1b57140d7dce388e8ba4))
+* add mfa to frontend ([04ddd27](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/04ddd27ec6423350bf3e5e9de9e105962e8b18a3))
+* add new dependencies in frontend ([4fb00a1](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4fb00a1809daec7e1f5ccf0498875c478e7f1702))
+* add product image in backend and frontend ([986510e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/986510e367f425790ff6e3fd2fbafa873f339827))
+* add product image in backend and frontend ([e2c442f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e2c442f5a4f8ceec8850c19dd5509fd65a2e0a13))
+* add tests to new functionalities ([ff79743](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/ff79743db511d59556e6ad915f92c10ebb3f6591))
+* create product page and manager dashboard ([5fc5f59](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5fc5f59a31b7995130bc39ce484f46f9acaaff09))
+* create product page and manager dashboard ([2ac74f4](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/2ac74f4a414f151904e0a8e3fa72e1fac74e1759))
+* create products backups page ([72f9921](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/72f9921e77b0ab2685e55184218f1d014087b528))
+
+
+### Bug Fixes
+
+* add frontend dependencies ([317e303](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/317e303d1238be6beee2ab81fcf8f5f77e7d91c3))
+* app paths to use correct hrefs ([c2f7308](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c2f73081801c76da6dcb5068cfb8fbe391acc0e0))
+* failling test (CartItemServiceImplTest.testGetAllCartItemsSuccess) ([cea5b71](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/cea5b71e37282531d2edf80e27aad9209e1b396d))
+* fix linting ([3c1dade](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/3c1dade288bf52b9f84e2f3cce9f294c54d7472e))
+* io.netty:netty-handler@4.2.12.Final Critical vulnerability ([09df0cf](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/09df0cf28e126f927aeadd9319bfea4c12c662c1))
+* io.netty:netty-handler@4.2.12.Final Critical vulnerability ([a077155](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/a0771550d3cbd4784a5a3c25174346ac80a849f1))
+* password security improvements with breach check and validation improvements ([e1180ec](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/e1180ecf77eeaf9435f83352da39d06ff74ebaf9))
+* remove redirect links to forget password and register in  login page ([cfaf321](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/cfaf321f2e8a039823dabb29bd256d7531af81cd))
+* small changes on the app security ([1222824](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/1222824741a910f05f23d80e2cedb13f7ba75219))
+* to use secure access token in endpoints ([5ae0e36](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5ae0e36989dcb17e79722b3d6d3ece9bcfb3feaa))
+
 ## [2.2.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.1.0...v2.2.0) (2026-06-07)
 
 
