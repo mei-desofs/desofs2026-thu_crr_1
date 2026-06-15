@@ -17,7 +17,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
 
   mail:
     host: ${MAIL_HOST}
@@ -73,3 +73,7 @@ supabase:
   issuer: ${SUPABASE_ISSUER}
   jwks-url: ${SUPABASE_JWKS_URL}
   jwt-audience: ${SUPABASE_JWT_AUDIENCE}
+
+hibp:
+  api:
+    url: ${HIPB_URL}
