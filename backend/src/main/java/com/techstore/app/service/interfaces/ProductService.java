@@ -18,10 +18,15 @@ public interface ProductService {
 
     List<ProductResponseDTO> findByName(ProductName productName);
 
+    ProductResponseDTO findById(UUID id);
+
     Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable);
 
     Page<ProductResponseDTO> findAll(Pageable pageable);
-    
+
     ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId);
+
+    ProductResponseDTO update(UUID productId, com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            org.springframework.web.multipart.MultipartFile image, String managerId) throws IOException;
 
 }

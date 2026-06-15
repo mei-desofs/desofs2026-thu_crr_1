@@ -86,4 +86,24 @@ public class Product {
     public void updateStock(Quantity newQuantity) {
         this.stockQuantity = newQuantity;
     }
+
+    public void updateName(String name) {
+        this.name = new ProductName(name);
+    }
+
+    public void updateDescription(String description) {
+        this.description = new ProductDescription(description);
+    }
+
+    public void updatePrice(Money price) {
+        this.price = price;
+    }
+
+    public void updateCategory(Category category) {
+        this.category = category;
+    }
+
+    public ProductDescription getDescription() {
+        return description;
+    }
 }

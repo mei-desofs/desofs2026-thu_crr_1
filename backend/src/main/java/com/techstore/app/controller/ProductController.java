@@ -50,14 +50,30 @@ public class ProductController {
         return productService.findAll(pageable);
     }
 
-    @PutMapping("/{id}/stock")
-@RateLimit("update-product-stock")
-public ProductResponseDTO updateStock(
-        @PathVariable UUID id,
-        @Valid @RequestBody UpdateStockRequestDTO request,
-        Authentication authentication) {
+    @RateLimit("get-product")
+    @GetMapping("/{id}")
+    public ProductResponseDTO findById(@PathVariable UUID id) {
+        return productService.findById(id);
+    }
 
-    String managerId = authentication.getName();
-    return productService.updateStock(id, request.quantity(), managerId);
-}
+    @PutMapping("/{id}/stock")
+    @RateLimit("update-product-stock")
+    public ProductResponseDTO updateStock(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateStockRequestDTO request,
+            Authentication authentication) {
+
+        String managerId = authentication.getName();
+        return productService.updateStock(id, request.quantity(), managerId);
+    }
+
+    @PatchMapping("/{id}")
+    @RateLimit("update-product")
+    public ProductResponseDTO update(@PathVariable UUID id,
+            @Valid @ModelAttribute com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication) throws IOException {
+        String managerId = authentication.getName();
+        return productService.update(id, updateDTO, image, managerId);
+    }
 }
