@@ -50,6 +50,12 @@ public class ProductController {
         return productService.findAll(pageable);
     }
 
+    @RateLimit("get-product")
+    @GetMapping("/{id}")
+    public ProductResponseDTO findById(@PathVariable UUID id) {
+        return productService.findById(id);
+    }
+
     @PutMapping("/{id}/stock")
     @RateLimit("update-product-stock")
     public ProductResponseDTO updateStock(

@@ -18,6 +18,8 @@ public interface ProductService {
 
     List<ProductResponseDTO> findByName(ProductName productName);
 
+    ProductResponseDTO findById(UUID id);
+
     Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable);
 
     Page<ProductResponseDTO> findAll(Pageable pageable);

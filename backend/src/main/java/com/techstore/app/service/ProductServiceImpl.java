@@ -71,6 +71,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponseDTO findById(UUID id) {
+        Product product = productRepository.findById(new ProductId(id))
+                .orElseThrow(() -> new BusinessException("Product not found"));
+        return ProductMapper.toResponse(product, fileUploadConfig.getBasePath());
+    }
+
+    @Override
     public List<ProductResponseDTO> findByName(ProductName productName) {
         List<Product> products = productRepository.findByName(productName);
 
