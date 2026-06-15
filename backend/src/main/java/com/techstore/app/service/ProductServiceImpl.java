@@ -172,40 +172,33 @@ public class ProductServiceImpl implements ProductService {
         return filename.substring(dotIndex).toLowerCase();
     }
 
-     @Override
+    @Override
     public ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId) {
-        try {
-            if (newQuantity < 0) {
-                throw new BusinessException("Stock quantity cannot be negative");
-            }
-
-            Product product = productRepository.findById(new ProductId(productId))
-                    .orElseThrow(() -> new BusinessException("Product not found"));
-
-            Integer oldQuantity = product.getStockQuantity().getQuantity();
-            product.updateStock(new Quantity(newQuantity));
-            Product saved = productRepository.save(product);
-
-            productAuditLogger.logStockUpdate(product.getName().getProductName(),
-                    oldQuantity, newQuantity, managerId);
-
-            return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
-        } catch (BusinessException ex) {
-            productAuditLogger.logStockUpdateFailure(
-                    "unknown",
-                    ex.getMessage(),
-                    managerId
-            );
-            throw ex;
-        } catch (Exception ex) {
-            productAuditLogger.logStockUpdateFailure(
-                    "unknown",
-                    ex.getMessage(),
-                    managerId
-            );
-            throw new BusinessException("Failed to update stock: " + ex.getMessage());
+    try {
+        if (newQuantity < 0) {
+            throw new BusinessException("Stock quantity cannot be negative");
         }
+
+        Product product = productRepository.findById(new ProductId(productId))
+                .orElseThrow(() -> new BusinessException("Product not found"));
+
+        Integer oldQuantity = product.getStockQuantity().getQuantity();
+        product.updateStock(new Quantity(newQuantity));
+        Product saved = productRepository.save(product);
+
+        productAuditLogger.logStockUpdate(product.getName().getProductName(),
+                oldQuantity, newQuantity, managerId);
+
+        return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
+    } catch (Exception ex) {
+        productAuditLogger.logStockUpdateFailure("unknown", ex.getMessage(), managerId);
+        
+        if (ex instanceof BusinessException) {
+            throw ex;
+        }
+        throw new BusinessException("Failed to update stock: " + ex.getMessage());
     }
+}
     
 
 }
