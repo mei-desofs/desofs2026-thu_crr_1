@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.6.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.5.0...v2.6.0) (2026-06-15)
+
+
+### Features
+
+* implement logic for product detail page ([c84a7a6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c84a7a6f515bfbe20159d084813fce3ebe4069c8))
+* implement product patch endpoint ([cb2b120](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/cb2b1209db4c649870d1803d67dcc148bf84f419))
+* Product update ([223b473](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/223b47358f5957ee01f12291657ac26acbe939fe))
+
+
+### Bug Fixes
+
+* add rate limit ([5bef462](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/5bef4627cc4bc962d2b199cc0d10c6d140d6ab44))
+* add rate limit ([213f887](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/213f8871db82efbe65451d6c51251abbd36dc3ec))
+* add url of hibp to .env and remove from code ([c4b9dbe](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c4b9dbecc0a810249c233345e32ef732d7845bb1))
+* update dast to new env ([70532f5](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/70532f59ec3a8d7fbd9a2ea26240257c2036eead))
+* update password inputs in login and register page ([9ea5553](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9ea5553c2104776d3f6a0550dab443f28705d0fb))
+* update password inputs in login and register page ([4f3c1e6](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/4f3c1e674fd7a15b13e22c82c52e142562787b7b))
+
 ## [2.5.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.4.0...v2.5.0) (2026-06-15)
 
 
