@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.4.0...v2.5.0) (2026-06-15)
+
+
+### Features
+
+* add forgot-password page ([c6eff07](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/c6eff0748f001e19a21323384f6a7aa7a8a56375))
+
 ## [2.4.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.3.0...v2.4.0) (2026-06-14)
 
 
