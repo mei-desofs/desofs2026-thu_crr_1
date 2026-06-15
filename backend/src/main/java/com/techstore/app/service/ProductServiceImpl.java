@@ -174,31 +174,99 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId) {
-    try {
-        if (newQuantity < 0) {
-            throw new BusinessException("Stock quantity cannot be negative");
+        try {
+            if (newQuantity < 0) {
+                throw new BusinessException("Stock quantity cannot be negative");
+            }
+
+            Product product = productRepository.findById(new ProductId(productId))
+                    .orElseThrow(() -> new BusinessException("Product not found"));
+
+            Integer oldQuantity = product.getStockQuantity().getQuantity();
+            product.updateStock(new Quantity(newQuantity));
+            Product saved = productRepository.save(product);
+
+            productAuditLogger.logStockUpdate(product.getName().getProductName(),
+                    oldQuantity, newQuantity, managerId);
+
+            return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
+        } catch (Exception ex) {
+            productAuditLogger.logStockUpdateFailure("unknown", ex.getMessage(), managerId);
+
+            if (ex instanceof BusinessException) {
+                throw ex;
+            }
+            throw new BusinessException("Failed to update stock: " + ex.getMessage());
         }
-
-        Product product = productRepository.findById(new ProductId(productId))
-                .orElseThrow(() -> new BusinessException("Product not found"));
-
-        Integer oldQuantity = product.getStockQuantity().getQuantity();
-        product.updateStock(new Quantity(newQuantity));
-        Product saved = productRepository.save(product);
-
-        productAuditLogger.logStockUpdate(product.getName().getProductName(),
-                oldQuantity, newQuantity, managerId);
-
-        return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
-    } catch (Exception ex) {
-        productAuditLogger.logStockUpdateFailure("unknown", ex.getMessage(), managerId);
-        
-        if (ex instanceof BusinessException) {
-            throw ex;
-        }
-        throw new BusinessException("Failed to update stock: " + ex.getMessage());
     }
-}
-    
+
+    @Override
+    public ProductResponseDTO update(UUID productId, com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            MultipartFile image, String managerId) throws IOException {
+        try {
+            Product product = productRepository.findById(new ProductId(productId))
+                    .orElseThrow(() -> new BusinessException("Product not found"));
+
+            String oldProductName = product.getName().getProductName();
+            String oldPrice = product.getPrice().getMoneyValue().toString();
+            Integer oldStockQuantity = product.getStockQuantity().getQuantity();
+            String oldCategoryName = product.getCategory().getName().getCategoryName();
+
+            if (updateDTO.name() != null) {
+                product.updateName(updateDTO.name());
+            }
+
+            if (updateDTO.description() != null) {
+                product.updateDescription(updateDTO.description());
+            }
+
+            if (updateDTO.price() != null) {
+                product.updatePrice(new com.techstore.app.domain.shared.Money(updateDTO.price()));
+            }
+
+            if (updateDTO.categoryId() != null) {
+                Category category = categoryRepository.findById(new CategoryId(updateDTO.categoryId()))
+                        .orElseThrow(() -> new BusinessException("Category not found"));
+                product.updateCategory(category);
+            }
+
+            if (updateDTO.stockQuantity() != null) {
+                if (updateDTO.stockQuantity() < 0) {
+                    throw new BusinessException("Stock quantity cannot be negative");
+                }
+                product.updateStock(new Quantity(updateDTO.stockQuantity()));
+            }
+
+            if (image != null && !image.isEmpty()) {
+                String imagePath = storeProductImage(product.getId().getId().toString(), image);
+                product.setImagePath(imagePath);
+            }
+
+            Product savedProduct = productRepository.save(product);
+
+            productAuditLogger.logProductUpdate(
+                    oldProductName,
+                    savedProduct.getName().getProductName(),
+                    oldPrice,
+                    savedProduct.getPrice().getMoneyValue().toString(),
+                    oldStockQuantity,
+                    savedProduct.getStockQuantity().getQuantity(),
+                    oldCategoryName,
+                    savedProduct.getCategory().getName().getCategoryName(),
+                    managerId);
+
+            return ProductMapper.toResponse(savedProduct, fileUploadConfig.getBasePath());
+        } catch (BusinessException e) {
+            productAuditLogger.logProductUpdateFailure("unknown", e.getMessage(), managerId);
+            throw e;
+        } catch (Exception ex) {
+            productAuditLogger.logProductUpdateFailure("unknown", ex.getMessage(), managerId);
+
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            }
+            throw new BusinessException("Failed to update product: " + ex.getMessage());
+        }
+    }
 
 }

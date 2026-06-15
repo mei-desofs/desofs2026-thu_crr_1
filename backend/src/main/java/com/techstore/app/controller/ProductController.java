@@ -51,13 +51,23 @@ public class ProductController {
     }
 
     @PutMapping("/{id}/stock")
-@RateLimit("update-product-stock")
-public ProductResponseDTO updateStock(
-        @PathVariable UUID id,
-        @Valid @RequestBody UpdateStockRequestDTO request,
-        Authentication authentication) {
+    @RateLimit("update-product-stock")
+    public ProductResponseDTO updateStock(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateStockRequestDTO request,
+            Authentication authentication) {
 
-    String managerId = authentication.getName();
-    return productService.updateStock(id, request.quantity(), managerId);
-}
+        String managerId = authentication.getName();
+        return productService.updateStock(id, request.quantity(), managerId);
+    }
+
+    @PatchMapping("/{id}")
+    @RateLimit("update-product")
+    public ProductResponseDTO update(@PathVariable UUID id,
+            @Valid @ModelAttribute com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication) throws IOException {
+        String managerId = authentication.getName();
+        return productService.update(id, updateDTO, image, managerId);
+    }
 }
