@@ -4,6 +4,22 @@ import { useState } from "react";
 import apiClient from "@/lib/api";
 import { isAxiosError } from "axios";
 
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+}
+
+function getPasswordStrength(password: string): PasswordStrength {
+  if (password.length === 0) return { score: 0, label: "", color: "" };
+
+  // Strength based solely on length
+  if (password.length < 8)  return { score: 1, label: "Weak",   color: "bg-red-500" };
+  if (password.length < 12) return { score: 2, label: "Fair",   color: "bg-orange-400" };
+  if (password.length < 16) return { score: 3, label: "Good",   color: "bg-yellow-400" };
+                             return { score: 4, label: "Strong", color: "bg-green-500" };
+}
+
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +29,10 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+
+  const strength = getPasswordStrength(password);
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,6 +175,37 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
+
+            {/* Strength meter */}
+            {password.length > 0 && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                        strength.score >= i ? strength.color : "bg-slate-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-slate-500">
+                    {password.length < 8 ? "At least 8 characters required" : ""}
+                  </p>
+                  {strength.label && (
+                    <p className={`text-xs font-medium ${
+                      strength.score === 1 ? "text-red-400" :
+                      strength.score === 2 ? "text-orange-400" :
+                      strength.score === 3 ? "text-yellow-400" :
+                      "text-green-400"
+                    }`}>
+                      {strength.label}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -170,7 +221,13 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 pr-10 rounded bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 pr-10 rounded bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 disabled:opacity-50 transition ${
+                  passwordsMismatch
+                    ? "border border-red-500 focus:ring-red-500"
+                    : passwordsMatch
+                    ? "border border-green-500 focus:ring-green-500"
+                    : "border border-slate-600 focus:ring-blue-500"
+                }`}
               />
               <button
                 type="button"
@@ -220,6 +277,13 @@ export default function RegisterPage() {
                 )}
               </button>
             </div>
+
+            {passwordsMismatch && (
+              <p className="mt-1.5 text-xs text-red-400">Passwords do not match.</p>
+            )}
+            {passwordsMatch && (
+              <p className="mt-1.5 text-xs text-green-400">Passwords match.</p>
+            )}
           </div>
 
           {/* Error message */}
