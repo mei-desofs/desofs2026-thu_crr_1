@@ -14,3 +14,11 @@ Base repository for DESOFS project
 [Report Phase 2 - PDF](Deliverables/Report-Phase-2.pdf)
 
 [ASVS Excel Sheet](Deliverables/asvs-assessment/ASVS_5.0_Tracker.xlsx)
+
+## Report Phase 3
+
+[Report Phase 3 - Readme](Deliverables/Report-Phase-3.md)
+
+[Report Phase 3 - PDF](Deliverables/Report-Phase-3.pdf)
+
+[ASVS Excel Sheet](Deliverables/asvs-assessment/ASVS_5.0_Tracker.xlsx)

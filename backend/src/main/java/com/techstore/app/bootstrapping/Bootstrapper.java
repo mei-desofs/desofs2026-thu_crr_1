@@ -6,7 +6,7 @@ import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.product.ProductName;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.domain.shared.Quantity;
-import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductRequestDTO;
 import com.techstore.app.service.interfaces.CategoryService;
 import com.techstore.app.service.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;

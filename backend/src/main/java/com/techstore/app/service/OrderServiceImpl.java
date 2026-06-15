@@ -12,19 +12,25 @@ import com.techstore.app.domain.user.User;
 import com.techstore.app.domain.order.OrderId;
 import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
+import com.techstore.app.dto.product.OrderFilterDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.OrderAuditLogger;
 import com.techstore.app.mapper.OrderMapper;
 import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.repository.*;
+import com.techstore.app.repository.Custom.OrderSpecification;
 import com.techstore.app.service.interfaces.NotificationService;
 import com.techstore.app.service.interfaces.OrderService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -291,4 +297,31 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
+    public Page<ManagerOrderResponseDTO> findAllOrders(
+        OrderFilterDTO filter,
+        Pageable pageable,
+        String managerId) {
+    try {
+        Specification<Order> spec = OrderSpecification.withFilters(
+            filter.status(),
+            filter.customerEmail(),
+            filter.startDate(),
+            filter.endDate()
+        );
+
+        Page<Order> orders = orderRepository.findAll(spec, pageable);
+        Page<ManagerOrderResponseDTO> result = orders.map(OrderMapper::toManagerResponse);
+
+        orderAuditLogger.logOrdersFiltered(managerId,
+            filter.status() != null ? filter.status().name() : null,
+            filter.customerEmail(), (int) orders.getTotalElements());
+
+        return result;
+    } catch (Exception ex) {
+        orderAuditLogger.logOrdersAccessFailure(managerId, ex.getMessage());
+        throw ex;
+    }
+}
+
 }

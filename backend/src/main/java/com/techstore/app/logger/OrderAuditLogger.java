@@ -166,4 +166,42 @@ public class OrderAuditLogger {
         appLog.warn("Failed to list pending orders: userId={}, reason={}",
                 sanitize(userId), sanitize(exception.getMessage()));
     }
+    public void logOrdersAccessed(String managerId, int totalResults) {
+    auditLog.info(
+            "event=MANAGER_ORDERS_LIST_ATTEMPT | managerId={} | timestamp={}",
+            sanitize(managerId),
+            System.currentTimeMillis()
+    );
+
+    appLog.info("Manager accessing all orders: managerId={}",
+            sanitize(managerId));
+}
+
+public void logOrdersFiltered(String managerId, String status, String customerEmail, int resultsFound) {
+    auditLog.info(
+            "event=MANAGER_ORDERS_FILTERED | managerId={} | status={} | customerEmail={} | resultsFound={} | timestamp={}",
+            sanitize(managerId),
+            status != null ? status : "ALL",
+            customerEmail != null ? sanitize(customerEmail) : "ALL",
+            resultsFound,
+            System.currentTimeMillis()
+    );
+
+    appLog.info("Manager filtered orders: status={}, email={}, results={}",
+            status != null ? status : "ALL",
+            customerEmail != null ? sanitize(customerEmail) : "ALL",
+            resultsFound);
+}
+
+public void logOrdersAccessFailure(String managerId, String reason) {
+    auditLog.warn(
+            "event=MANAGER_ORDERS_ACCESS_FAILURE | managerId={} | reason={} | timestamp={}",
+            sanitize(managerId),
+            sanitize(reason),
+            System.currentTimeMillis()
+    );
+
+    appLog.warn("Manager failed to access orders: managerId={}, reason={}",
+            sanitize(managerId), sanitize(reason));
+}
 }

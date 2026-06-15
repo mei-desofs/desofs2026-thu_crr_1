@@ -1,13 +1,15 @@
 package com.techstore.app.service.interfaces;
 
 import com.techstore.app.domain.product.ProductName;
-import com.techstore.app.dto.ProductResponseDTO;
-import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductResponseDTO;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public interface ProductService {
 
@@ -16,7 +18,15 @@ public interface ProductService {
 
     List<ProductResponseDTO> findByName(ProductName productName);
 
+    ProductResponseDTO findById(UUID id);
+
     Page<ProductResponseDTO> findByNameLike(ProductName productName, Pageable pageable);
 
     Page<ProductResponseDTO> findAll(Pageable pageable);
+
+    ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId);
+
+    ProductResponseDTO update(UUID productId, com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            org.springframework.web.multipart.MultipartFile image, String managerId) throws IOException;
+
 }

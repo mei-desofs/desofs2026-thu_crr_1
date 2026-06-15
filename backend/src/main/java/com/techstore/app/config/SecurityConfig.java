@@ -43,30 +43,27 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.deny())
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                            "default-src 'self'; " +
-                            "script-src 'self'; " +
-                            "style-src 'self'; " +
-                            "img-src 'self' data:; " +
-                            "font-src 'self'; " +
-                            "object-src 'none'; " +
-                            "base-uri 'none'; " +
-                            "frame-ancestors 'none';"
-                        ))
+                                "default-src 'self'; " +
+                                        "script-src 'self'; " +
+                                        "style-src 'self'; " +
+                                        "img-src 'self' data:; " +
+                                        "font-src 'self'; " +
+                                        "object-src 'none'; " +
+                                        "base-uri 'none'; " +
+                                        "frame-ancestors 'none';"))
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .preload(true)
-                                .maxAgeInSeconds(31536000)
-                        )
+                                .maxAgeInSeconds(31536000))
                         .referrerPolicy(referrer -> referrer
-                            .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-                        )
-                )
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/index.html","/reset-password.html", "/auth/login", "/auth/refresh", "/auth/callback", "/auth/register",
+                        .requestMatchers("/index.html", "/reset-password.html", "/auth/login", "/auth/refresh",
+                                "/auth/callback", "/auth/register",
                                 "/auth/confirm", "/auth/confirm-invite", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/swagger-ui.html","/actuator/health", "/auth/password-reset/request")
+                                "/swagger-ui.html", "/actuator/health", "/auth/password-reset/request")
                         .permitAll()
 
                         .requestMatchers("/auth/invite").hasRole("MANAGER")
@@ -78,6 +75,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("MANAGER")
 
                         .requestMatchers(HttpMethod.GET, "/categories/**").hasRole("MANAGER")
@@ -88,17 +86,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/carrier").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.PATCH, "/orders/*/pickup").hasRole("CARRIER")
                         .requestMatchers(HttpMethod.GET, "/orders/pending").hasRole("CARRIER")
+                        .requestMatchers(HttpMethod.GET, "/orders/manager").hasRole("MANAGER")
 
-                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/enroll").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST,   "/auth/mfa/verify").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/enroll")
+                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/verify")
+                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
                         .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/mfa/challenge/verify").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/auth/mfa/*").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.GET,    "/auth/mfa/status").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
-                        .requestMatchers(HttpMethod.POST, "/auth/mfa/enroll/challenge").hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.GET, "/auth/mfa/status")
+                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
+                        .requestMatchers(HttpMethod.POST, "/auth/mfa/enroll/challenge")
+                        .hasAnyRole("MANAGER", "CUSTOMER", "CARRIER")
 
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
 
         return http.build();
     }
@@ -107,17 +109,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:8081",
-            "https://techstore.francecentral.cloudapp.azure.com"
-        ));
+                "http://localhost:3000",
+                "http://localhost:8081",
+                "https://techstore.francecentral.cloudapp.azure.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With",
-            "X-MFA-Token"
-        ));
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "X-MFA-Token"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -41,9 +41,12 @@ User-based rate limiting will be used for authenticated actions, where the appli
 
 | Rule              | Scope |       Limit | Window   |
 | ----------------- | ----- | ----------: | -------- |
-| `create-product`  | IP    | 10 requests | 1 hour   |
+| `create-product`  | USER  | 10 requests | 1 hour   |
 | `list-products`   | IP    | 60 requests | 1 minute |
 | `search-products` | IP    | 60 requests | 1 minute |
+| `get-product` | IP | 60 requests | 1 minute |
+| `update-product-stock` | User | 20 requests | 1 minute |
+| `update-product` | User | 20 requests | 1 minute |
 
 ### Cart Operations
 
@@ -82,7 +85,10 @@ The following endpoint groups are planned to be protected by rate limiting:
 | MFA unenrollment flow             | `mfa-unenroll`                |
 | `GET /api/products`               | `list-products`               |
 | `GET /api/products/search`        | `search-products`             |
+| `GET /api/products/{id}`          | `get-product`                 |
 | `POST /api/products`              | `create-product`              |
+| Product stock update flow         | `update-product-stock`        |
+| Product update flow               | `update-product`              |
 | `GET /api/cart`                   | `get-cart-items`              |
 | `POST /api/cart/items`            | `add-item-to-cart`            |
 | `PUT /api/cart/items/{productId}` | `update-item-in-cart`         |

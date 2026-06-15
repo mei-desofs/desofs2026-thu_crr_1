@@ -9,36 +9,96 @@ import java.time.Instant;
 @Component
 public class ProductAuditLogger {
 
-    private static final Logger auditLog = LoggerFactory.getLogger("PRODUCT_AUDIT");
-    private static final Logger appLog = LoggerFactory.getLogger("PRODUCT_APP");
+        private static final Logger auditLog = LoggerFactory.getLogger("PRODUCT_AUDIT");
+        private static final Logger appLog = LoggerFactory.getLogger("PRODUCT_APP");
 
-    public void logProductCreation(String productName, String categoryId, String price, String userId) {
-        auditLog.info("event=PRODUCT_CREATION | productName={} | categoryId={} | price={} | userId={} | timestamp={}",
-                sanitize(productName),
-                categoryId,
-                price,
-                userId,
-                Instant.now()
-        );
+        public void logProductCreation(String productName, String categoryId, String price, String userId) {
+                auditLog.info("event=PRODUCT_CREATION | productName={} | categoryId={} | price={} | userId={} | timestamp={}",
+                                sanitize(productName),
+                                categoryId,
+                                price,
+                                userId,
+                                Instant.now());
 
-        appLog.info("Product created: name={}, category={}, price={}",
-                sanitize(productName),
-                categoryId,
-                price);
-    }
+                appLog.info("Product created: name={}, category={}, price={}",
+                                sanitize(productName),
+                                categoryId,
+                                price);
+        }
 
-    public void logProductCreationFailure(String productName, String reason, String userId) {
-        auditLog.warn("event=PRODUCT_CREATION_FAILURE | productName={} | reason={} | userId={} | timestamp={}",
-                sanitize(productName),
-                reason,
-                userId,
-                Instant.now()
-        );
-    }
+        public void logProductCreationFailure(String productName, String reason, String userId) {
+                auditLog.warn("event=PRODUCT_CREATION_FAILURE | productName={} | reason={} | userId={} | timestamp={}",
+                                sanitize(productName),
+                                reason,
+                                userId,
+                                Instant.now());
+        }
 
-    private String sanitize(String input) {
-        if (input == null) return null;
-        return input.replaceAll("[\\r\\n\\t]", "_")
-                .replaceAll("\\p{Cntrl}", "");
-    }
+        public void logStockUpdate(String productName, Integer oldQuantity, Integer newQuantity, String managerId) {
+                auditLog.info("event=STOCK_UPDATE | productName={} | oldQuantity={} | newQuantity={} | change={} | managerId={} | timestamp={}",
+                                sanitize(productName),
+                                oldQuantity,
+                                newQuantity,
+                                (newQuantity - oldQuantity),
+                                sanitize(managerId),
+                                Instant.now());
+
+                appLog.info("Stock updated: productName={}, oldQuantity={}, newQuantity={}",
+                                sanitize(productName),
+                                oldQuantity,
+                                newQuantity);
+        }
+
+        public void logStockUpdateFailure(String productName, String reason, String managerId) {
+                auditLog.warn("event=STOCK_UPDATE_FAILURE | productName={} | reason={} | managerId={} | timestamp={}",
+                                sanitize(productName),
+                                sanitize(reason),
+                                sanitize(managerId),
+                                Instant.now());
+
+                appLog.warn("Stock update failed: productName={}, reason={}",
+                                sanitize(productName),
+                                sanitize(reason));
+        }
+
+        public void logProductUpdate(String oldName, String newName, String oldPrice, String newPrice,
+                        Integer oldQuantity, Integer newQuantity, String oldCategory, String newCategory,
+                        String managerId) {
+                auditLog.info("event=PRODUCT_UPDATE | oldName={} | newName={} | oldPrice={} | newPrice={} | oldQuantity={} | newQuantity={} | oldCategory={} | newCategory={} | managerId={} | timestamp={}",
+                                sanitize(oldName),
+                                sanitize(newName),
+                                oldPrice,
+                                newPrice,
+                                oldQuantity,
+                                newQuantity,
+                                sanitize(oldCategory),
+                                sanitize(newCategory),
+                                sanitize(managerId),
+                                Instant.now());
+
+                appLog.info("Product updated: name={}, price={}, quantity={}, category={}",
+                                sanitize(newName),
+                                newPrice,
+                                newQuantity,
+                                sanitize(newCategory));
+        }
+
+        public void logProductUpdateFailure(String productName, String reason, String managerId) {
+                auditLog.warn("event=PRODUCT_UPDATE_FAILURE | productName={} | reason={} | managerId={} | timestamp={}",
+                                sanitize(productName),
+                                sanitize(reason),
+                                sanitize(managerId),
+                                Instant.now());
+
+                appLog.warn("Product update failed: productName={}, reason={}",
+                                sanitize(productName),
+                                sanitize(reason));
+        }
+
+        private String sanitize(String input) {
+                if (input == null)
+                        return null;
+                return input.replaceAll("[\\r\\n\\t]", "_")
+                                .replaceAll("\\p{Cntrl}", "");
+        }
 }

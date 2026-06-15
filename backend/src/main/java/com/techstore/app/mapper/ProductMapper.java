@@ -4,8 +4,9 @@ import com.techstore.app.domain.category.Category;
 import com.techstore.app.domain.product.Product;
 import com.techstore.app.domain.shared.Money;
 import com.techstore.app.domain.shared.Quantity;
-import com.techstore.app.dto.ProductResponseDTO;
-import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductResponseDTO;
+
 import org.springframework.stereotype.Component;
 
 @Component

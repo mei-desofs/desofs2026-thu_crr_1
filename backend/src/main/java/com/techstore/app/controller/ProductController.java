@@ -2,10 +2,13 @@ package com.techstore.app.controller;
 
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
 import com.techstore.app.domain.product.ProductName;
-import com.techstore.app.dto.ProductResponseDTO;
-import com.techstore.app.dto.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductRequestDTO;
+import com.techstore.app.dto.product.ProductResponseDTO;
+import com.techstore.app.dto.product.UpdateStockRequestDTO;
 import com.techstore.app.service.interfaces.ProductService;
 import jakarta.validation.Valid;
+
+import org.springframework.security.core.Authentication;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
@@ -41,7 +45,35 @@ public class ProductController {
 
     @RateLimit("list-products")
     @GetMapping
-    public Page<ProductResponseDTO> findAll(@ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
+    public Page<ProductResponseDTO> findAll(
+            @ParameterObject @PageableDefault(size = 5, sort = "name") Pageable pageable) {
         return productService.findAll(pageable);
+    }
+
+    @RateLimit("get-product")
+    @GetMapping("/{id}")
+    public ProductResponseDTO findById(@PathVariable UUID id) {
+        return productService.findById(id);
+    }
+
+    @PutMapping("/{id}/stock")
+    @RateLimit("update-product-stock")
+    public ProductResponseDTO updateStock(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateStockRequestDTO request,
+            Authentication authentication) {
+
+        String managerId = authentication.getName();
+        return productService.updateStock(id, request.quantity(), managerId);
+    }
+
+    @PatchMapping("/{id}")
+    @RateLimit("update-product")
+    public ProductResponseDTO update(@PathVariable UUID id,
+            @Valid @ModelAttribute com.techstore.app.dto.product.UpdateProductRequestDTO updateDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication) throws IOException {
+        String managerId = authentication.getName();
+        return productService.update(id, updateDTO, image, managerId);
     }
 }

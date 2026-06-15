@@ -37,3 +37,7 @@ supabase:
   issuer: http://localhost:54321
   jwks-url: http://localhost:54321/auth/v1/.well-known/jwks.json
   jwt-audience: my-app
+
+hibp:
+  api:
+    url: http://localhost:8080

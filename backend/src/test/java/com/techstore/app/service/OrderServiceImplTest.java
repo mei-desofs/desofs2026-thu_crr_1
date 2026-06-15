@@ -17,8 +17,10 @@ import com.techstore.app.domain.user.SupabaseUserId;
 import com.techstore.app.domain.user.User;
 import com.techstore.app.domain.user.UserId;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
+import com.techstore.app.dto.product.OrderFilterDTO;
 import com.techstore.app.dto.shared.AddAddressDTO;
 import com.techstore.app.exception.BusinessException;
 import com.techstore.app.logger.OrderAuditLogger;
@@ -32,8 +34,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +52,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -660,7 +672,6 @@ class OrderServiceImplTest {
                 .thenReturn(Optional.of(carrier));
         when(carrier.getId()).thenReturn(userId);
 
-        // Simulate domain rejecting the transition (e.g. already PICKED_UP)
         doThrow(new BusinessException("Order cannot be picked up: current status is PICKED_UP"))
                 .when(order).pickup(carrier);
 
@@ -737,4 +748,325 @@ class OrderServiceImplTest {
         verify(orderAuditLogger).logPendingOrdersListingSuccess(userUuid.toString(), 2);
     }
 
+    @Test
+void shouldFindAllOrdersWithoutFilters() {
+    String managerId = "manager-001";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(null, null, null, null);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    Order order1 = mock(Order.class);
+    Order order2 = mock(Order.class);
+ 
+    OrderId orderId1 = mock(OrderId.class);
+    OrderId orderId2 = mock(OrderId.class);
+ 
+    Customer customer1 = mock(Customer.class);
+    Customer customer2 = mock(Customer.class);
+ 
+    CustomerId customerId1 = mock(CustomerId.class);
+    CustomerId customerId2 = mock(CustomerId.class);
+ 
+    User user1 = mock(User.class);
+    User user2 = mock(User.class);
+ 
+    Email email1 = mock(Email.class);
+    Email email2 = mock(Email.class);
+ 
+    when(orderId1.getId()).thenReturn(UUID.randomUUID());
+    when(orderId2.getId()).thenReturn(UUID.randomUUID());
+ 
+    when(order1.getId()).thenReturn(orderId1);
+    when(order2.getId()).thenReturn(orderId2);
+ 
+    when(order1.getCustomer()).thenReturn(customer1);
+    when(order2.getCustomer()).thenReturn(customer2);
+ 
+    when(customer1.getId()).thenReturn(customerId1);
+    when(customer2.getId()).thenReturn(customerId2);
+ 
+    when(customer1.getUser()).thenReturn(user1);
+    when(customer2.getUser()).thenReturn(user2);
+ 
+    when(user1.getEmail()).thenReturn(email1);
+    when(user2.getEmail()).thenReturn(email2);
+ 
+    when(email1.getEmail()).thenReturn("customer1@example.com");
+    when(email2.getEmail()).thenReturn("customer2@example.com");
+ 
+    when(customerId1.getId()).thenReturn(UUID.randomUUID());
+    when(customerId2.getId()).thenReturn(UUID.randomUUID());
+ 
+    when(order1.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+    when(order2.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+ 
+    when(order1.getTotalPrice()).thenReturn(new Money(new BigDecimal("100.00")));
+    when(order2.getTotalPrice()).thenReturn(new Money(new BigDecimal("200.00")));
+ 
+    when(order1.getCreatedAt()).thenReturn(LocalDateTime.now());
+    when(order2.getCreatedAt()).thenReturn(LocalDateTime.now());
+ 
+    when(order1.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+    when(order2.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+ 
+    Page<Order> ordersPage = new PageImpl<>(List.of(order1, order2), pageable, 2);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(ordersPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(2, response.getTotalElements());
+    assertEquals(1, response.getTotalPages());
+    assertEquals(2, response.getContent().size());
+ 
+    verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+    verify(orderAuditLogger).logOrdersFiltered(managerId, null, null, 2);
+}
+ 
+@Test
+void shouldFindAllOrdersWithStatusFilter() {
+    String managerId = "manager-001";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(OrderStatus.DELIVERED, null, null, null);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    Order order = mock(Order.class);
+    OrderId orderId = mock(OrderId.class);
+    Customer customer = mock(Customer.class);
+    CustomerId customerId = mock(CustomerId.class);
+    User user = mock(User.class);
+    Email email = mock(Email.class);
+ 
+    when(orderId.getId()).thenReturn(UUID.randomUUID());
+    when(order.getId()).thenReturn(orderId);
+    when(order.getCustomer()).thenReturn(customer);
+    when(customer.getId()).thenReturn(customerId);
+    when(customerId.getId()).thenReturn(UUID.randomUUID());
+    when(customer.getUser()).thenReturn(user);
+    when(user.getEmail()).thenReturn(email);
+    when(email.getEmail()).thenReturn("customer@example.com");
+    when(order.getOrderStatus()).thenReturn(OrderStatus.DELIVERED);
+    when(order.getTotalPrice()).thenReturn(new Money(new BigDecimal("150.00")));
+    when(order.getCreatedAt()).thenReturn(LocalDateTime.now());
+    when(order.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+ 
+    Page<Order> ordersPage = new PageImpl<>(List.of(order), pageable, 1);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(ordersPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(1, response.getTotalElements());
+    assertEquals(1, response.getContent().size());
+ 
+    verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+    verify(orderAuditLogger).logOrdersFiltered(eq(managerId), eq("DELIVERED"), isNull(), eq(1));
+}
+ 
+@Test
+void shouldFindAllOrdersWithEmailFilter() {
+    String managerId = "manager-001";
+    String customerEmail = "john@example.com";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(null, customerEmail, null, null);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    Order order = mock(Order.class);
+    OrderId orderId = mock(OrderId.class);
+    Customer customer = mock(Customer.class);
+    CustomerId customerId = mock(CustomerId.class);
+    User user = mock(User.class);
+    Email email = mock(Email.class);
+ 
+    when(orderId.getId()).thenReturn(UUID.randomUUID());
+    when(order.getId()).thenReturn(orderId);
+    when(order.getCustomer()).thenReturn(customer);
+    when(customer.getId()).thenReturn(customerId);
+    when(customerId.getId()).thenReturn(UUID.randomUUID());
+    when(customer.getUser()).thenReturn(user);
+    when(user.getEmail()).thenReturn(email);
+    when(email.getEmail()).thenReturn(customerEmail);
+    when(order.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+    when(order.getTotalPrice()).thenReturn(new Money(new BigDecimal("75.00")));
+    when(order.getCreatedAt()).thenReturn(LocalDateTime.now());
+    when(order.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+ 
+    Page<Order> ordersPage = new PageImpl<>(List.of(order), pageable, 1);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(ordersPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(1, response.getTotalElements());
+ 
+    verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+    verify(orderAuditLogger).logOrdersFiltered(eq(managerId), isNull(), eq(customerEmail), eq(1));
+}
+ 
+@Test
+void shouldReturnEmptyPageWhenNoOrdersMatch() {
+    String managerId = "manager-001";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(null, null, null, null);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    Page<Order> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(0, response.getTotalElements());
+    assertEquals(0, response.getContent().size());
+ 
+    verify(orderAuditLogger).logOrdersFiltered(eq(managerId), isNull(), isNull(), eq(0));
+}
+ 
+@Test
+void shouldHandleExceptionWhenFindingOrders() {
+    String managerId = "manager-001";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(null, null, null, null);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable)))
+            .thenThrow(new RuntimeException("Database error"));
+ 
+    RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> orderService.findAllOrders(filter, pageable, managerId));
+ 
+    assertEquals("Database error", exception.getMessage());
+ 
+    verify(orderAuditLogger).logOrdersAccessFailure(eq(managerId), contains("Database error"));
+}
+ 
+@Test
+void shouldFindOrdersWithPagination() {
+    String managerId = "manager-001";
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(null, null, null, null);
+ 
+    Pageable pageable = PageRequest.of(1, 5);
+ 
+    Order order1 = mock(Order.class);
+    Order order2 = mock(Order.class);
+ 
+    OrderId orderId1 = mock(OrderId.class);
+    OrderId orderId2 = mock(OrderId.class);
+ 
+    Customer customer1 = mock(Customer.class);
+    Customer customer2 = mock(Customer.class);
+ 
+    CustomerId customerId1 = mock(CustomerId.class);
+    CustomerId customerId2 = mock(CustomerId.class);
+ 
+    User user1 = mock(User.class);
+    User user2 = mock(User.class);
+ 
+    Email email1 = mock(Email.class);
+    Email email2 = mock(Email.class);
+ 
+    when(orderId1.getId()).thenReturn(UUID.randomUUID());
+    when(orderId2.getId()).thenReturn(UUID.randomUUID());
+ 
+    when(order1.getId()).thenReturn(orderId1);
+    when(order2.getId()).thenReturn(orderId2);
+ 
+    when(order1.getCustomer()).thenReturn(customer1);
+    when(order2.getCustomer()).thenReturn(customer2);
+ 
+    when(customer1.getId()).thenReturn(customerId1);
+    when(customer2.getId()).thenReturn(customerId2);
+ 
+    when(customer1.getUser()).thenReturn(user1);
+    when(customer2.getUser()).thenReturn(user2);
+ 
+    when(user1.getEmail()).thenReturn(email1);
+    when(user2.getEmail()).thenReturn(email2);
+ 
+    when(email1.getEmail()).thenReturn("customer1@example.com");
+    when(email2.getEmail()).thenReturn("customer2@example.com");
+ 
+    when(customerId1.getId()).thenReturn(UUID.randomUUID());
+    when(customerId2.getId()).thenReturn(UUID.randomUUID());
+ 
+    when(order1.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+    when(order2.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+ 
+    when(order1.getTotalPrice()).thenReturn(new Money(new BigDecimal("100.00")));
+    when(order2.getTotalPrice()).thenReturn(new Money(new BigDecimal("120.00")));
+ 
+    when(order1.getCreatedAt()).thenReturn(LocalDateTime.now());
+    when(order2.getCreatedAt()).thenReturn(LocalDateTime.now());
+ 
+    when(order1.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+    when(order2.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+ 
+    Page<Order> ordersPage = new PageImpl<>(List.of(order1, order2), pageable, 12);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(ordersPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(12, response.getTotalElements());
+    assertEquals(3, response.getTotalPages());
+    assertEquals(1, response.getNumber());
+    assertEquals(2, response.getContent().size());
+ 
+    verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+}
+ 
+@Test
+void shouldFindOrdersWithMultipleFilters() {
+    String managerId = "manager-001";
+    String customerEmail = "jane@example.com";
+    LocalDate startDate = LocalDate.of(2024, 1, 1);
+    LocalDate endDate = LocalDate.of(2024, 12, 31);
+ 
+    OrderFilterDTO filter = new OrderFilterDTO(OrderStatus.SHIPPED, customerEmail, startDate, endDate);
+ 
+    Pageable pageable = PageRequest.of(0, 10);
+ 
+    Order order = mock(Order.class);
+    OrderId orderId = mock(OrderId.class);
+    Customer customer = mock(Customer.class);
+    CustomerId customerId = mock(CustomerId.class);
+    User user = mock(User.class);
+    Email email = mock(Email.class);
+ 
+    when(orderId.getId()).thenReturn(UUID.randomUUID());
+    when(order.getId()).thenReturn(orderId);
+    when(order.getCustomer()).thenReturn(customer);
+    when(customer.getId()).thenReturn(customerId);
+    when(customerId.getId()).thenReturn(UUID.randomUUID());
+    when(customer.getUser()).thenReturn(user);
+    when(user.getEmail()).thenReturn(email);
+    when(email.getEmail()).thenReturn(customerEmail);
+    when(order.getOrderStatus()).thenReturn(OrderStatus.SHIPPED);
+    when(order.getTotalPrice()).thenReturn(new Money(new BigDecimal("250.00")));
+    when(order.getCreatedAt()).thenReturn(LocalDateTime.now());
+    when(order.getOrderItems()).thenReturn(new java.util.ArrayList<>());
+ 
+    Page<Order> ordersPage = new PageImpl<>(List.of(order), pageable, 1);
+ 
+    when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(ordersPage);
+ 
+    Page<ManagerOrderResponseDTO> response = orderService.findAllOrders(filter, pageable, managerId);
+ 
+    assertEquals(1, response.getTotalElements());
+ 
+    verify(orderRepository).findAll(any(Specification.class), eq(pageable));
+    verify(orderAuditLogger).logOrdersFiltered(
+            eq(managerId),
+            eq("SHIPPED"),
+            eq(customerEmail),
+            eq(1)
+    );
+
+    }
 }

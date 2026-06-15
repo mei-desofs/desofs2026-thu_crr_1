@@ -32,12 +32,31 @@ The system architecture consists of a Next.js web frontend, a Spring Boot REST A
 
 # Full Workflow
 
+## Overview
+
+Compared to the previous report, the CI/CD workflows were extended to support the frontend application across all environments.
+
+The following improvements were introduced:
+
+* **Frontend build integration**: Frontend build stages were added to the Feature, Dev, and Main workflows, ensuring that frontend changes are continuously validated alongside backend changes.
+* **Full-stack deployment**: The Main workflow was extended to deploy the frontend application together with the backend, providing a complete automated deployment process.
+* **Functional testing**: Functional tests were added to the Main workflow to validate end-to-end system behavior after the build and deployment stages.
+
+These enhancements strengthen the CI/CD process by providing full-stack validation, automated frontend deployment, and additional quality assurance through functional testing before production releases.
+
+
+
+### Example of workflow run to feature branch
+
 <img src="./images/phase-3/feature-workflow.png" alt="Feature Branch Workflow" width="600">
+
+### Example of workflow run to dev branch
 
 <img src="./images/phase-3/dev-workflow.png" alt="Dev Branch Workflow" width="600">
 
-<img src="./images/phase-3/main-workflow.png" alt="Main Branch Workflow" width="1400">
+### Example of workflow run to main branch
 
+<img src="./images/phase-3/main-workflow.png" alt="Main Branch Workflow" width="1400">
 
 # Requirements Implemented
 
@@ -56,7 +75,7 @@ The system architecture consists of a Next.js web frontend, a Spring Boot REST A
 | FR9 | Display product details (price, description, stock) | <span style="color: green;">Done</span> |
 | FR10 | Allow customers to add products to the cart | <span style="color: green;">Done</span> |
 | FR11 | Allow customers to remove products from the cart | <span style="color: green;">Done</span> |
-| FR12 | Allow customers to update product quantities in the cart | <span style="color: red;">Not Done</span> |
+| FR12 | Allow customers to update product quantities in the cart | <span style="color: green;">Done</span> |
 | FR13 | Automatically calculate cart totals | <span style="color: green;">Done</span> |
 | FR14 | Allow customers to place orders | <span style="color: green;">Done</span> |
 | FR15 | Validate product stock before confirming orders | <span style="color: green;">Done</span> |
@@ -69,8 +88,8 @@ The system architecture consists of a Next.js web frontend, a Spring Boot REST A
 | FR22 | Allow managers to add new products | <span style="color: green;">Done</span> |
 | FR23 | Allow managers to edit product information | <span style="color: red;">Not Done</span> |
 | FR24 | Allow managers to manage product categories | <span style="color: green;">Done</span> |
-| FR25 | Allow managers to update product stock levels manually | <span style="color: red;">Not Done</span> |
-| FR26 | Allow managers to view and filter all customer orders | <span style="color: red;">Not Done</span> |
+| FR25 | Allow managers to update product stock levels manually | <span style="color: green;">Done</span> |
+| FR26 | Allow managers to view and filter all customer orders | <span style="color: green;">Done</span> |
 | FR27 | Allow managers to create backups of products, categories, and orders | <span style="color: orange;">Partially Done</span> |
 
 ---
@@ -117,27 +136,45 @@ The system architecture consists of a Next.js web frontend, a Spring Boot REST A
 | SR14 | Secure storage of sensitive logs | <span style="color: green;">Done</span> |
 | SR15 | Logs must be backed up in 3 locations (local + 2 cloud) | <span style="color: green;">Done</span> |
 
-# Production
+# Production Deployment
+
+For the production environment, an Azure Virtual Machine was provisioned to host both the backend API and the frontend application.
+
+To expose the applications to end users, Nginx was configured as a reverse proxy and web server, routing incoming requests to the appropriate services and serving the frontend application.
+
+Additionally, HTTPS was enabled for both the frontend and backend endpoints using *Let's Encrypt* certificates, ensuring encrypted communication between clients and the deployed services. This configuration improves security by protecting data in transit and providing trusted SSL/TLS certificates.
+
+The final production setup includes:
+
+- Azure VM hosting the application infrastructure.
+- Nginx configuration for application routing and reverse proxying.
+- Frontend and backend applications deployed on the same environment.
+- HTTPS enabled for both services.
+- Automatic certificate management through *Let's Encrypt*.
+
+### Nginx Configuration
 
 <img src="./images/phase-3/nginx-config.png" alt="Nginx Configuration" width="600">
 
-<img src="./images/phase-3/app.png" alt="App" width="1000">
+### Deployed Application
+
+<img src="./images/phase-3/app.png" alt="Application Running in Production" width="1000">
 
 # Security Requirements and Tests Traceability
 
 | Security Requirement | Test |
 |----------------------|------|
-| SR1 MFA | |
-| SR2 Lockout | |
-| SR3 Password policy | |
-| SR4 Registration email | |
-| SR5 RBAC | |
-| SR6 Session Expiry | |
-| SR7 Rate limiting | |
-| SR8 Encryption at rest and in transit | |
-| SR9 Password hashing | |
-| SR10 GDPR compliance | |
-| SR11 Input validation | |
-| SR12 Data format validation | |
-| SR13 Secure logs | |
-| SR14 Log backup | |
+| SR1 MFA | Postman Test: Try Login When User Has MFA; Postman Test: MFA Challenge |
+| SR2 Lockout | Postman Test: SR2 Lockout (Attempt_1–Attempt_6) |
+| SR3 Password policy | Postman Test: Register with Weak Password; Unit Tests: PasswordUtilsTest.java |
+| SR4 Registration email | Manual: Test it on the prod environment |
+| SR5 RBAC | Postman Test: Login As Customer; Postman Test: Try to access Manager Route |
+| SR6 Session Expiry | Obs: Since the session timeout is configured in supabase, and to change it we needed pro account, and the default value is 1 hour, it was not possible to test it on a functional test, so we test it manually |
+| SR7 Rate limiting | Postman Test: SR7 Rate limiting (Attempt_1–Attempt_6, Expect 429); Integration Test: RateLimitIntegrationTest.java |
+| SR8 Encryption at rest and in transit | Postman Test: Encryption in Transit |
+| SR9 Password hashing | Unit Tests: PasswordUtilsTest.java |
+| SR10 GDPR compliance | - |
+| SR11 Input validation | Postman Test: Register with Weak Password; Postman Test: Login With Wrong Data |
+| SR12 Data format validation | Postman Test: Login With Wrong Data |
+| SR13 Secure logs | Postman Test: Login With Wrong Creds |
+| SR14 Log backup | Manual: See the backups on the vm |

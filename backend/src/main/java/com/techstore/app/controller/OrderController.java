@@ -1,22 +1,30 @@
 package com.techstore.app.controller;
 
 import com.techstore.app.dto.order.OrderSummaryDTO;
+import com.techstore.app.dto.product.OrderFilterDTO;
+
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable; 
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import com.techstore.app.config.ratelimit.annotation.RateLimit;
+import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.service.interfaces.OrderService;
 
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/orders")
@@ -30,11 +38,13 @@ public class OrderController {
 
     @RateLimit("create-order")
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid CreateOrderRequestDTO request, Authentication authentication) {
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody @Valid CreateOrderRequestDTO request,
+            Authentication authentication) {
         String supabaseUserId = authentication.getName();
 
-        return ResponseEntity.ok(orderService.createOrder(request,supabaseUserId));
+        return ResponseEntity.ok(orderService.createOrder(request, supabaseUserId));
     }
+
     @RateLimit("customer-list-orders")
     @GetMapping
     public ResponseEntity<List<OrderSummaryDTO>> getCustomerOrders(
@@ -46,6 +56,7 @@ public class OrderController {
                 .header("Cache-Control", "no-store")
                 .body(orders);
     }
+
     @RateLimit("carrier-list-orders")
     @GetMapping("/carrier")
     public ResponseEntity<List<OrderSummaryDTO>> getCarrierOrders(
@@ -70,6 +81,7 @@ public class OrderController {
 
         return ResponseEntity.noContent().build();
     }
+
     @RateLimit("carrier-list-pending-orders")
     @GetMapping("/pending")
     public ResponseEntity<List<OrderSummaryDTO>> getPendingOrders(
@@ -80,5 +92,20 @@ public class OrderController {
         return ResponseEntity.ok()
                 .header("Cache-Control", "no-store")
                 .body(orders);
+    }
+
+    @GetMapping("/manager")
+    @RateLimit("list-all-orders")
+    public Page<ManagerOrderResponseDTO> getAllOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String customerEmail,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,            
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,            
+            @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        Authentication authentication) {
+        String managerId = authentication.getName();
+
+        OrderFilterDTO filter = new OrderFilterDTO(status, customerEmail, startDate, endDate);
+        return orderService.findAllOrders(filter, pageable, managerId);
     }
 }
