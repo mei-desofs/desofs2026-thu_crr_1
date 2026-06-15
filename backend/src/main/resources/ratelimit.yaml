@@ -119,3 +119,19 @@ ratelimit:
       type: USER
       capacity: 10
       duration: PT1M
+
+    get-product:
+      type: IP
+      capacity: 60
+      duration: PT1M
+
+    update-product-stock:
+      type: USER
+      capacity: 20
+      duration: PT1M
+
+    update-product:
+      type: USER
+      capacity: 20
+      duration: PT1M
+    
