@@ -3,6 +3,7 @@ package com.techstore.app.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -16,7 +17,8 @@ public class HaveIBeenPwnedClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HaveIBeenPwnedClient.class);
 
-    private static final String HIBP_URL = "https://api.pwnedpasswords.com/range/";
+    @Value("${hibp.api.url}")
+    private String HIBP_URL;
 
     private final RestTemplate restTemplate;
 
