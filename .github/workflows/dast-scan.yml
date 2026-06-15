@@ -68,6 +68,7 @@ jobs:
           MAIL_PORT: 1025
           MAIL_FROM: no-reply@techstore.com
           MAIL_FROM_NAME: TechStore
+          HIPB_URL: http://localhost:8081
           
         run: |
           JAR_FILE=$(find target -name "*.jar" -type f | head -1)
