@@ -41,7 +41,7 @@ User-based rate limiting will be used for authenticated actions, where the appli
 
 | Rule              | Scope |       Limit | Window   |
 | ----------------- | ----- | ----------: | -------- |
-| `create-product`  | IP    | 10 requests | 1 hour   |
+| `create-product`  | USER  | 10 requests | 1 hour   |
 | `list-products`   | IP    | 60 requests | 1 minute |
 | `search-products` | IP    | 60 requests | 1 minute |
 | `get-product` | IP | 60 requests | 1 minute |
