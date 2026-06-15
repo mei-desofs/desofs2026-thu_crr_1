@@ -78,6 +78,10 @@ public class AuthServiceImpl implements AuthService {
             if (userRepository.existsByEmail(email)) {
                 throw new BusinessException("Email already registered");
             }
+
+            if (supabaseClient.userExists(request.email())) {
+            throw new BusinessException("Email already registered");
+            }
             passwordUtils.validate(request.password(), request.email());
 
             SupabaseLoginResponse supabaseResponse = supabaseClient.signUp(

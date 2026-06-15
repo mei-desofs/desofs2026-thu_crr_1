@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTest {
 
@@ -45,5 +43,52 @@ class ProductTest {
         assertNull(product.getDescription());
         assertNull(product.getPrice());
         assertNull(product.getCategory());
+    }
+
+    @Test
+    void shouldUpdateStockSuccessfully() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(100));
+
+        product.updateStock(new Quantity(75));
+
+        assertEquals(75, product.getStockQuantity().getQuantity());
+    }
+
+
+
+    @Test
+    void shouldUpdateStockToHigherQuantity() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(50));
+
+        product.updateStock(new Quantity(200));
+
+        assertEquals(200, product.getStockQuantity().getQuantity());
+    }
+
+    @Test
+    void shouldDecreaseStockSuccessfully() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(100));
+
+        product.decreaseStock(new Quantity(25));
+
+        assertEquals(75, product.getStockQuantity().getQuantity());
+    }
+
+    @Test
+    void shouldThrowWhenDecreasingStockMoreThanAvailable() {
+        Category category = new Category("Accessories");
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(50));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> product.decreaseStock(new Quantity(100)));
+
+        assertTrue(exception.getMessage().contains("Not enough stock"));
     }
 }

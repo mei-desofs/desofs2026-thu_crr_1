@@ -6,6 +6,7 @@ import com.techstore.app.domain.order.Order;
 import com.techstore.app.domain.order.OrderItem;
 import com.techstore.app.domain.order.OrderStatus;
 import com.techstore.app.dto.order.CreateOrderRequestDTO;
+import com.techstore.app.dto.order.ManagerOrderResponseDTO;
 import com.techstore.app.dto.order.OrderItemDTO;
 import com.techstore.app.dto.order.OrderResponseDTO;
 import com.techstore.app.dto.order.OrderSummaryDTO;
@@ -83,4 +84,16 @@ public class OrderMapper {
                                                                 uploadBasePath)))
                                 .toList();
         }
+
+        public static ManagerOrderResponseDTO toManagerResponse(Order order) {
+        return new ManagerOrderResponseDTO(    
+             order.getId().getId(),
+            order.getCustomer().getId().getId(),
+            order.getCustomer().getUser().getEmail().getEmail(),
+            order.getTotalPrice(),
+            order.getOrderStatus().toString(),
+            order.getCreatedAt(),
+            order.getOrderItems().size()
+        );
+    }
 }
