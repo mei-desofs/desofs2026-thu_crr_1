@@ -173,6 +173,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Override
     public ProductResponseDTO updateStock(UUID productId, Integer newQuantity, String managerId) {
         try {
             if (newQuantity < 0) {
@@ -190,17 +191,12 @@ public class ProductServiceImpl implements ProductService {
                     oldQuantity, newQuantity, managerId);
 
             return ProductMapper.toResponse(saved, fileUploadConfig.getBasePath());
-        } catch (BusinessException ex) {
-            productAuditLogger.logStockUpdateFailure(
-                    "unknown",
-                    ex.getMessage(),
-                    managerId);
-            throw ex;
         } catch (Exception ex) {
-            productAuditLogger.logStockUpdateFailure(
-                    "unknown",
-                    ex.getMessage(),
-                    managerId);
+            productAuditLogger.logStockUpdateFailure("unknown", ex.getMessage(), managerId);
+
+            if (ex instanceof BusinessException) {
+                throw ex;
+            }
             throw new BusinessException("Failed to update stock: " + ex.getMessage());
         }
     }

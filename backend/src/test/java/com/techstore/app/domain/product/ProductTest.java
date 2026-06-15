@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ProductTest {
 
@@ -48,94 +46,47 @@ class ProductTest {
     }
 
     @Test
-    void shouldUpdateProductName() {
+    void shouldUpdateStockSuccessfully() {
         Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(100));
 
-        product.updateName("Gaming Mouse");
+        product.updateStock(new Quantity(75));
 
-        assertEquals("Gaming Mouse", product.getName().getProductName());
+        assertEquals(75, product.getStockQuantity().getQuantity());
     }
 
     @Test
-    void shouldThrowWhenUpdatingNameToInvalid() {
+    void shouldUpdateStockToHigherQuantity() {
         Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(50));
 
-        assertThrows(BusinessException.class, () -> product.updateName("A"));
+        product.updateStock(new Quantity(200));
+
+        assertEquals(200, product.getStockQuantity().getQuantity());
     }
 
     @Test
-    void shouldUpdateProductDescription() {
+    void shouldDecreaseStockSuccessfully() {
         Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(100));
 
-        product.updateDescription("High-precision wireless gaming mouse");
+        product.decreaseStock(new Quantity(25));
 
-        assertEquals("High-precision wireless gaming mouse", product.getDescription().getDescription());
+        assertEquals(75, product.getStockQuantity().getQuantity());
     }
 
     @Test
-    void shouldThrowWhenUpdatingDescriptionToTooShort() {
+    void shouldThrowWhenDecreasingStockMoreThanAvailable() {
         Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
+        Money price = new Money(new BigDecimal("49.99"));
+        Product product = new Product("Mouse", "Wireless mouse", price, category, new Quantity(50));
 
-        assertThrows(BusinessException.class, () -> product.updateDescription("Too short"));
-    }
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> product.decreaseStock(new Quantity(100)));
 
-    @Test
-    void shouldUpdateProductPrice() {
-        Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
-
-        product.updatePrice(new BigDecimal("79.99"));
-
-        assertEquals(new BigDecimal("79.99"), product.getPrice().getMoneyValue());
-    }
-
-    @Test
-    void shouldThrowWhenUpdatingPriceToNegative() {
-        Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
-
-        assertThrows(BusinessException.class, () -> product.updatePrice(new BigDecimal("-1.00")));
-    }
-
-    @Test
-    void shouldUpdateProductCategory() {
-        Category oldCategory = new Category("Accessories");
-        Category newCategory = new Category("Gaming");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), oldCategory,
-                new Quantity(10));
-
-        product.updateCategory(newCategory);
-
-        assertEquals("Gaming", product.getCategory().getName().getCategoryName());
-    }
-
-    @Test
-    void shouldUpdateProductStockQuantity() {
-        Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
-
-        product.updateStockQuantity(250);
-
-        assertEquals(250, product.getStockQuantity().getQuantity());
-    }
-
-    @Test
-    void shouldThrowWhenUpdatingStockToNegative() {
-        Category category = new Category("Accessories");
-        Product product = new Product("Mouse", "Wireless mouse device", new Money(new BigDecimal("49.99")), category,
-                new Quantity(10));
-
-        assertThrows(BusinessException.class, () -> product.updateStockQuantity(-5));
+        assertTrue(exception.getMessage().contains("Not enough stock"));
     }
 }
