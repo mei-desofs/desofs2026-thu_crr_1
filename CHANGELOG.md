@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.1](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v3.0.0...v3.0.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* add events to syslogconfig to document in audit log file ([9665607](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/966560760b80ba55c201c90cc78f343bc66ac425))
+* change error message ([177db9a](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/177db9a5160b1195e661cef4eba3caf7e54f4410))
+* SR13 functional test ([51203a1](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/51203a190e7996a811685eb563a96728c03d99e0))
+
 ## [3.0.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.6.1...v3.0.0) (2026-06-16)
 
 
