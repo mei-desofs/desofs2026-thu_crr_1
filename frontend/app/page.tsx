@@ -2,25 +2,39 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiGet } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to products page
     const redirect = async () => {
-      const me = await apiGet<{ role: string }>("/auth/me");
-      router.refresh();
-      if (me.role === "MANAGER") {
-        router.push("/manager/dashboard");
-      } else if (me.role === "CARRIER") {
-        router.push("/carrier");
-        } else {
-          router.push("/products");
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/me`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          router.replace("/products");
+          return;
         }
-        router.refresh();
+
+        const me = await response.json();
+
+        if (me.role === "MANAGER") {
+          router.replace("/manager/dashboard");
+        } else if (me.role === "CARRIER") {
+          router.replace("/carrier");
+        } else {
+          router.replace("/products");
+        }
+      } catch {
+        router.replace("/products");
+      }
     };
+
     redirect();
   }, [router]);
 
