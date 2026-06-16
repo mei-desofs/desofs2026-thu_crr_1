@@ -9,7 +9,7 @@ import java.time.Instant;
 @Component
 public class CartAuditLogger {
 
-    private static final Logger auditLog = LoggerFactory.getLogger("CART_AUDIT");
+    private static final Logger auditLog = LoggerFactory.getLogger("AUDIT");
     private static final Logger appLog = LoggerFactory.getLogger("CART_APP");
 
     public void logCartCreation(String customerId, String cartId) {
