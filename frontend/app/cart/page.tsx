@@ -28,14 +28,20 @@ export default function CartPage() {
     const items = await apiGet<CartItem[]>("/cart/items");
     setCartItems(items || []);
   } catch (err: any) {
-    console.error("Failed to load cart:", err);
+  console.error("Failed to load cart:", err);
 
-    if (err?.status === 403 || err?.response?.status === 403) {
-      setCartItems([]);
-      return;
-    }
-    setError("Failed to load cart items. Please try again later.");
-  } finally {
+  const status = err?.response?.status;
+  const message = err?.response?.data?.message;
+  if (
+    status === 404 ||
+    message?.toLowerCase?.().includes("cart not found")
+  ) {
+    setCartItems([]);
+    return;
+  }
+
+  setError("Failed to load cart items. Please try again later.");
+}finally {
     setLoading(false);
   }
 };
