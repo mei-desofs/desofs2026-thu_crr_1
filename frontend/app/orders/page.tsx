@@ -76,7 +76,7 @@ export default function CustomerOrdersPage() {
           <div className="text-center py-12">
             <p className="text-slate-400 text-lg mb-4">You have no orders yet.</p>
             <a
-              href="/products"
+              href="/app/products"
               className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Start Shopping
