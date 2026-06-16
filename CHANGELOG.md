@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.2](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v3.0.1...v3.0.2) (2026-06-16)
+
+
+### Bug Fixes
+
+* redirect pages fix ([7f10fe2](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/7f10fe27538a586945c4de7f7ff8fffe3caa63ed))
+* redirect pages fix ([9a16ecc](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9a16ecc15497aef081ccd1e9da5a5ecefe27fa28))
+
 ## [3.0.1](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v3.0.0...v3.0.1) (2026-06-16)
 
 
