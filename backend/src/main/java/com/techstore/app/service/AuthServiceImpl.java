@@ -273,7 +273,7 @@ public class AuthServiceImpl implements AuthService {
 
             Email email = new Email(request.email());
             if (!userRepository.existsByEmail(email)) {
-                throw new BusinessException("Email not registered");
+                throw new BusinessException("Invalid credentials");
             }
 
             SupabaseLoginResponse supabaseResponse = supabaseClient.login(request.email(), request.password());
