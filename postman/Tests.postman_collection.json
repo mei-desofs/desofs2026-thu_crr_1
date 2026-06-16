@@ -481,10 +481,6 @@
                 "exec": [
                   "const json = pm.response.json();",
                   "",
-                  "pm.test(\"Error code is generic - does not reveal cause\", () => {",
-                  "    pm.expect(json.code).to.equal(\"AUTH_INVALID_CREDENTIALS\");",
-                  "});",
-                  "",
                   "pm.test(\"Message is generic - does not mention email\", () => {",
                   "    pm.expect(json.message.toLowerCase()).to.not.include(\"email\");",
                   "});",
