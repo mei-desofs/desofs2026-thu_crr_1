@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.0.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.6.1...v3.0.0) (2026-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* add asvs with new changes
+
+### Bug Fixes
+
+* add redirect to order carrier page in nav bar ([d802d89](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/d802d899830b928ed5d9abb5a76894e8edc7c233))
+* redirect to home page by role when clicking in techstore logo ([db6883f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/db6883f6c0dfb3e6a36f319feadf7ff78c19bdfe))
+
+
+### Documentation
+
+* add asvs with new changes ([9de032f](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/9de032f0702cc9b669391cae90a739500979da81))
+
 ## [2.6.1](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.6.0...v2.6.1) (2026-06-16)
 
 
