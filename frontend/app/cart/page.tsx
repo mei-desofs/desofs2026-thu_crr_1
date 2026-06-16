@@ -21,18 +21,30 @@ export default function CartPage() {
 
   useEffect(() => {
     const loadCart = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const items = await apiGet<CartItem[]>("/cart/items");
-        setCartItems(items || []);
-      } catch (err) {
-        console.error("Failed to load cart:", err);
-        setError("Failed to load cart items. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    setLoading(true);
+    setError(null);
+
+    const items = await apiGet<CartItem[]>("/cart/items");
+    setCartItems(items || []);
+  } catch (err: any) {
+  console.error("Failed to load cart:", err);
+
+  const status = err?.response?.status;
+  const message = err?.response?.data?.message;
+  if (
+    status === 404 ||
+    message?.toLowerCase?.().includes("cart not found")
+  ) {
+    setCartItems([]);
+    return;
+  }
+
+  setError("Failed to load cart items. Please try again later.");
+}finally {
+    setLoading(false);
+  }
+};
 
     loadCart();
   }, []);
@@ -46,7 +58,7 @@ export default function CartPage() {
       setError(null);
       await apiDelete(`/cart/items/${productId}`);
       setCartItems((prev) => prev.filter((item) => item.productId !== productId));
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to remove item:", err);
       setError("Failed to remove item. Please try again.");
     }
@@ -66,7 +78,7 @@ export default function CartPage() {
             : item
         )
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update quantity:", err);
       setError("Failed to update item quantity. Please try again.");
     }

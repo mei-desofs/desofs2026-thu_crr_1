@@ -85,7 +85,7 @@ export default function CustomerOrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order, index) => (
-              <OrderCard key={order.orderId} order={order} orderNumber={orders.length - index} />
+              <OrderCard key={order.orderId} order={order} orderNumber={index + 1} />
             ))}
           </div>
         )}
