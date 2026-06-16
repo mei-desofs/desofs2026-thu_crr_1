@@ -270,6 +270,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         try {
+
+            Email email = new Email(request.email());
+            if (!userRepository.existsByEmail(email)) {
+                throw new BusinessException("Email not registered");
+            }
+
             SupabaseLoginResponse supabaseResponse = supabaseClient.login(request.email(), request.password());
 
             MfaStatusResponse mfaStatus = supabaseClient.getMfaStatus(supabaseResponse.accessToken());

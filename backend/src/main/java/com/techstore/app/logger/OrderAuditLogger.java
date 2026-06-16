@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderAuditLogger {
 
-    private static final Logger auditLog = LoggerFactory.getLogger("ORDER_AUDIT");
+    private static final Logger auditLog = LoggerFactory.getLogger("AUDIT");
     private static final Logger appLog = LoggerFactory.getLogger("ORDER_APP");
 
     public void logOrderCreationAttempt(String userId, String cartId) {
