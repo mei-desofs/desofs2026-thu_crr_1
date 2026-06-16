@@ -86,7 +86,7 @@ These enhancements strengthen the CI/CD process by providing full-stack validati
 | FR20 | Display relevant order information for pickup | <span style="color: green;">Done</span> |
 | FR21 | Allow carriers to mark an order as picked up | <span style="color: green;">Done</span> |
 | FR22 | Allow managers to add new products | <span style="color: green;">Done</span> |
-| FR23 | Allow managers to edit product information | <span style="color: red;">Not Done</span> |
+| FR23 | Allow managers to edit product information | <span style="color: green;">Done</span> |
 | FR24 | Allow managers to manage product categories | <span style="color: green;">Done</span> |
 | FR25 | Allow managers to update product stock levels manually | <span style="color: green;">Done</span> |
 | FR26 | Allow managers to view and filter all customer orders | <span style="color: green;">Done</span> |
