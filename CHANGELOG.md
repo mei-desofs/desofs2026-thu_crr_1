@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.1](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.6.0...v2.6.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* backend Dockerfile to pass scripts also ([20b900e](https://github.com/mei-desofs/desofs2026-thu_crr_1/commit/20b900ec70beaf8695c38bb7d20c2ab49d6b4a9a))
+
 ## [2.6.0](https://github.com/mei-desofs/desofs2026-thu_crr_1/compare/v2.5.0...v2.6.0) (2026-06-15)
 
 
