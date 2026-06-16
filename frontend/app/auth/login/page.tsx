@@ -22,6 +22,7 @@ export default function AuthPage() {
   const rawRedirectTo = searchParams?.get("next");
   const infoMessage = searchParams?.get("message") || null;
   const [showPassword, setShowPassword] = useState(false);
+  const [allowSubmit, setAllowSubmit] = useState(false);
 
   const getSafeRedirect = (url: string | null): string => {
     if (!url) return "/products";
@@ -34,9 +35,12 @@ export default function AuthPage() {
 
   const handleCredentials = async (e: React.FormEvent) => {
       e.preventDefault();
+
+      if (!allowSubmit) return;
+      setAllowSubmit(false);
+
       setError(null);
       setLoading(true);
-
       try {
           const loginResponse = await apiPost<{
               mfaRequired: boolean;
@@ -214,6 +218,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
+                onClick={() => setAllowSubmit(true)}
                 className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -288,6 +293,7 @@ export default function AuthPage() {
                   setStep("credentials");
                   setError(null);
                   setOtpCode("");
+                  setAllowSubmit(false);
                 }}
                 className="w-full text-sm text-slate-400 hover:text-white transition"
               >
